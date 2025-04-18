@@ -1,0 +1,76 @@
+@using TeachTokenCrowdsale.Web.Services
+@inject IJSRuntime JSRuntime
+@inject ChartService ChartService
+
+<div class="chart-container" style="position: relative; height: 350px;">
+    <canvas id="@ChartId"></canvas>
+</div>
+
+@code {
+    [Parameter] public string ChartId { get; set; } = "tokenomicsChart";
+    
+    private readonly Dictionary<string, object> _chartData = new()
+    {
+        ["labels"] = new[]
+        {
+            "Platform Ecosystem (32%)",
+            "Community Incentives (22%)",
+            "Initial Liquidity (14%)",
+            "Public Presale (10%)",
+            "Team and Development (10%)",
+            "Educational Partners (8%)",
+            "Reserve (4%)"
+        },
+        ["datasets"] = new[]
+        {
+            new
+            {
+                data = new[] { 32, 22, 14, 10, 10, 8, 4 },
+                backgroundColor = new[]
+                {
+                    "#4e73df", // Primary blue
+                    "#1cc88a", // Success green
+                    "#36b9cc", // Info blue
+                    "#f6c23e", // Warning yellow
+                    "#e74a3b", // Danger red
+                    "#fd7e14", // Orange
+                    "#6f42c1"  // Purple
+                },
+                borderWidth = 1
+            }
+        }
+    };
+
+    private readonly Dictionary<string, object> _chartOptions = new()
+    {
+        ["responsive"] = true,
+        ["maintainAspectRatio"] = false,
+        ["cutout"] = "65%",
+        ["plugins"] = new
+        {
+            legend = new
+            {
+                display = false
+            },
+            tooltip = new
+            {
+                backgroundColor = "rgb(255,255,255)",
+                bodyFontColor = "#858796",
+                borderColor = "#dddfeb",
+                borderWidth = 1,
+                padding = 15,
+                displayColors = false,
+                caretPadding = 10,
+                callbacks = new Dictionary<string, object>()
+            }
+        }
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ChartService.CreateDoughnutChartAsync(ChartId, _chartData, _chartOptions);
+        }
+    }
+}

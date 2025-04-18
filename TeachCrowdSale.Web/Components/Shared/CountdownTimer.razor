@@ -1,0 +1,110 @@
+@inject IJSRuntime JSRuntime
+
+<div class="countdown-timer" id="@TimerId">
+    <div class="countdown-item">
+        <span id="@($"{TimerId}-days")">@_days</span>
+        <p>Days</p>
+    </div>
+    <div class="countdown-item">
+        <span id="@($"{TimerId}-hours")">@_hours</span>
+        <p>Hours</p>
+    </div>
+    <div class="countdown-item">
+        <span id="@($"{TimerId}-minutes")">@_minutes</span>
+        <p>Minutes</p>
+    </div>
+    <div class="countdown-item">
+        <span id="@($"{TimerId}-seconds")">@_seconds</span>
+        <p>Seconds</p>
+    </div>
+</div>
+
+@if (_isEnded)
+{
+    <div class="alert alert-warning mt-3">
+        This tier has ended. Please check current active tier.
+    </div>
+}
+
+@code {
+    [Parameter] public DateTime EndDate { get; set; }
+    [Parameter] public string TimerId { get; set; } = "countdown-timer";
+    [Parameter] public EventCallback<bool> OnCountdownEnded { get; set; }
+
+    private string _days = "00";
+    private string _hours = "00";
+    private string _minutes = "00";
+    private string _seconds = "00";
+    private bool _isEnded = false;
+    private System.Threading.Timer _timer;
+    private DotNetObjectReference<CountdownTimer> _objectReference;
+
+    protected override void OnInitialized()
+    {
+        _objectReference = DotNetObjectReference.Create(this);
+        _timer = new System.Threading.Timer(UpdateCountdown, null, 0, 1000);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initializeCountdown", _objectReference, TimerId, EndDate.ToString("O"));
+        }
+    }
+
+    private void UpdateCountdown(object state)
+    {
+        var now = DateTime.Now;
+        var distance = EndDate - now;
+
+        if (distance.TotalMilliseconds <= 0)
+        {
+            _days = "00";
+            _hours = "00";
+            _minutes = "00";
+            _seconds = "00";
+            _isEnded = true;
+            _timer?.Dispose();
+            _timer = null;
+            
+            InvokeAsync(async () => 
+            {
+                await OnCountdownEnded.InvokeAsync(true);
+                StateHasChanged();
+            });
+        }
+        else
+        {
+            _days = Math.Floor(distance.TotalDays).ToString().PadLeft(2, '0');
+            _hours = distance.Hours.ToString().PadLeft(2, '0');
+            _minutes = distance.Minutes.ToString().PadLeft(2, '0');
+            _seconds = distance.Seconds.ToString().PadLeft(2, '0');
+            
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    [JSInvokable]
+    public void UpdateCountdownFromJS(string days, string hours, string minutes, string seconds, bool isEnded)
+    {
+        _days = days;
+        _hours = hours;
+        _minutes = minutes;
+        _seconds = seconds;
+        _isEnded = isEnded;
+        
+        if (isEnded)
+        {
+            OnCountdownEnded.InvokeAsync(true);
+        }
+        
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _objectReference?.Dispose();
+    }
+}

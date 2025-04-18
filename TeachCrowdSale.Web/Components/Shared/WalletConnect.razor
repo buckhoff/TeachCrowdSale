@@ -1,0 +1,161 @@
+@using TeachTokenCrowdsale.Web.Services
+@inject IJSRuntime JSRuntime
+@inject WalletService WalletService
+
+<div class="wallet-connect">
+    @if (!string.IsNullOrEmpty(Address))
+    {
+        <div class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="walletDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-wallet-fill me-2"></i>@AddressDisplay
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="walletDropdown">
+                <li>
+                    <div class="px-3 py-2">
+                        <small class="text-muted">Connected as</small>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-2">
+                                <img src="@WalletService.GetWalletIcon(WalletType)" alt="Wallet" width="24" height="24">
+                            </div>
+                            <span class="text-truncate" style="max-width: 150px;">@Address</span>
+                        </div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                @if (NetworkValid)
+                {
+                    <li>
+                        <div class="px-3 py-2 d-flex justify-content-between">
+                            <span>Network:</span>
+                            <span class="text-success">@NetworkName <i class="bi bi-check-circle-fill"></i></span>
+                        </div>
+                    </li>
+                }
+                else
+                {
+                    <li>
+                        <div class="px-3 py-2 d-flex justify-content-between">
+                            <span>Network:</span>
+                            <span class="text-danger">@NetworkName <i class="bi bi-exclamation-triangle-fill"></i></span>
+                        </div>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" @onclick="SwitchNetwork">
+                            <i class="bi bi-arrow-repeat me-2"></i>Switch to Polygon
+                        </button>
+                    </li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button class="dropdown-item" @onclick="ViewOnExplorer">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>View on Explorer
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item" @onclick="CopyAddress">
+                        <i class="bi bi-clipboard me-2"></i>Copy Address
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item" @onclick="DisconnectWallet">
+                        <i class="bi bi-power me-2"></i>Disconnect
+                    </button>
+                </li>
+            </ul>
+        </div>
+    }
+    else
+    {
+        <button class="btn btn-outline-light" @onclick="ConnectWallet">
+            <i class="bi bi-wallet me-2"></i>Connect Wallet
+        </button>
+    }
+</div>
+
+@code {
+    private string Address { get; set; }
+    private string AddressDisplay => !string.IsNullOrEmpty(Address) 
+        ? $"{Address.Substring(0, 6)}...{Address.Substring(Address.Length - 4)}" 
+        : "";
+    private string NetworkName { get; set; } = "Unknown";
+    private bool NetworkValid { get; set; } = false;
+    private string WalletType { get; set; } = "metamask";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if wallet is already connected
+        var connectionState = await WalletService.GetConnectionStateAsync();
+        if (connectionState.IsConnected)
+        {
+            Address = connectionState.Address;
+            NetworkName = connectionState.NetworkName;
+            NetworkValid = connectionState.NetworkValid;
+            WalletType = connectionState.WalletType;
+        }
+    }
+
+    private async Task ConnectWallet()
+    {
+        try
+        {
+            var result = await WalletService.ConnectWalletAsync();
+            if (result.Success)
+            {
+                Address = result.Address;
+                NetworkName = result.NetworkName;
+                NetworkValid = result.NetworkValid;
+                WalletType = result.WalletType;
+            }
+            else
+            {
+                // Show error message
+                await JSRuntime.InvokeVoidAsync("alert", $"Failed to connect wallet: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error connecting wallet: {ex.Message}");
+        }
+    }
+
+    private async Task DisconnectWallet()
+    {
+        await WalletService.DisconnectWalletAsync();
+        Address = null;
+        NetworkName = "Unknown";
+        NetworkValid = false;
+    }
+
+    private async Task SwitchNetwork()
+    {
+        try
+        {
+            var result = await WalletService.SwitchNetworkAsync(137); // Polygon Mainnet
+            if (result.Success)
+            {
+                NetworkName = result.NetworkName;
+                NetworkValid = true;
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Failed to switch network: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error switching network: {ex.Message}");
+        }
+    }
+
+    private async Task CopyAddress()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", Address);
+        await JSRuntime.InvokeVoidAsync("showToast", "Address copied to clipboard");
+    }
+
+    private async Task ViewOnExplorer()
+    {
+        string explorerUrl = $"https://polygonscan.com/address/{Address}";
+        await JSRuntime.InvokeVoidAsync("window.open", explorerUrl, "_blank");
+    }
+}

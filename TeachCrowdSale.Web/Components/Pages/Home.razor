@@ -1,0 +1,193 @@
+﻿@page "/"
+
+<PageTitle>TeachToken - Empowering Educators Through Blockchain</PageTitle>
+
+<section id="about" class="section-padding bg-light">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>About TeachToken</h2>
+            <p class="lead">Supporting educators through decentralized technology</p>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h3>Our Vision</h3>
+                <p>TeachToken is creating a decentralized ecosystem to empower educators worldwide by providing financial support, resource sharing, and community governance.</p>
+                <p>Our platform connects teachers directly with supporters, eliminating intermediaries and maximizing the impact of every contribution.</p>
+                <div class="mt-4">
+                    <a href="#" class="btn btn-primary">Download Whitepaper</a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="about-img">
+                    <img src="images/about-illustration.svg" alt="TeachToken Ecosystem" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="tokenomics" class="section-padding">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Tokenomics</h2>
+            <p class="lead">Balanced distribution for long-term sustainability</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="tokenomics-chart">
+                    <TokenomicsChart />
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="tokenomics-details">
+                    <div class="tokenomics-info">
+                        <h3>Token Supply</h3>
+                        <p>Total supply: <strong>5,000,000,000 TEACH</strong></p>
+                        <div class="tokenomics-list">
+                            <div class="tokenomics-item">
+                                <span class="color-box" style="background-color: #4e73df;"></span>
+                                <span class="label">Platform Ecosystem (32%)</span>
+                                <span class="value">1,600,000,000</span>
+                            </div>
+                            <div class="tokenomics-item">
+                                <span class="color-box" style="background-color: #1cc88a;"></span>
+                                <span class="label">Community Incentives (22%)</span>
+                                <span class="value">1,100,000,000</span>
+                            </div>
+                            <div class="tokenomics-item">
+                                <span class="color-box" style="background-color: #36b9cc;"></span>
+                                <span class="label">Initial Liquidity (14%)</span>
+                                <span class="value">700,000,000</span>
+                            </div>
+                            <div class="tokenomics-item">
+                                <span class="color-box" style="background-color: #f6c23e;"></span>
+                                <span class="label">Public Presale (10%)</span>
+                                <span class="value">500,000,000</span>
+                            </div>
+                            <div class="tokenomics-item">
+                                <span class="color-box" style="background-color: #e74a3b;"></span>
+                                <span class="label">Team and Development (10%)</span>
+                                <span class="value">500,000,000</span>
+                            </div>
+                            <div class="tokenomics-item">
+                                <span class="color-box" style="background-color: #fd7e14;"></span>
+                                <span class="label">Educational Partners (8%)</span>
+                                <span class="value">400,000,000</span>
+                            </div>
+                            <div class="tokenomics-item">
+                                <span class="color-box" style="background-color: #6f42c1;"></span>
+                                <span class="label">Reserve (4%)</span>
+                                <span class="value">200,000,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="architecture" class="section-padding bg-light">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Platform Architecture</h2>
+            <p class="lead">A secure and scalable ecosystem of interconnected smart contracts</p>
+        </div>
+        
+        <div class="architecture-diagram mb-5">
+            <img src="images/architecture-diagram.svg" alt="TeachToken Platform Architecture" class="img-fluid">
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <ArchitectureCard 
+                    Title="TeachToken" 
+                    Description="The core ERC20 token contract powering the platform." 
+                    Features="@(new[] { "Initial token distribution", "Token transfers and burns", "ERC20 standard compliance", "Access control for minting", "Deflationary mechanisms" })" />
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <ArchitectureCard 
+                    Title="TokenCrowdSale" 
+                    Description="Multi-tier presale contract that manages token distribution during the presale phases." 
+                    Features="@(new[] { "Tiered pricing structure", "Vesting schedules", "Purchase limits", "Whitelist functionality", "Auto-compounding rewards" })" />
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <ArchitectureCard 
+                    Title="PlatformStabilityFund" 
+                    Description="Price stability and volatility protection system." 
+                    Features="@(new[] { "Token price stability mechanisms", "Reserve ratio management", "Automatic fee adjustments", "Flash loan protection", "Time-weighted average price feeds" })" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="presale" class="section-padding">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Presale Tiers</h2>
+            <p class="lead">Multi-tiered structure with transparent pricing and allocation</p>
+        </div>
+        
+        <div class="current-tier-info text-center mb-5">
+            <div class="tier-badge">
+                <span>Current Tier: <span id="activeTierLabel">Tier 2</span></span>
+            </div>
+            <h3 class="mb-3">Join the <span id="currentTierName">Community Round</span> now!</h3>
+            <p class="lead mb-4">Don't miss out on the opportunity to participate in our presale at the current rate of <strong>$<span id="currentTierPrice">0.045</span></strong> per token.</p>
+        </div>
+        
+        <div class="tiers-container mb-5">
+            <TierCard 
+                Id="1"
+                Title="Tier 1"
+                Price="0.035"
+                Name="Seed Round"
+                IsActive="false"
+                IsCompleted="true"
+                Allocation="75,000,000"
+                MinPurchase="100"
+                MaxPurchase="50,000"
+                VestingTGE="10"
+                VestingMonths="18"
+                SoldPercent="100" />
+                
+            <TierCard 
+                Id="2"
+                Title="Tier 2"
+                Price="0.045"
+                Name="Community Round"
+                IsActive="true"
+                IsCompleted="false"
+                Allocation="100,000,000"
+                MinPurchase="100"
+                MaxPurchase="25,000"
+                VestingTGE="15"
+                VestingMonths="15"
+                SoldPercent="72.5" />
+                
+            <TierCard 
+                Id="3"
+                Title="Tier 3"
+                Price="0.055"
+                Name="Growth Round"
+                IsActive="false"
+                IsCompleted="false"
+                Allocation="100,000,000"
+                MinPurchase="100"
+                MaxPurchase="10,000"
+                VestingTGE="20"
+                VestingMonths="12"
+                SoldPercent="0" />
+        </div>
+    </div>
+</section>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        // Initialize any data needed for the page
+    }
+}

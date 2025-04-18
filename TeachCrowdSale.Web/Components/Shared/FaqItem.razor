@@ -1,0 +1,29 @@
+<div class="accordion-item">
+    <h2 class="accordion-header" id="heading-@Id">
+        <button class="accordion-button @(IsExpanded ? "" : "collapsed")" 
+                type="button" 
+                @onclick="Toggle">
+            @Question
+        </button>
+    </h2>
+    <div class="accordion-collapse collapse @(IsExpanded ? "show" : "")" 
+         id="collapse-@Id" 
+         aria-labelledby="heading-@Id">
+        <div class="accordion-body">
+            @((MarkupString)Answer)
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; }
+    [Parameter] public string Question { get; set; }
+    [Parameter] public string Answer { get; set; }
+    [Parameter] public bool IsExpanded { get; set; }
+    [Parameter] public EventCallback OnToggle { get; set; }
+
+    private async Task Toggle()
+    {
+        await OnToggle.InvokeAsync();
+    }
+}

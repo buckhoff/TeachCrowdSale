@@ -1,0 +1,19 @@
+<div class="contract-card">
+    <h4>@Title</h4>
+    <p>@Description</p>
+    @if (Features != null && Features.Length > 0)
+    {
+        <ul>
+            @foreach (var feature in Features)
+            {
+                <li>@feature</li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Description { get; set; }
+    [Parameter] public string[] Features { get; set; }
+}

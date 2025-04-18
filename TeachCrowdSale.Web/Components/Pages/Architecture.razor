@@ -1,0 +1,174 @@
+<section id="architecture" class="section-padding bg-light">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Platform Architecture</h2>
+            <p class="lead">A secure and scalable ecosystem of interconnected smart contracts</p>
+        </div>
+        
+        <div class="architecture-diagram mb-5">
+            <img src="~/images/architecture-diagram.svg" alt="TeachToken Platform Architecture" class="img-fluid">
+        </div>
+        
+        <div class="architecture-description mb-5">
+            <p>The TeachToken platform is built on a robust architecture of interconnected smart contracts that work together to provide a secure, transparent, and scalable ecosystem for educators and supporters. Each contract serves a specific purpose within the platform, with a central registry ensuring seamless coordination.</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>TeachToken</h4>
+                    <p>The core ERC20 token contract powering the platform with built-in mechanisms for:</p>
+                    <ul>
+                        <li>Initial token distribution</li>
+                        <li>Token transfers and burns</li>
+                        <li>ERC20 standard compliance</li>
+                        <li>Access control for minting</li>
+                        <li>Deflationary mechanisms</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>TokenCrowdSale</h4>
+                    <p>Multi-tier presale contract that manages token distribution during the presale phases:</p>
+                    <ul>
+                        <li>Tiered pricing structure</li>
+                        <li>Vesting schedules</li>
+                        <li>Purchase limits</li>
+                        <li>Whitelist functionality</li>
+                        <li>Auto-compounding rewards</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>PlatformStabilityFund</h4>
+                    <p>Price stability and volatility protection system:</p>
+                    <ul>
+                        <li>Token price stability mechanisms</li>
+                        <li>Reserve ratio management</li>
+                        <li>Automatic fee adjustments</li>
+                        <li>Flash loan protection</li>
+                        <li>Time-weighted average price feeds</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>TokenStaking</h4>
+                    <p>Staking and rewards distribution system with unique features:</p>
+                    <ul>
+                        <li>Multiple staking pools with different parameters</li>
+                        <li>50/50 reward split between users and schools</li>
+                        <li>Time-based vesting rewards</li>
+                        <li>Emergency withdrawal options</li>
+                        <li>Cooldown periods for unstaking</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>PlatformGovernance</h4>
+                    <p>Decentralized governance for platform decision-making:</p>
+                    <ul>
+                        <li>Proposal creation and voting</li>
+                        <li>Quadratic voting mechanism</li>
+                        <li>Timelock for parameter changes</li>
+                        <li>Treasury management</li>
+                        <li>Emergency recovery system</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>PlatformMarketplace</h4>
+                    <p>Educational resource marketplace for teachers and students:</p>
+                    <ul>
+                        <li>Resource creation and purchasing</li>
+                        <li>Subscription model for access</li>
+                        <li>Ratings and reviews system</li>
+                        <li>Bulk purchase discounts</li>
+                        <li>Dispute resolution mechanism</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>TeacherReward</h4>
+                    <p>Incentives and rewards for verified educators:</p>
+                    <ul>
+                        <li>Teacher verification system</li>
+                        <li>Reputation-based rewards</li>
+                        <li>Achievement milestones</li>
+                        <li>Peer review system</li>
+                        <li>Performance-based multipliers</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>ContractRegistry</h4>
+                    <p>Central coordination hub for all platform contracts:</p>
+                    <ul>
+                        <li>Contract address management</li>
+                        <li>Version tracking for upgrades</li>
+                        <li>System-wide pause functionality</li>
+                        <li>Emergency recovery coordination</li>
+                        <li>Cross-contract communication</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="contract-card">
+                    <h4>Proxy Contracts</h4>
+                    <p>Upgradability layer for all platform contracts:</p>
+                    <ul>
+                        <li>Seamless contract updates</li>
+                        <li>Preserving state between upgrades</li>
+                        <li>Governance-controlled upgrades</li>
+                        <li>Multiple approval requirements</li>
+                        <li>Timelocks for critical changes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="security-features mt-5">
+            <h3 class="text-center mb-4">Security Features</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-shield-alt me-2"></i> Multi-layered Access Control</h5>
+                        <p>Role-based permissions with specific access rights for different operations, ensuring only authorized addresses can execute sensitive functions.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-lock me-2"></i> Reentrancy Protection</h5>
+                        <p>All contracts implement reentrancy guards to prevent malicious reentrant calls that could exploit contract execution flow.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-pause-circle me-2"></i> Emergency Circuit Breakers</h5>
+                        <p>System-wide and contract-specific pause mechanisms that can halt operations in case of detected vulnerabilities or attacks.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-code-branch me-2"></i> Multi-signature Recovery</h5>
+                        <p>Critical operations and emergency recovery procedures require multiple approvals from different admin addresses.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

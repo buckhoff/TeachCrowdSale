@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <header>
+        <div class="hero-section">
+            <div class="hero-overlay"></div>
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h1 class="hero-title">TeachToken</h1>
+                        <p class="hero-subtitle">Revolutionizing Educational Support Through Blockchain</p>
+                        <div class="hero-cta">
+                            <a href="#presale" class="btn btn-primary btn-lg">Join Presale</a>
+                            <a href="#tokenomics" class="btn btn-outline-light btn-lg">Learn More</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="countdown-card">
+                            <h3>Presale Stage 2 Ends In:</h3>
+                            <CountdownTimer EndDate="@DateTime.Now.AddDays(14)" />
+                            <div class="presale-progress">
+                                <div class="progress-text">
+                                    <span>Total Raised: $<span id="totalRaised">3,450,000</span></span>
+                                    <span>Goal: $<span id="fundingGoal">5,000,000</span></span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: 69%;" aria-valuenow="69" aria-valuemin="0" aria-valuemax="100">69%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <NavMenu />
+    </header>
+
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+
+    <Footer />
+</div>

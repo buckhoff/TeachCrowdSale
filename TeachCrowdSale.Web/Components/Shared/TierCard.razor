@@ -1,0 +1,77 @@
+<div class="tier-card @(IsActive ? "active" : "") @(IsCompleted ? "completed" : "")">
+    <div class="tier-header">
+        @if (IsCompleted)
+        {
+            <div class="tier-badge completed">Completed</div>
+        }
+        else if (IsActive)
+        {
+            <div class="tier-badge active">Active Now</div>
+        }
+        else
+        {
+            <div class="tier-badge upcoming">Upcoming</div>
+        }
+        <h4 class="tier-title">@Title</h4>
+        <h4 class="tier-price">$@Price</h4>
+        <p class="tier-subtitle">@Name</p>
+    </div>
+    <div class="tier-details">
+        <div class="tier-detail-item">
+            <span class="tier-detail-label">Allocation</span>
+            <span class="tier-detail-value">@Allocation Tokens</span>
+        </div>
+        <div class="tier-detail-item">
+            <span class="tier-detail-label">Min Purchase</span>
+            <span class="tier-detail-value">$@MinPurchase</span>
+        </div>
+        <div class="tier-detail-item">
+            <span class="tier-detail-label">Max Purchase</span>
+            <span class="tier-detail-value">$@MaxPurchase</span>
+        </div>
+        <div class="tier-detail-item">
+            <span class="tier-detail-label">Vesting at TGE</span>
+            <span class="tier-detail-value">@VestingTGE%</span>
+        </div>
+        <div class="tier-detail-item">
+            <span class="tier-detail-label">Vesting Period</span>
+            <span class="tier-detail-value">@VestingMonths Months</span>
+        </div>
+        <div class="tier-detail-item">
+            <span class="tier-detail-label">Status</span>
+            @if (IsCompleted)
+            {
+                <span class="tier-detail-value text-success">100% Sold</span>
+            }
+            else if (IsActive)
+            {
+                <span class="tier-detail-value">@SoldPercent% Sold</span>
+            }
+            else
+            {
+                <span class="tier-detail-value text-muted">Not Started</span>
+            }
+        </div>
+    </div>
+    @if (IsActive)
+    {
+        <div class="tier-cta">
+            <a href="#purchase-form" class="btn btn-primary">Purchase Now</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Price { get; set; }
+    [Parameter] public string Name { get; set; }
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public bool IsCompleted { get; set; }
+    [Parameter] public string Allocation { get; set; }
+    [Parameter] public string MinPurchase { get; set; }
+    [Parameter] public string MaxPurchase { get; set; }
+    [Parameter] public string VestingTGE { get; set; }
+    [Parameter] public string VestingMonths { get; set; }
+    [Parameter] public string SoldPercent { get; set; } = "0";
+}

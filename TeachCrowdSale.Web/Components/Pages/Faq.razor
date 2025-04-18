@@ -1,0 +1,105 @@
+@page "/faq"
+@using TeachCrowdSale.Web.Models
+@using TeachTokenCrowdsale.Web.Services
+@inject FaqService FaqService
+
+<PageTitle>FAQ - TeachToken</PageTitle>
+
+<section class="faq-section section-padding">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Frequently Asked Questions</h2>
+            <p class="lead">Everything you need to know about the TeachToken platform</p>
+        </div>
+
+        <div class="faq-categories mb-5">
+            <div class="row justify-content-center">
+                <div class="col-auto">
+                    <div class="nav nav-pills faq-nav" id="faq-tabs" role="tablist">
+                        @foreach (var category in FaqCategories)
+                        {
+                            <button class="nav-link @(category.Id == ActiveCategory ? "active" : "")" 
+                                    @onclick="() => SetActiveCategory(category.Id)" 
+                                    role="tab">
+                                <i class="@category.Icon me-2"></i> @category.Name
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-content">
+            <div class="accordion" id="faqAccordion">
+                @foreach (var item in FilteredFaqItems)
+                {
+                    <FaqItem 
+                        Question="@item.Question" 
+                        Answer="@item.Answer"
+                        Id="@item.Id" 
+                        IsExpanded="@(ExpandedItemId == item.Id)"
+                        OnToggle="@(() => ToggleItem(item.Id))" />
+                }
+            </div>
+        </div>
+
+        <div class="faq-support text-center mt-5">
+            <div class="card">
+                <div class="card-body py-5">
+                    <h4>Still have questions?</h4>
+                    <p>If you cannot find answer to your question in our FAQ, you can always contact us. We will answer to you shortly!</p>
+                    <div class="mt-4">
+                        <a href="https://t.me/teachtoken" target="_blank" class="btn btn-outline-primary me-2">
+                            <i class="fab fa-telegram me-2"></i>Join Telegram
+                        </a>
+                        <a href="mailto:support@teachtoken.com" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<FaqCategory> FaqCategories { get; set; } = new();
+    private List<FaqItemModel> FaqItems { get; set; } = new();
+    private string ActiveCategory { get; set; } = "general";
+    private string ExpandedItemId { get; set; } = "faq-1";
+
+    private IEnumerable<FaqItemModel> FilteredFaqItems => 
+        FaqItems.Where(f => f.Category == ActiveCategory);
+
+    protected override async Task OnInitializedAsync()
+    {
+        FaqCategories = await FaqService.GetCategoriesAsync();
+        FaqItems = await FaqService.GetFaqItemsAsync();
+
+        // Expand the first item by default
+        if (FilteredFaqItems.Any())
+        {
+            ExpandedItemId = FilteredFaqItems.First().Id;
+        }
+    }
+
+    private void SetActiveCategory(string category)
+    {
+        ActiveCategory = category;
+        
+        // Expand the first item in the new category
+        if (FilteredFaqItems.Any())
+        {
+            ExpandedItemId = FilteredFaqItems.First().Id;
+        }
+        else
+        {
+            ExpandedItemId = string.Empty;
+        }
+    }
+
+    private void ToggleItem(string id)
+    {
+        ExpandedItemId = ExpandedItemId == id ? string.Empty : id;
+    }
+}

@@ -1,0 +1,492 @@
+@page "/purchase"
+@using System.ComponentModel.DataAnnotations
+@using TeachCrowdSale.Web.Models
+@using TeachTokenCrowdsale.Web.Services
+@inject WalletService WalletService
+@inject PresaleService PresaleService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<PageTitle>TeachToken - Purchase Tokens</PageTitle>
+
+<div class="purchase-container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title mb-0">Purchase TeachToken</h2>
+                </div>
+                <div class="card-body">
+                    @if (!_isWalletConnected)
+                    {
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-wallet2 display-1 text-muted"></i>
+                            </div>
+                            <h3>Connect Your Wallet</h3>
+                            <p class="text-muted mb-4">Please connect your wallet to participate in the presale.</p>
+                            <button @onclick="ConnectWallet" class="btn btn-primary btn-lg">
+                                <i class="bi bi-wallet me-2"></i>Connect Wallet
+                            </button>
+                        </div>
+                    }
+                    else if (!_isCorrectNetwork)
+                    {
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
+                            </div>
+                            <h3>Wrong Network</h3>
+                            <p class="text-muted mb-4">Please switch to Polygon Mainnet to participate in the presale.</p>
+                            <button @onclick="SwitchNetwork" class="btn btn-warning btn-lg">
+                                <i class="bi bi-arrow-repeat me-2"></i>Switch to Polygon
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="wallet-info p-3 rounded border">
+                                    <h5>Connected Wallet</h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="wallet-icon me-2">
+                                            <img src="@WalletService.GetWalletIcon(_walletType)" alt="Wallet" width="24" height="24">
+                                        </div>
+                                        <div class="text-truncate">@_walletAddress</div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">Network: <span class="text-success">@_networkName</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="presale-info p-3 rounded border">
+                                    <h5>Current Tier: @_currentTier?.Name</h5>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Price:</span>
+                                        <strong>$@_currentTier?.Price</strong>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 10px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                            style="width: @_currentTier?.SoldPercentage%;" 
+                                            aria-valuenow="@_currentTier?.SoldPercentage" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small>@_currentTier?.SoldPercentage%</small>
+                                        <small class="text-muted">@_currentTier?.TokensRemaining.ToString("N0") remaining</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <EditForm Model="@_purchaseModel" OnValidSubmit="@HandleValidSubmit">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary class="text-danger mb-4" />
+
+                            <div class="mb-4">
+                                <label for="amount" class="form-label">USDC Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <InputNumber id="amount" class="form-control form-control-lg" @bind-Value="_purchaseModel.UsdcAmount" @oninput="OnAmountChanged" />
+                                    <button type="button" class="btn btn-outline-secondary" @onclick="() => SetMaxAmount()">MAX</button>
+                                </div>
+                                <div class="form-text d-flex justify-content-between mt-1">
+                                    <span>Min: $@_currentTier?.MinPurchase</span>
+                                    <span>Max: $@_currentTier?.MaxPurchase</span>
+                                </div>
+                                <ValidationMessage For="@(() => _purchaseModel.UsdcAmount)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">You will receive (estimated)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-lg bg-light" value="@_estimatedTokens.ToString("N0")" readonly />
+                                    <span class="input-group-text">TEACH</span>
+                                </div>
+                                <div class="form-text text-end">≈ $@(_estimatedTokens * _futureValue).ToString("N2") (at listing price of $@_futureValue)</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Vesting Schedule</label>
+                                <div class="vesting-info p-3 rounded border bg-light">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2 mb-md-0">
+                                            <div class="text-center">
+                                                <h5 class="mb-2">@(_currentTier?.VestingTGE)%</h5>
+                                                <p class="small mb-0">At TGE</p>
+                                                <p class="small text-muted mb-0">@String.Format("{0:N0}",((_estimatedTokens * _currentTier?.VestingTGE / 100))) TEACH</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-2 mb-md-0">
+                                            <div class="text-center">
+                                                <h5 class="mb-2">@(100 - _currentTier?.VestingTGE)%</h5>
+                                                <p class="small mb-0">Linear Vesting</p>
+                                                <p class="small text-muted mb-0">@String.Format("{0:N0}",((_estimatedTokens * (100 - _currentTier?.VestingTGE) / 100))) TEACH</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-center">
+                                                <h5 class="mb-2">@_currentTier?.VestingMonths</h5>
+                                                <p class="small mb-0">Months</p>
+                                                <p class="small text-muted mb-0">Duration</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <InputCheckbox id="terms" class="form-check-input" @bind-Value="_purchaseModel.AcceptTerms" />
+                                    <label class="form-check-label" for="terms">
+                                        I have read and agree to the <a href="/terms" target="_blank">Terms and Conditions</a>
+                                    </label>
+                                    <ValidationMessage For="@(() => _purchaseModel.AcceptTerms)" class="text-danger d-block" />
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" disabled="@_isProcessing">
+                                    @if (_isProcessing)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Processing...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Purchase Tokens</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+
+                        @if (_transactions.Count > 0)
+                        {
+                            <div class="purchase-history mt-5">
+                                <h4>Recent Transactions</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>USDC Amount</th>
+                                                <th>TEACH Amount</th>
+                                                <th>Status</th>
+                                                <th>Transaction</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var tx in _transactions)
+                                            {
+                                                <tr>
+                                                    <td>@tx.Timestamp.ToString("MMM dd, yyyy HH:mm")</td>
+                                                    <td>$@tx.UsdcAmount.ToString("N2")</td>
+                                                    <td>@tx.TokenAmount.ToString("N0")</td>
+                                                    <td>
+                                                        @if (tx.Status == "Success")
+                                                        {
+                                                            <span class="badge bg-success">Success</span>
+                                                        }
+                                                        else if (tx.Status == "Pending")
+                                                        {
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-danger">Failed</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <a href="@($"https://polygonscan.com/tx/{tx.TxHash}")" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-box-arrow-up-right"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isWalletConnected = false;
+    private bool _isCorrectNetwork = false;
+    private string _walletAddress = string.Empty;
+    private string _walletType = string.Empty;
+    private string _networkName = string.Empty;
+    private PresaleTierModel _currentTier;
+    private decimal _estimatedTokens = 0;
+    private decimal _futureValue = 0.15m; // Estimated future listing price
+    private bool _isProcessing = false;
+    private decimal _usdcBalance = 0;
+
+    private PurchaseModel _purchaseModel = new();
+    private List<TransactionModel> _transactions = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check wallet connection
+        var connectionState = await WalletService.GetConnectionStateAsync();
+        if (connectionState.IsConnected)
+        {
+            _isWalletConnected = true;
+            _walletAddress = connectionState.Address;
+            _networkName = connectionState.NetworkName;
+            _isCorrectNetwork = connectionState.NetworkValid;
+            _walletType = connectionState.WalletType;
+
+            // Load user data
+            if (_isCorrectNetwork)
+            {
+                await LoadUserDataAsync();
+            }
+        }
+
+        // Load current tier data
+        await LoadCurrentTierAsync();
+    }
+
+    private async Task ConnectWallet()
+    {
+        try
+        {
+            var result = await WalletService.ConnectWalletAsync();
+            if (result.Success)
+            {
+                _isWalletConnected = true;
+                _walletAddress = result.Address;
+                _networkName = result.NetworkName;
+                _isCorrectNetwork = result.NetworkValid;
+                _walletType = result.WalletType;
+
+                // Load user data
+                if (_isCorrectNetwork)
+                {
+                    await LoadUserDataAsync();
+                }
+            }
+            else
+            {
+                // Show error message
+                await JSRuntime.InvokeVoidAsync("showToast", $"Failed to connect wallet: {result.ErrorMessage}", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("showToast", $"Error connecting wallet: {ex.Message}", "error");
+        }
+    }
+
+    private async Task SwitchNetwork()
+    {
+        try
+        {
+            var result = await WalletService.SwitchNetworkAsync(137); // Polygon Mainnet
+            if (result.Success)
+            {
+                _networkName = result.NetworkName;
+                _isCorrectNetwork = true;
+
+                // Load user data
+                await LoadUserDataAsync();
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("showToast", $"Failed to switch network: {result.ErrorMessage}", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("showToast", $"Error switching network: {ex.Message}", "error");
+        }
+    }
+
+    private async Task LoadCurrentTierAsync()
+    {
+        try
+        {
+            _currentTier = await PresaleService.GetCurrentTierAsync();
+            
+            // Set default values for validation
+            _purchaseModel.MinPurchase = _currentTier.MinPurchase;
+            _purchaseModel.MaxPurchase = _currentTier.MaxPurchase;
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("showToast", $"Error loading tier data: {ex.Message}", "error");
+        }
+    }
+
+    private async Task LoadUserDataAsync()
+    {
+        try
+        {
+            // Get USDC balance
+            _usdcBalance = await WalletService.GetTokenBalanceAsync(_currentTier?.PaymentTokenAddress);
+
+            // Load transaction history
+            _transactions = await PresaleService.GetUserTransactionsAsync(_walletAddress);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("showToast", $"Error loading user data: {ex.Message}", "error");
+        }
+    }
+
+    private void OnAmountChanged(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), out decimal amount))
+        {
+            // Calculate estimated tokens
+            _estimatedTokens = _currentTier != null && _currentTier.Price > 0
+                ? amount / _currentTier.Price
+                : 0;
+        }
+        else
+        {
+            _estimatedTokens = 0;
+        }
+    }
+
+    private void SetMaxAmount()
+    {
+        // Set to max USDC balance or max purchase limit, whichever is lower
+        decimal maxAmount = Math.Min(_usdcBalance, _currentTier?.MaxPurchase ?? 0);
+        _purchaseModel.UsdcAmount = maxAmount;
+        
+        // Recalculate estimated tokens
+        _estimatedTokens = _currentTier != null && _currentTier.Price > 0
+            ? maxAmount / _currentTier.Price
+            : 0;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (!_isWalletConnected || !_isCorrectNetwork)
+        {
+            return;
+        }
+
+        try
+        {
+            _isProcessing = true;
+
+            // Check allowance first
+            bool hasAllowance = await PresaleService.CheckTokenAllowanceAsync(
+                _walletAddress, 
+                _currentTier.PresaleContractAddress, 
+                _purchaseModel.UsdcAmount,
+                _currentTier.PaymentTokenAddress
+            );
+
+            if (!hasAllowance)
+            {
+                // Request approval
+                bool approved = await PresaleService.ApproveTokenSpendingAsync(
+                    _walletAddress,
+                    _currentTier.PresaleContractAddress,
+                    _purchaseModel.UsdcAmount,
+                    _currentTier.PaymentTokenAddress
+                );
+
+                if (!approved)
+                {
+                    await JSRuntime.InvokeVoidAsync("showToast", "Failed to approve token spending", "error");
+                    _isProcessing = false;
+                    return;
+                }
+            }
+
+            // Purchase tokens
+            var result = await PresaleService.PurchaseTokensAsync(
+                _currentTier.Id,
+                _purchaseModel.UsdcAmount
+            );
+
+            if (result.Success)
+            {
+                await JSRuntime.InvokeVoidAsync("showToast", "Purchase successful! Check your transaction history.", "success");
+                
+                // Add to transactions
+                _transactions.Insert(0, new TransactionModel
+                {
+                    Timestamp = DateTime.Now,
+                    UsdcAmount = _purchaseModel.UsdcAmount,
+                    TokenAmount = _estimatedTokens,
+                    Status = "Success",
+                    TxHash = result.TxHash
+                });
+
+                // Reset form
+                _purchaseModel = new PurchaseModel
+                {
+                    MinPurchase = _currentTier.MinPurchase,
+                    MaxPurchase = _currentTier.MaxPurchase
+                };
+                _estimatedTokens = 0;
+
+                // Reload data
+                await LoadUserDataAsync();
+                await LoadCurrentTierAsync();
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("showToast", $"Purchase failed: {result.ErrorMessage}", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("showToast", $"Error processing purchase: {ex.Message}", "error");
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    public class PurchaseModel
+    {
+        [Required(ErrorMessage = "USDC amount is required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than zero")]
+        public decimal UsdcAmount { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms and conditions")]
+        public bool AcceptTerms { get; set; }
+
+        // For validation only
+        [ValidateComplexType]
+        public decimal MinPurchase { get; set; }
+
+        [ValidateComplexType]
+        public decimal MaxPurchase { get; set; }
+    }
+
+    public class TransactionModel
+    {
+        public DateTime Timestamp { get; set; }
+        public decimal UsdcAmount { get; set; }
+        public decimal TokenAmount { get; set; }
+        public string Status { get; set; }
+        public string TxHash { get; set; }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize any JS functionality
+            await JSRuntime.InvokeVoidAsync("initPurchaseForm");
+        }
+    }
+}
