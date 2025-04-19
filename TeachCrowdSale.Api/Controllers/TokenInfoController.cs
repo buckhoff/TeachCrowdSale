@@ -1,24 +1,30 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeachCrowdSale.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 using TeachCrowdSale.Api.Models;
+using TeachCrowdSale.Core.Models.Response;
 
 namespace TeachCrowdSale.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/tokeninfo")]
     public class TokenInfoController : ControllerBase
     {
         private readonly ITokenContractService _tokenService;
+        private readonly ILogger<TokenInfoController> _logger;
         
-        public TokenInfoController(ITokenContractService tokenService)
+        public TokenInfoController(ITokenContractService tokenService,ILogger<TokenInfoController> logger)
         {
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         
         [HttpGet]
-        public async Task<ActionResult<TokenInfoModel>> GetTokenInfo()
+        public async Task<ActionResult<TokenInfoModel>> GetTokenInfo([FromHeader(Name = "X-API-Key")] string apiKey)
         {
             try
             {
@@ -39,7 +45,12 @@ namespace TeachCrowdSale.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error retrieving token information: {ex.Message}");
+                _logger.LogError(ex, "Error retrieving token information");
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Message = "An error occurred while retrieving token information",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
         
@@ -53,7 +64,12 @@ namespace TeachCrowdSale.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error retrieving token price: {ex.Message}");
+                _logger.LogError(ex, "Error retrieving token price");
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Message = "An error occurred while retrieving token price",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
         
@@ -74,7 +90,12 @@ namespace TeachCrowdSale.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error retrieving token supply information: {ex.Message}");
+                _logger.LogError(ex, "Error retrieving token supply information");
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Message = "An error occurred while retrieving token supply information",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
         
@@ -87,10 +108,8 @@ namespace TeachCrowdSale.Api.Controllers
                 var marketCap = await _tokenService.CalculateMarketCapAsync();
                 var holdersCount = await _tokenService.GetHoldersCountAsync();
                 
-                // For demonstration purposes, we're generating some mock data
-                // In a real application, these would come from exchanges or price APIs
-                var priceChange24h = -2.5m; // Mock 24h price change percentage
-                var volume24h = 950000m; // Mock 24h trading volume
+                var volume24h = await _tokenService.GetVolume24hAsync();
+                var priceChange24h = await _tokenService.GetPriceChange24hAsync();
                 
                 return Ok(new MarketDataModel
                 {
@@ -103,7 +122,12 @@ namespace TeachCrowdSale.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error retrieving market data: {ex.Message}");
+                _logger.LogError(ex, "Error retrieving market data");
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Message = "An error occurred while retrieving market data",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
         
@@ -118,10 +142,9 @@ namespace TeachCrowdSale.Api.Controllers
                 var holdersCount = await _tokenService.GetHoldersCountAsync();
                 var marketCap = await _tokenService.CalculateMarketCapAsync();
                 
-                // For demonstration purposes, we're using mock values for the additional stats
-                var burnedTokens = 75000000m; // 75M tokens burned
-                var stakedTokens = 350000000m; // 350M tokens staked
-                var liquidityTokens = 225000000m; // 225M tokens in liquidity pools
+                var burnedTokens = await _tokenService.GetBurnedTokensAsync();
+                var stakedTokens = await _tokenService.GetStakedTokensAsync();
+                var liquidityTokens = await _tokenService.GetLiquidityTokensAsync();
                 
                 return Ok(new TokenStatsModel
                 {
@@ -140,43 +163,5 @@ namespace TeachCrowdSale.Api.Controllers
                 return StatusCode(500, $"Error retrieving token statistics: {ex.Message}");
             }
         }
-    }
-    
-    // Additional models for specialized endpoints
-    public class SupplyModel
-    {
-        public decimal TotalSupply { get; set; }
-        public decimal CirculatingSupply { get; set; }
-        public decimal PercentCirculating { get; set; }
-    }
-    
-    public class MarketDataModel
-    {
-        public decimal CurrentPrice { get; set; }
-        public decimal MarketCap { get; set; }
-        public decimal PriceChange24h { get; set; }
-        public decimal Volume24h { get; set; }
-        public int HoldersCount { get; set; }
-    }
-    
-    public class TokenStatsModel
-    {
-        public decimal TotalSupply { get; set; }
-        public decimal CirculatingSupply { get; set; }
-        public decimal CurrentPrice { get; set; }
-        public decimal MarketCap { get; set; }
-        public int HoldersCount { get; set; }
-        public decimal BurnedTokens { get; set; }
-        public decimal StakedTokens { get; set; }
-        public decimal LiquidityTokens { get; set; }
-    }
-    
-    public class TokenInfoModel
-    {
-        public decimal TotalSupply { get; set; }
-        public decimal CirculatingSupply { get; set; }
-        public decimal CurrentPrice { get; set; }
-        public decimal MarketCap { get; set; }
-        public int HoldersCount { get; set; }
     }
 }

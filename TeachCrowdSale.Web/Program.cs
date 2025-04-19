@@ -1,6 +1,7 @@
 using TeachCrowdSale.Web.Components;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using TeachCrowdSale.Web.Helper;
 using TeachCrowdSale.Web.Services;
 using TeachTokenCrowdsale.Web.Services;
 
@@ -30,6 +31,14 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
+
+builder.Services.AddHttpClient("TeachApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
+});
+
+builder.Services.AddScoped<ApiAuthService>();
+builder.Services.AddScoped<AuthenticatedHttpClientFactory>();
 
 var app = builder.Build();
 

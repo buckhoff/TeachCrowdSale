@@ -2,25 +2,33 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using TeachCrowdSale.Api.Models;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models;
+using Microsoft.Extensions.Logging;
+using TeachCrowdSale.Core.Models.Request;
+using TeachCrowdSale.Core.Models.Response;
 
 namespace TeachCrowdSale.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/presale")]
     public class PresaleController : ControllerBase
     {
         private readonly IBlockchainService _blockchainService;
         private readonly IPresaleService _presaleService;
+        private readonly ILogger<PresaleController> _logger;
         
         public PresaleController(
             IBlockchainService blockchainService,
-            IPresaleService presaleService)
+            IPresaleService presaleService,
+            ILogger<PresaleController> logger)
         {
             _blockchainService = blockchainService ?? throw new ArgumentNullException(nameof(blockchainService));
             _presaleService = presaleService ?? throw new ArgumentNullException(nameof(presaleService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         
         [HttpGet("current-tier")]
@@ -122,7 +130,7 @@ namespace TeachCrowdSale.Api.Controllers
         }
         
         [HttpGet("user/{address}")]
-        public async Task<ActionResult<UserPurchaseModel>> GetUserPurchases(string address)
+        public async Task<ActionResult<UserPurchaseModel>> GetUserPurchases([FromRoute] string address)
         {
             try
             {
@@ -157,7 +165,7 @@ namespace TeachCrowdSale.Api.Controllers
         }
         
         [HttpGet("next-vesting/{address}")]
-        public async Task<ActionResult<VestingMilestoneModel>> GetNextVestingMilestone(string address)
+        public async Task<ActionResult<VestingMilestoneModel>> GetNextVestingMilestone([FromRoute] string address)
         {
             try
             {
@@ -221,6 +229,258 @@ namespace TeachCrowdSale.Api.Controllers
                 7 => "Final Round",
                 _ => $"Tier {tierId}"
             };
+        }
+        
+        [HttpPost("purchase")]
+        public async Task<ActionResult> PurchaseTokens([FromBody] PurchaseRequestModel request)
+        {
+try
+    {
+        if (!_blockchainService.IsValidAddress(request.Address))
+        {
+            return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
+        }
+
+        // Get current tier information
+        var tiers = await _presaleService.GetAllTiersAsync();
+        var tier = tiers.FirstOrDefault(t => t.Id == request.TierId);
+        
+        if (tier == null)
+        {
+            return NotFound(new ErrorResponse { Message = $"Tier with ID {request.TierId} not found" });
+        }
+        
+        if (!tier.IsActive)
+        {
+            return BadRequest(new ErrorResponse { Message = "Selected tier is not currently active" });
+        }
+        
+        // Validate purchase amount
+        if (request.Amount < tier.MinPurchase)
+        {
+            return BadRequest(new ErrorResponse 
+            { 
+                Message = $"Purchase amount is below minimum ({tier.MinPurchase} USDC)" 
+            });
+        }
+        
+        if (request.Amount > tier.MaxPurchase)
+        {
+            return BadRequest(new ErrorResponse 
+            { 
+                Message = $"Purchase amount is above maximum ({tier.MaxPurchase} USDC)" 
+            });
+        }
+        
+        // Execute the purchase
+        var success = await _presaleService.PurchaseTokensAsync(request.Address, request.TierId, request.Amount);
+        
+        if (!success)
+        {
+            return StatusCode(500, new ErrorResponse { Message = "Failed to process token purchase" });
+        }
+        
+        // Get updated user purchase info
+        var userPurchase = await _presaleService.GetUserPurchaseAsync(request.Address);
+        
+        // Calculate tokens received
+        var tokensReceived = request.Amount / tier.Price;
+        
+        return Ok(new PurchaseResponseModel
+        {
+            Address = request.Address,
+            TierId = request.TierId,
+            Amount = request.Amount,
+            TokensReceived = tokensReceived,
+            TransactionTime = DateTime.UtcNow,
+            TotalTokens = userPurchase?.Tokens ?? tokensReceived
+        });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"Error processing purchase for address {request.Address}");
+        return StatusCode(500, new ErrorResponse 
+        { 
+            Message = "An error occurred while processing the purchase",
+            TraceId = HttpContext.TraceIdentifier
+        });
+    }
+        }
+
+        [HttpPost("purchase-validation")]
+        public async Task<ActionResult<PurchaseValidationModel>> ValidatePurchase(
+            [FromBody] PurchaseRequestModel request)
+        {
+            try
+            {
+                if (!_blockchainService.IsValidAddress(request.Address))
+                {
+                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
+                }
+
+                // Get current tier information
+                var tiers = await _presaleService.GetAllTiersAsync();
+                var tier = tiers.FirstOrDefault(t => t.Id == request.TierId);
+
+                if (tier == null)
+                {
+                    return NotFound(new ErrorResponse { Message = $"Tier with ID {request.TierId} not found" });
+                }
+
+                if (!tier.IsActive)
+                {
+                    return BadRequest(new ErrorResponse { Message = "Selected tier is not currently active" });
+                }
+
+                // Validate purchase amount
+                if (request.Amount < tier.MinPurchase)
+                {
+                    return BadRequest(new ErrorResponse
+                    {
+                        Message = $"Purchase amount is below minimum ({tier.MinPurchase} USDC)"
+                    });
+                }
+
+                if (request.Amount > tier.MaxPurchase)
+                {
+                    return BadRequest(new ErrorResponse
+                    {
+                        Message = $"Purchase amount is above maximum ({tier.MaxPurchase} USDC)"
+                    });
+                }
+
+                // Check if tier has enough tokens left
+                var tokensToReceive = request.Amount / tier.Price;
+                if (tokensToReceive > (tier.Allocation - tier.Sold))
+                {
+                    return BadRequest(new ErrorResponse
+                    {
+                        Message =
+                            $"Not enough tokens left in this tier (Requested: {tokensToReceive}, Available: {tier.Allocation - tier.Sold})"
+                    });
+                }
+
+                // Get user's current purchases if any
+                var userPurchase = await _presaleService.GetUserPurchaseAsync(request.Address);
+
+                // Create validation response
+                return Ok(new PurchaseValidationModel
+                {
+                    IsValid = true,
+                    Address = request.Address,
+                    TierId = request.TierId,
+                    Amount = request.Amount,
+                    TokensToReceive = tokensToReceive,
+                    Price = tier.Price,
+                    ExistingPurchase = userPurchase?.Tokens ?? 0,
+                    TierName = GetTierName(tier.Id),
+                    VestingTGE = tier.VestingTGE,
+                    VestingMonths = tier.VestingMonths
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error validating purchase for address {request.Address}");
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "An error occurred while validating the purchase",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+        
+        [HttpPost("claim")]
+        public async Task<ActionResult> ClaimTokens([FromBody] ClaimRequestModel request)
+        {
+            try
+            {
+                if (!_blockchainService.IsValidAddress(request.Address))
+                {
+                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
+                }
+        
+                // Check if user has tokens to claim
+                var claimableTokens = await _presaleService.GetClaimableTokensAsync(request.Address);
+        
+                if (claimableTokens <= 0)
+                {
+                    return BadRequest(new ErrorResponse { Message = "No tokens available to claim" });
+                }
+        
+                // Process the claim
+                var success = await _presaleService.ClaimTokensAsync(request.Address);
+        
+                if (!success)
+                {
+                    return StatusCode(500, new ErrorResponse { Message = "Failed to process token claim" });
+                }
+        
+                // Get next vesting milestone for response
+                var nextMilestone = await _presaleService.GetNextVestingMilestoneAsync(request.Address);
+        
+                return Ok(new ClaimResponseModel
+                {
+                    Address = request.Address,
+                    TokensClaimed = claimableTokens,
+                    TransactionTime = DateTime.UtcNow,
+                    NextVestingAmount = nextMilestone?.Amount ?? 0,
+                    NextVestingDate = nextMilestone?.Timestamp ?? DateTime.MaxValue
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error claiming tokens for address {request.Address}");
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Message = "An error occurred while claiming tokens",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        [HttpGet("claimable/{address}")]
+        public async Task<ActionResult<decimal>> GetClaimableTokens([FromRoute] string address)
+        {
+            try
+            {
+                if (!_blockchainService.IsValidAddress(address))
+                {
+                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
+                }
+        
+                // Get user purchase information
+                var userPurchase = await _presaleService.GetUserPurchaseAsync(address);
+        
+                if (userPurchase == null || userPurchase.Tokens <= 0)
+                {
+                    return NotFound(new ErrorResponse { Message = $"No purchases found for address {address}" });
+                }
+        
+                // Get claimable tokens
+                var claimableTokens = await _presaleService.GetClaimableTokensAsync(address);
+        
+                // Get next vesting milestone
+                var nextMilestone = await _presaleService.GetNextVestingMilestoneAsync(address);
+        
+                return Ok(new ClaimableTokensModel
+                {
+                    Address = address,
+                    TotalTokens = userPurchase.Tokens,
+                    ClaimableTokens = claimableTokens,
+                    LastClaimTime = userPurchase.LastClaimTime,
+                    NextVestingDate = nextMilestone?.Timestamp,
+                    NextVestingAmount = nextMilestone?.Amount ?? 0
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting claimable tokens for address {address}");
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Message = "An error occurred while retrieving claimable tokens",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
         }
     }
 }
