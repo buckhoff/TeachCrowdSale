@@ -5,9 +5,11 @@ using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models;
 using TeachCrowdSale.Core.Models.Response;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace TeachCrowdSale.Api.Controllers;
 
+[EnableRateLimiting("Auth")]
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase

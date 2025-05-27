@@ -2,6 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @using TeachCrowdSale.Web.Models
 @using TeachTokenCrowdsale.Web.Services
+@using FluentValidation
 @inject WalletService WalletService
 @inject PresaleService PresaleService
 @inject IJSRuntime JSRuntime
@@ -464,11 +465,8 @@
         [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms and conditions")]
         public bool AcceptTerms { get; set; }
 
-        // For validation only
-        [ValidateComplexType]
         public decimal MinPurchase { get; set; }
 
-        [ValidateComplexType]
         public decimal MaxPurchase { get; set; }
     }
 

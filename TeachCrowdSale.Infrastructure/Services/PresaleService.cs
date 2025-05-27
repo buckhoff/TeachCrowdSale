@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using TeachCrowdSale.Core.Data.Entities;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models;
 
@@ -12,7 +13,8 @@ namespace TeachCrowdSale.Infrastructure.Services
     {
         private readonly ILogger<PresaleService> _logger;
         private readonly IBlockchainService _blockchainService;
-        
+        private readonly ITransactionRepository _transactionRepository;
+
         // Cache variables
         private List<SaleTier> _cachedTiers;
         private DateTime _lastTierCacheUpdate = DateTime.MinValue;
@@ -20,10 +22,12 @@ namespace TeachCrowdSale.Infrastructure.Services
         
         public PresaleService(
             ILogger<PresaleService> logger,
-            IBlockchainService blockchainService)
+            IBlockchainService blockchainService,
+            ITransactionRepository transactionRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _blockchainService = blockchainService ?? throw new ArgumentNullException(nameof(blockchainService));
+            _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
         }
         
         public async Task<SaleTier> GetCurrentTierAsync()
@@ -340,7 +344,26 @@ namespace TeachCrowdSale.Infrastructure.Services
             {
                 // Get contract addresses
                 var contractAddresses = _blockchainService.GetContractAddresses();
-                
+                var tiers = await GetAllTiersAsync();
+                var tier = tiers.FirstOrDefault(t => t.Id == tierId);
+                if (tier == null)
+                {
+                    throw new InvalidOperationException($"Tier with ID {tierId} does not exist");
+                }
+
+                var purchase = new PurchaseTransaction
+                {
+                    WalletAddress = address.ToLowerInvariant(),
+                    TierId = tierId,
+                    UsdAmount = amount,
+                    TokenAmount = amount / tier.Price,
+                    TokenPrice = tier.Price,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = TransactionStatus.Pending
+                };
+
+                await _transactionRepository.AddPurchaseAsync(purchase);
+
                 // Convert amount to USDC units (6 decimals)
                 var amountInUnits = ConvertToWei(amount, 6);
                 
@@ -349,7 +372,16 @@ namespace TeachCrowdSale.Infrastructure.Services
                     contractAddresses.PresaleAddress, 
                     "purchase(uint256,uint256)",
                     tierId, amountInUnits);
-                
+
+                purchase.TransactionHash = transactionHash;
+                purchase.Status = !string.IsNullOrEmpty(transactionHash) ?
+                    TransactionStatus.Confirmed : TransactionStatus.Failed;
+
+                await _transactionRepository.UpdatePurchaseAsync(purchase);
+
+                // Update user balance
+                await UpdateUserBalanceAsync(address);
+
                 return !string.IsNullOrEmpty(transactionHash);
             }
             catch (Exception ex)
@@ -363,6 +395,20 @@ namespace TeachCrowdSale.Infrastructure.Services
         {
             try
             {
+                var claimableTokens = await GetClaimableTokensAsync(address);
+                if (claimableTokens <= 0) return false;
+
+                // Log claim as pending
+                var claim = new ClaimTransaction
+                {
+                    WalletAddress = address.ToLowerInvariant(),
+                    TokenAmount = claimableTokens,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = TransactionStatus.Pending
+                };
+
+                await _transactionRepository.AddClaimAsync(claim);
+
                 // Get contract addresses
                 var contractAddresses = _blockchainService.GetContractAddresses();
                 
@@ -371,7 +417,18 @@ namespace TeachCrowdSale.Infrastructure.Services
                     contractAddresses.PresaleAddress, 
                     "withdrawTokens()",
                     Array.Empty<object>());
-                
+
+                // Update claim with hash and status
+                claim.TransactionHash = transactionHash;
+                claim.Status = !string.IsNullOrEmpty(transactionHash) ?
+                    TransactionStatus.Confirmed : TransactionStatus.Failed;
+
+                await _transactionRepository.UpdateClaimAsync(claim);
+
+                // Update user balance
+                await UpdateUserBalanceAsync(address);
+
+
                 return !string.IsNullOrEmpty(transactionHash);
             }
             catch (Exception ex)
@@ -391,6 +448,28 @@ namespace TeachCrowdSale.Infrastructure.Services
         private BigInteger ConvertToWei(decimal amount, int decimals)
         {
             return new BigInteger(amount * (decimal)Math.Pow(10, decimals));
+        }
+
+        private async Task UpdateUserBalanceAsync(string address)
+        {
+            var userBalance = await _transactionRepository.GetUserBalanceAsync(address)
+                ?? new UserBalance { WalletAddress = address.ToLowerInvariant() };
+
+            var purchases = await _transactionRepository.GetUserPurchasesAsync(address);
+            var claims = await _transactionRepository.GetUserClaimsAsync(address);
+
+            userBalance.TotalPurchased = purchases
+                .Where(p => p.Status == TransactionStatus.Confirmed)
+                .Sum(p => p.TokenAmount);
+
+            userBalance.TotalClaimed = claims
+                .Where(c => c.Status == TransactionStatus.Confirmed)
+                .Sum(c => c.TokenAmount);
+
+            userBalance.PendingTokens = userBalance.TotalPurchased - userBalance.TotalClaimed;
+            userBalance.LastUpdated = DateTime.UtcNow;
+
+            await _transactionRepository.UpdateUserBalanceAsync(userBalance);
         }
     }
 }

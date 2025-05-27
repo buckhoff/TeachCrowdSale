@@ -6,11 +6,12 @@ using TeachCrowdSale.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 using TeachCrowdSale.Api.Models;
 using TeachCrowdSale.Core.Models.Response;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace TeachCrowdSale.Api.Controllers
 {
+    [EnableRateLimiting("TokenInfo")]
     [ApiController]
-    [Authorize]
     [Route("api/tokeninfo")]
     public class TokenInfoController : ControllerBase
     {

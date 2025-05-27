@@ -10,13 +10,16 @@ namespace TeachCrowdSale.Infrastructure.Web3
     {
         private readonly ILogger<BlockchainService> _logger;
         private readonly Web3Helper _web3Helper;
+        private readonly IAbiService _abiService;
 
         public BlockchainService(
             ILogger<BlockchainService> logger,
-            Web3Helper web3Helper)
+            Web3Helper web3Helper,
+            IAbiService abiService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _web3Helper = web3Helper ?? throw new ArgumentNullException(nameof(web3Helper));
+            _abiService = abiService;
         }
 
         public bool IsValidAddress(string address)
@@ -148,35 +151,415 @@ namespace TeachCrowdSale.Infrastructure.Web3
 
         // Contract ABIs - would be stored in separate files in a real application
         private const string PresaleAbi = @"[
-            // Add your presale contract ABI here
-        ]";
+            {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""getCurrentTier"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""tierCount"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""name"": ""tiers"",
+        ""outputs"": [
+            {""name"": ""price"", ""type"": ""uint256""},
+            {""name"": ""allocation"", ""type"": ""uint256""},
+            {""name"": ""sold"", ""type"": ""uint256""},
+            {""name"": ""minPurchase"", ""type"": ""uint256""},
+            {""name"": ""maxPurchase"", ""type"": ""uint256""},
+            {""name"": ""vestingTGE"", ""type"": ""uint256""},
+            {""name"": ""vestingMonths"", ""type"": ""uint256""}
+        ],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""name"": ""tierDeadlines"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""totalTokensSold"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""totalUsdRaised"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""participantsCount"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""presaleStart"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""presaleEnd"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""address""}],
+        ""name"": ""purchases"",
+        ""outputs"": [
+            {""name"": ""tokens"", ""type"": ""uint256""},
+            {""name"": ""usdAmount"", ""type"": ""uint256""}
+        ],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""address""}],
+        ""name"": ""lastClaimTime"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [
+            {""name"": """", ""type"": ""address""},
+            {""name"": """", ""type"": ""uint256""}
+        ],
+        ""name"": ""getUserTierAmount"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""address""}],
+        ""name"": ""claimableTokens"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""address""}],
+        ""name"": ""getNextVestingMilestone"",
+        ""outputs"": [
+            {""name"": ""timestamp"", ""type"": ""uint256""},
+            {""name"": ""amount"", ""type"": ""uint256""}
+        ],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": false,
+        ""inputs"": [
+            {""name"": ""tierId"", ""type"": ""uint256""},
+            {""name"": ""amount"", ""type"": ""uint256""}
+        ],
+        ""name"": ""purchase"",
+        ""outputs"": [],
+        ""payable"": false,
+        ""stateMutability"": ""nonpayable"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": false,
+        ""inputs"": [],
+        ""name"": ""withdrawTokens"",
+        ""outputs"": [],
+        ""payable"": false,
+        ""stateMutability"": ""nonpayable"",
+        ""type"": ""function""
+    }
+]";
 
         private const string TokenAbi = @"[
-            // Add your token contract ABI here
-        ]";
+          {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""name"",
+        ""outputs"": [{""name"": """", ""type"": ""string""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""symbol"",
+        ""outputs"": [{""name"": """", ""type"": ""string""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""decimals"",
+        ""outputs"": [{""name"": """", ""type"": ""uint8""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""totalSupply"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""MAX_SUPPLY"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": ""_owner"", ""type"": ""address""}],
+        ""name"": ""balanceOf"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": false,
+        ""inputs"": [
+            {""name"": ""_to"", ""type"": ""address""},
+            {""name"": ""_value"", ""type"": ""uint256""}
+        ],
+        ""name"": ""transfer"",
+        ""outputs"": [{""name"": """", ""type"": ""bool""}],
+        ""payable"": false,
+        ""stateMutability"": ""nonpayable"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": false,
+        ""inputs"": [
+            {""name"": ""_spender"", ""type"": ""address""},
+            {""name"": ""_value"", ""type"": ""uint256""}
+        ],
+        ""name"": ""approve"",
+        ""outputs"": [{""name"": """", ""type"": ""bool""}],
+        ""payable"": false,
+        ""stateMutability"": ""nonpayable"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [
+            {""name"": ""_owner"", ""type"": ""address""},
+            {""name"": ""_spender"", ""type"": ""address""}
+        ],
+        ""name"": ""allowance"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    }
+]";
 
         private const string StabilityFundAbi = @"[
-            // Add your stability fund contract ABI here
+            {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""getVerifiedPrice"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""get24hVolume"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""get24hPriceChange"",
+        ""outputs"": [{""name"": """", ""type"": ""int256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    }
         ]";
 
         private const string StakingAbi = @"[
-            // Add your staking contract ABI here
+            {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""totalStaked"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""address""}],
+        ""name"": ""stakedBalance"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""address""}],
+        ""name"": ""pendingRewards"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": false,
+        ""inputs"": [{""name"": ""amount"", ""type"": ""uint256""}],
+        ""name"": ""stake"",
+        ""outputs"": [],
+        ""payable"": false,
+        ""stateMutability"": ""nonpayable"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": false,
+        ""inputs"": [{""name"": ""amount"", ""type"": ""uint256""}],
+        ""name"": ""unstake"",
+        ""outputs"": [],
+        ""payable"": false,
+        ""stateMutability"": ""nonpayable"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": false,
+        ""inputs"": [],
+        ""name"": ""claimRewards"",
+        ""outputs"": [],
+        ""payable"": false,
+        ""stateMutability"": ""nonpayable"",
+        ""type"": ""function""
+    }
         ]";
 
         private const string GovernanceAbi = @"[
-            // Add your governance contract ABI here
+           {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""proposalCount"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    },
+    {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""name"": ""proposals"",
+        ""outputs"": [
+            {""name"": ""id"", ""type"": ""uint256""},
+            {""name"": ""proposer"", ""type"": ""address""},
+            {""name"": ""description"", ""type"": ""string""},
+            {""name"": ""forVotes"", ""type"": ""uint256""},
+            {""name"": ""againstVotes"", ""type"": ""uint256""},
+            {""name"": ""endTime"", ""type"": ""uint256""},
+            {""name"": ""executed"", ""type"": ""bool""}
+        ],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    }
         ]";
 
         private const string MarketplaceAbi = @"[
-            // Add your marketplace contract ABI here
+            {
+        ""constant"": true,
+        ""inputs"": [],
+        ""name"": ""totalListings"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    }
         ]";
 
         private const string RewardAbi = @"[
-            // Add your reward contract ABI here
+            {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""address""}],
+        ""name"": ""pendingRewards"",
+        ""outputs"": [{""name"": """", ""type"": ""uint256""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    }
         ]";
 
         private const string RegistryAbi = @"[
-            // Add your registry contract ABI here
+            {
+        ""constant"": true,
+        ""inputs"": [{""name"": """", ""type"": ""string""}],
+        ""name"": ""getAddress"",
+        ""outputs"": [{""name"": """", ""type"": ""address""}],
+        ""payable"": false,
+        ""stateMutability"": ""view"",
+        ""type"": ""function""
+    }
         ]";
 
         private const string Erc20Abi = @"[

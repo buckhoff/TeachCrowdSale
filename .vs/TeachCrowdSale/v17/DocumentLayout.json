@@ -1,0 +1,428 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\attributes\\percentagerangeattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\attributes\\percentagerangeattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\attributes\\transactionhashattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\attributes\\transactionhashattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\middleware\\bearersecurityschemetransformer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\middleware\\bearersecurityschemetransformer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.infrastructure\\repositories\\transactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|solutionrelative:teachcrowdsale.infrastructure\\repositories\\transactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\interfaces\\itransactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\interfaces\\itransactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.infrastructure\\web3\\blockchainservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|solutionrelative:teachcrowdsale.infrastructure\\web3\\blockchainservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.infrastructure\\services\\tokencontractservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|solutionrelative:teachcrowdsale.infrastructure\\services\\tokencontractservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.infrastructure\\services\\abiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|solutionrelative:teachcrowdsale.infrastructure\\services\\abiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\interfaces\\iabiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\interfaces\\iabiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.infrastructure\\services\\presaleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|solutionrelative:teachcrowdsale.infrastructure\\services\\presaleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\.env||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\.env||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\controllers\\presalecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\controllers\\presalecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\validator\\purchaserequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\validator\\purchaserequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.infrastructure\\data\\context\\teachcrowdsaledbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|solutionrelative:teachcrowdsale.infrastructure\\data\\context\\teachcrowdsaledbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\data\\entities\\userbalance.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\data\\entities\\userbalance.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\data\\entities\\transactionstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\data\\entities\\transactionstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\data\\entities\\purchasetransaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\data\\entities\\purchasetransaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.core\\data\\entities\\claimtransaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0335D84C-75EB-44A4-8E32-66344A6B5B2A}|TeachCrowdSale.Core\\TeachCrowdSale.Core.csproj|solutionrelative:teachcrowdsale.core\\data\\entities\\claimtransaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.infrastructure\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{691F0EC7-4B2A-47B5-BE84-8B85B942C65A}|TeachCrowdSale.Infrastructure\\TeachCrowdSale.Infrastructure.csproj|solutionrelative:teachcrowdsale.infrastructure\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|c:\\users\\hofda\\downloads\\teach\\token\\teachersupport\\teachcrowdsale\\teachcrowdsale.api\\controllers\\tokeninfocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CED4726-99F7-4A56-8DC1-918D88C86C76}|TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj|solutionrelative:teachcrowdsale.api\\controllers\\tokeninfocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PercentageRangeAttribute.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Attributes\\PercentageRangeAttribute.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Attributes\\PercentageRangeAttribute.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Attributes\\PercentageRangeAttribute.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Attributes\\PercentageRangeAttribute.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T21:11:03.701Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TransactionHashAttribute.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Attributes\\TransactionHashAttribute.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Attributes\\TransactionHashAttribute.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Attributes\\TransactionHashAttribute.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Attributes\\TransactionHashAttribute.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T21:10:58.705Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\appsettings.json",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\appsettings.json",
+              "RelativeToolTip": "TeachCrowdSale.Api\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-05-27T21:06:54.265Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BearerSecuritySchemeTransformer.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Middleware\\BearerSecuritySchemeTransformer.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\Middleware\\BearerSecuritySchemeTransformer.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Middleware\\BearerSecuritySchemeTransformer.cs",
+              "RelativeToolTip": "TeachCrowdSale.Api\\Middleware\\BearerSecuritySchemeTransformer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAABVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T21:03:41.003Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "TokenContractService.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\TokenContractService.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Infrastructure\\Services\\TokenContractService.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\TokenContractService.cs",
+              "RelativeToolTip": "TeachCrowdSale.Infrastructure\\Services\\TokenContractService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T20:35:03.48Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AbiService.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\AbiService.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Infrastructure\\Services\\AbiService.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\AbiService.cs",
+              "RelativeToolTip": "TeachCrowdSale.Infrastructure\\Services\\AbiService.cs",
+              "ViewState": "AgIAAEgAAAAAAAAAAAAqwEwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T20:34:01.017Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "IAbiService.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Interfaces\\IAbiService.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Interfaces\\IAbiService.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Interfaces\\IAbiService.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Interfaces\\IAbiService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T20:33:31.964Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": ".env",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\.env",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\.env",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\.env",
+              "RelativeToolTip": "TeachCrowdSale.Api\\.env",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-05-27T20:25:04.898Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "PurchaseRequestValidator.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Validator\\PurchaseRequestValidator.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\Validator\\PurchaseRequestValidator.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Validator\\PurchaseRequestValidator.cs",
+              "RelativeToolTip": "TeachCrowdSale.Api\\Validator\\PurchaseRequestValidator.cs",
+              "ViewState": "AgIAACwAAAAAAAAAAAAAAAkAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T04:12:57.778Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "TransactionRepository.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Repositories\\TransactionRepository.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Infrastructure\\Repositories\\TransactionRepository.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Repositories\\TransactionRepository.cs",
+              "RelativeToolTip": "TeachCrowdSale.Infrastructure\\Repositories\\TransactionRepository.cs",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAiwEAAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:55:15.057Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ITransactionRepository.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Interfaces\\ITransactionRepository.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Interfaces\\ITransactionRepository.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Interfaces\\ITransactionRepository.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Interfaces\\ITransactionRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:54:20.605Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "UserBalance.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\UserBalance.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Data\\Entities\\UserBalance.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\UserBalance.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Data\\Entities\\UserBalance.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:52:19.232Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "TransactionStatus.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\TransactionStatus.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Data\\Entities\\TransactionStatus.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\TransactionStatus.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Data\\Entities\\TransactionStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:52:11.852Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "PurchaseTransaction.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\PurchaseTransaction.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Data\\Entities\\PurchaseTransaction.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\PurchaseTransaction.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Data\\Entities\\PurchaseTransaction.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:52:05.995Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "ClaimTransaction.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\ClaimTransaction.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Core\\Data\\Entities\\ClaimTransaction.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Core\\Data\\Entities\\ClaimTransaction.cs",
+              "RelativeToolTip": "TeachCrowdSale.Core\\Data\\Entities\\ClaimTransaction.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:51:59.17Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "PresaleService.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\PresaleService.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Infrastructure\\Services\\PresaleService.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\PresaleService.cs",
+              "RelativeToolTip": "TeachCrowdSale.Infrastructure\\Services\\PresaleService.cs",
+              "ViewState": "AgIAANUBAAAAAAAAAAAAAMoBAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:49:35.315Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Infrastructure\\Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Services\\AuthService.cs",
+              "RelativeToolTip": "TeachCrowdSale.Infrastructure\\Services\\AuthService.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAowAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:49:27.353Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "TeachCrowdSaleDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Data\\Context\\TeachCrowdSaleDbContext.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Infrastructure\\Data\\Context\\TeachCrowdSaleDbContext.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Data\\Context\\TeachCrowdSaleDbContext.cs",
+              "RelativeToolTip": "TeachCrowdSale.Infrastructure\\Data\\Context\\TeachCrowdSaleDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:47:41.248Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "TokenInfoController.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Controllers\\TokenInfoController.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\Controllers\\TokenInfoController.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Controllers\\TokenInfoController.cs",
+              "RelativeToolTip": "TeachCrowdSale.Api\\Controllers\\TokenInfoController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:35:20.843Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "BlockchainService.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Web3\\BlockchainService.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Infrastructure\\Web3\\BlockchainService.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Infrastructure\\Web3\\BlockchainService.cs",
+              "RelativeToolTip": "TeachCrowdSale.Infrastructure\\Web3\\BlockchainService.cs",
+              "ViewState": "AgIAAF4AAAAAAAAAAAAlwGoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:27:00.646Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\appsettings.Development.json",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\appsettings.Development.json",
+              "RelativeToolTip": "TeachCrowdSale.Api\\appsettings.Development.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-05-27T03:25:12.404Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "PresaleController.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Controllers\\PresaleController.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\Controllers\\PresaleController.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Controllers\\PresaleController.cs",
+              "RelativeToolTip": "TeachCrowdSale.Api\\Controllers\\PresaleController.cs",
+              "ViewState": "AgIAADABAAAAAAAAAAAuwO0AAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:18:50.965Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "TeachCrowdSale.Api\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:07:13.187Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Program.cs",
+              "RelativeDocumentMoniker": "TeachCrowdSale.Api\\Program.cs",
+              "ToolTip": "C:\\Users\\hofda\\Downloads\\TEACH\\Token\\TeacherSupport\\TeachCrowdSale\\TeachCrowdSale.Api\\Program.cs",
+              "RelativeToolTip": "TeachCrowdSale.Api\\Program.cs",
+              "ViewState": "AgIAALcAAAAAAAAAAAApwMIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T03:06:37.379Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
