@@ -3,3 +3,6 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+/TeachCrowdSale.Api/.env
+/TeachCrowdSale.Api/appsettings.json
+/TeachCrowdSale.Api/appsettings.Development.json
