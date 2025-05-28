@@ -1,0 +1,851 @@
+﻿@{
+    ViewData["Title"] = "TeachToken - Revolutionary Education Funding Token";
+    ViewData["Description"] = "Invest in the future of education with TEACH token. Multi-year treasury runway, sustainable tokenomics, and real-world utility in educational funding.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TeachToken - Revolutionary Education Funding" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/teachtoken-og.jpg" />
+    <meta property="og:url" content="https://teachtoken.io" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TeachToken - Revolutionary Education Funding" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="#home" class="logo">TeachToken</a>
+
+                <ul class="nav-menu">
+                    <li><a href="#tokenomics" class="nav-link">Tokenomics</a></li>
+                    <li><a href="#presale" class="nav-link">Presale</a></li>
+                    <li><a href="#roadmap" class="nav-link">Roadmap</a></li>
+                    <li><a href="#platform" class="nav-link">Platform</a></li>
+                    <li><a href="#community" class="nav-link">Community</a></li>
+                </ul>
+
+                <button class="nav-cta" data-action="buy-tokens">
+                    Buy TEACH
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-bg-animation"></div>
+        <div class="container">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1>
+                        Invest in the Future of
+                        <span class="highlight">Education Funding</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        TEACH Token combines institutional-grade treasury management with real-world education impact.
+                        Built for sustainability with a 10+ year operational runway and deflationary tokenomics.
+                    </p>
+
+                    <!-- Live Statistics -->
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-number" data-stat="totalRaised">$0</span>
+                            <span class="hero-stat-label">Total Raised</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-number" data-stat="tokensSold">0</span>
+                            <span class="hero-stat-label">Tokens Sold</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-number" data-stat="participants">0</span>
+                            <span class="hero-stat-label">Investors</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-cta-group">
+                        <a href="#presale" class="btn-primary" data-action="buy-tokens">
+                            <span>Join Presale</span>
+                            <i>→</i>
+                        </a>
+                        <a href="#tokenomics" class="btn-secondary" data-action="view-tokenomics">
+                            <span>View Tokenomics</span>
+                            <i>📊</i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Chart/Visual -->
+                <div class="hero-visual">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Token Distribution</h3>
+                        <div id="tokenDistributionChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Metrics Section -->
+    <section id="tokenomics" class="metrics-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why TEACH Token?</h2>
+                <p class="section-subtitle">
+                    Built with institutional-grade financial architecture for long-term sustainability and growth
+                </p>
+            </div>
+
+            <div class="metrics-grid">
+                <!-- Financial Fortress -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Financial Fortress Model</h3>
+                        <div class="metric-icon primary">🏛️</div>
+                    </div>
+                    <div class="metric-value" data-metric="operationalRunway" data-value="10" data-formatter="number">10+</div>
+                    <div class="metric-description">
+                        <p>Years of guaranteed operational funding through multi-layered treasury management</p>
+                        <div class="metric-change positive">
+                            <span>↗</span>
+                            <span>Extends with presale success</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Token Price -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Current Tier Price</h3>
+                        <div class="metric-icon secondary">💰</div>
+                    </div>
+                    <div class="metric-value" data-metric="currentTierPrice" data-value="0.06" data-formatter="currency">$0.06</div>
+                    <div class="metric-description">
+                        <p>Early investor pricing with structured tier progression</p>
+                        <div class="metric-change positive">
+                            <span>🔥</span>
+                            <span data-metric="currentTierName">Tier 2 Active</span>
+                        </div>
+                    </div>
+                    <div class="tier-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="currentTier" data-percentage="45"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>Tier Progress</span>
+                            <span>45% Complete</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Limited Supply -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Supply Scarcity</h3>
+                        <div class="metric-icon warning">⚡</div>
+                    </div>
+                    <div class="metric-value" data-metric="lockedPercentage" data-value="80" data-formatter="percentage">80%</div>
+                    <div class="metric-description">
+                        <p>Tokens locked for multi-year vesting creating natural scarcity</p>
+                        <div class="metric-change positive">
+                            <span>🔒</span>
+                            <span>Prevents token dumps</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Opportunity -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Market Opportunity</h3>
+                        <div class="metric-icon success">🌍</div>
+                    </div>
+                    <div class="metric-value" data-metric="marketSize" data-value="6000000000000" data-formatter="currency">$6T</div>
+                    <div class="metric-description">
+                        <p>Global education market size with massive growth potential</p>
+                        <div class="metric-change positive">
+                            <span>📈</span>
+                            <span>16% YoY growth</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funding Progress -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Funding Progress</h3>
+                        <div class="metric-icon primary">🎯</div>
+                    </div>
+                    <div class="metric-value" data-metric="totalRaised" data-value="0" data-formatter="currency">$0</div>
+                    <div class="metric-description">
+                        <p>Progress toward our funding goal</p>
+                        <div class="metric-change positive">
+                            <span>💪</span>
+                            <span>Strong community support</span>
+                        </div>
+                    </div>
+                    <div class="tier-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="funding" data-percentage="25"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>Raised</span>
+                            <span>Goal: <span data-metric="fundingGoal">$87.5M</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investor Count -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Growing Community</h3>
+                        <div class="metric-icon secondary">👥</div>
+                    </div>
+                    <div class="metric-value" data-metric="totalInvestors" data-value="0" data-formatter="number">0</div>
+                    <div class="metric-description">
+                        <p>Smart money investors joining our mission</p>
+                        <div class="metric-change positive">
+                            <span>🚀</span>
+                            <span>Growing daily</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Charts Section -->
+            <div class="charts-section">
+                <div class="metrics-grid">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Tier Progress & Sales</h3>
+                        <div id="tierProgressChart" style="height: 350px;"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Price Progression</h3>
+                        <div id="priceHistoryChart" style="height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Presale Tiers Section -->
+    <section id="presale" class="tier-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Presale Tiers</h2>
+                <p class="section-subtitle">
+                    Early investor pricing with structured progression. Limited allocations per tier.
+                </p>
+            </div>
+
+            <div class="tier-cards">
+                <!-- Tier 1 -->
+                <div class="tier-card" data-tier="1">
+                    <div class="tier-header">
+                        <h3 class="tier-name">Seed Round</h3>
+                        <div class="tier-price">
+                            <span class="currency">$</span>0.04
+                            <span class="tier-subtext">per TEACH</span>
+                        </div>
+                    </div>
+
+                    <div class="tier-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-percentage="100"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>250M / 250M tokens</span>
+                            <span>SOLD OUT</span>
+                        </div>
+                    </div>
+
+                    <ul class="tier-features">
+                        <li>250M token allocation</li>
+                        <li>20% TGE unlock</li>
+                        <li>6-month linear vesting</li>
+                        <li>Lowest entry price</li>
+                    </ul>
+                </div>
+
+                <!-- Tier 2 - Current -->
+                <div class="tier-card active" data-tier="2">
+                    <div class="tier-header">
+                        <h3 class="tier-name">Community Round</h3>
+                        <div class="tier-price">
+                            <span class="currency">$</span>0.06
+                            <span class="tier-subtext">per TEACH</span>
+                        </div>
+                    </div>
+
+                    <div class="tier-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-percentage="45"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span data-tier-sold>169M</span>
+                            <span data-tier-remaining>206M remaining</span>
+                        </div>
+                    </div>
+
+                    <ul class="tier-features">
+                        <li>375M token allocation</li>
+                        <li>20% TGE unlock</li>
+                        <li>6-month linear vesting</li>
+                        <li>50% price increase from Tier 1</li>
+                    </ul>
+
+                    <button class="btn-primary tier-cta" data-action="buy-tokens" data-tier-id="2">
+                        Buy Now - $0.06
+                    </button>
+                </div>
+
+                <!-- Tier 3 -->
+                <div class="tier-card" data-tier="3">
+                    <div class="tier-header">
+                        <h3 class="tier-name">Growth Round</h3>
+                        <div class="tier-price">
+                            <span class="currency">$</span>0.08
+                            <span class="tier-subtext">per TEACH</span>
+                        </div>
+                    </div>
+
+                    <div class="tier-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-percentage="0"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>0 / 375M tokens</span>
+                            <span>Coming Soon</span>
+                        </div>
+                    </div>
+
+                    <ul class="tier-features">
+                        <li>375M token allocation</li>
+                        <li>20% TGE unlock</li>
+                        <li>6-month linear vesting</li>
+                        <li>33% price increase</li>
+                    </ul>
+                </div>
+
+                <!-- Tier 4 -->
+                <div class="tier-card" data-tier="4">
+                    <div class="tier-header">
+                        <h3 class="tier-name">Final Round</h3>
+                        <div class="tier-price">
+                            <span class="currency">$</span>0.10
+                            <span class="tier-subtext">per TEACH</span>
+                        </div>
+                    </div>
+
+                    <div class="tier-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-percentage="0"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>0 / 250M tokens</span>
+                            <span>Coming Soon</span>
+                        </div>
+                    </div>
+
+                    <ul class="tier-features">
+                        <li>250M token allocation</li>
+                        <li>20% TGE unlock</li>
+                        <li>6-month linear vesting</li>
+                        <li>Last chance before DEX</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Investment Highlights -->
+            <div class="investment-highlights">
+                <div class="highlight-grid">
+                    <div class="highlight-card">
+                        <h4>🔒 Treasury Security</h4>
+                        <p>Multi-layer funding ensures 10+ year operational runway regardless of market conditions</p>
+                    </div>
+                    <div class="highlight-card">
+                        <h4>📈 Deflationary Mechanics</h4>
+                        <p>Token burns and limited supply create natural price appreciation pressure</p>
+                    </div>
+                    <div class="highlight-card">
+                        <h4>🎯 Real Utility</h4>
+                        <p>Direct use case in $6T education market with measurable impact</p>
+                    </div>
+                    <div class="highlight-card">
+                        <h4>⚡ First Mover Advantage</h4>
+                        <p>First blockchain solution specifically designed for education funding</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Development Section -->
+    <section id="platform" class="platform-section bg-card">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Platform Development</h2>
+                <p class="section-subtitle">
+                    Building the TeacherSupport platform - where TEACH tokens create real-world impact
+                </p>
+            </div>
+
+            <div class="development-timeline">
+                <div class="timeline-item completed">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>Smart Contracts & Tokenomics</h4>
+                        <p>Core contracts deployed, presale infrastructure complete</p>
+                        <span class="timeline-status">✅ Complete</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item active">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>Community Building & Presale</h4>
+                        <p>Growing investor community, funding platform development</p>
+                        <span class="timeline-status">🔄 In Progress</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item upcoming">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>TeacherSupport Platform MVP</h4>
+                        <p>Teacher verification, funding distribution, impact tracking</p>
+                        <span class="timeline-status">🔜 Q2 2024</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item upcoming">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>Global Launch & Scaling</h4>
+                        <p>Multi-language support, international partnerships</p>
+                        <span class="timeline-status">📅 Q4 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Preview -->
+            <div class="platform-preview">
+                <div class="preview-card">
+                    <h3>Coming Soon: TeacherSupport Platform</h3>
+                    <p>The education funding platform where TEACH tokens provide real utility:</p>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <span class="feature-icon">🎓</span>
+                            <span>Direct teacher funding & support</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📊</span>
+                            <span>Transparent impact tracking</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🌍</span>
+                            <span>Global educator network</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">💰</span>
+                            <span>TEACH token utility & staking rewards</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community & Call to Action -->
+    <section id="community" class="community-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Join the Revolution</h2>
+                <p class="section-subtitle">
+                    Be part of the first blockchain solution that combines sustainable tokenomics with real-world education impact
+                </p>
+            </div>
+
+            <div class="cta-grid">
+                <div class="cta-card primary">
+                    <h3>Invest in TEACH</h3>
+                    <p>Join our presale with early investor pricing and multi-year value appreciation potential</p>
+                    <a href="#presale" class="btn-primary" data-action="buy-tokens">
+                        Start Investing
+                    </a>
+                </div>
+
+                <div class="cta-card secondary">
+                    <h3>Stay Updated</h3>
+                    <p>Get the latest updates on platform development, token metrics, and investment opportunities</p>
+                    <a href="#newsletter" class="btn-secondary">
+                        Join Newsletter
+                    </a>
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="social-links">
+                <a href="#" class="social-link">
+                    <span>Discord</span>
+                </a>
+                <a href="#" class="social-link">
+                    <span>Telegram</span>
+                </a>
+                <a href="#" class="social-link">
+                    <span>Twitter</span>
+                </a>
+                <a href="#" class="social-link">
+                    <span>GitHub</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <p>Revolutionary education funding through blockchain technology</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Investment</h4>
+                    <ul>
+                        <li><a href="#tokenomics">Tokenomics</a></li>
+                        <li><a href="#presale">Presale Tiers</a></li>
+                        <li><a href="#">Whitepaper</a></li>
+                        <li><a href="#">Audit Report</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="#roadmap">Roadmap</a></li>
+                        <li><a href="#platform">Development</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Legal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Syncfusion JS -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Additional Styles for Timeline -->
+    <style>
+        .platform-section {
+            padding: var(--section-padding);
+            background: var(--secondary-bg);
+        }
+
+        .development-timeline {
+            max-width: 800px;
+            margin: 0 auto 4rem;
+            position: relative;
+        }
+
+            .development-timeline::before {
+                content: '';
+                position: absolute;
+                left: 30px;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background: var(--accent-bg);
+            }
+
+        .timeline-item {
+            position: relative;
+            padding: 2rem 0 2rem 5rem;
+            border-left: none;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 21px;
+            top: 2rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-bg);
+            border: 3px solid var(--primary-bg);
+        }
+
+        .timeline-item.completed .timeline-marker {
+            background: var(--success-color);
+        }
+
+        .timeline-item.active .timeline-marker {
+            background: var(--primary-color);
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+        }
+
+        .timeline-content h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .timeline-content p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-status {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: rgba(79, 70, 229, 0.2);
+            color: var(--primary-color);
+        }
+
+        .platform-preview {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+        }
+
+        .community-section {
+            padding: var(--section-padding);
+            background: var(--primary-bg);
+        }
+
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+
+        .cta-card {
+            background: var(--card-bg);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+            .cta-card.primary {
+                background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(6, 182, 212, 0.1));
+                border-color: var(--primary-color);
+            }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .social-link {
+            padding: 12px 24px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }
+
+            .social-link:hover {
+                border-color: var(--primary-color);
+                background: rgba(79, 70, 229, 0.1);
+            }
+
+        .footer {
+            background: var(--secondary-bg);
+            padding: 4rem 0 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+            .footer-section ul li {
+                margin-bottom: 0.5rem;
+            }
+
+                .footer-section ul li a {
+                    color: var(--text-secondary);
+                    text-decoration: none;
+                    transition: var(--transition-smooth);
+                }
+
+                    .footer-section ul li a:hover {
+                        color: var(--text-primary);
+                    }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+            .footer-links a {
+                color: var(--text-secondary);
+                text-decoration: none;
+                transition: var(--transition-smooth);
+            }
+
+                .footer-links a:hover {
+                    color: var(--text-primary);
+                }
+
+        .highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .highlight-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+            .highlight-card h4 {
+                margin-bottom: 1rem;
+                font-size: 1.1rem;
+            }
+
+            .highlight-card p {
+                color: var(--text-secondary);
+                line-height: 1.6;
+            }
+
+        .investment-highlights {
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .timeline-item
+
+        {
+            padding-left: 3rem;
+        }
+
+        .development-timeline::before {
+            left: 20px;
+        }
+
+        .timeline-marker {
+            left: 11px;
+        }
+
+        .social-links {
+            flex-wrap: wrap;
+        }
+
+        .footer-bottom {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .cta-grid {
+            grid-template-columns: 1fr;
+        }
+
+    </style>
+</body>
+</html>

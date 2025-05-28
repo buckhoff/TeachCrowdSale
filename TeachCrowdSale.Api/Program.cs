@@ -78,7 +78,8 @@ builder.Services.AddScoped<IBlockchainService, BlockchainService>();
 builder.Services.AddScoped<IPresaleService, PresaleService>();
 builder.Services.AddScoped<ITokenContractService, TokenContractService>();
 builder.Services.AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
-builder.Services.AddScoped<IValidator<PurchaseRequestModel>, PurchaseRequestValidator>();
+builder.Services.AddScoped<IAbiService, AbiService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
