@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
-using TeachCrowdSale.Api.Models;
+using TeachCrowdSale.Core.Models.Response;
 
 namespace TeachCrowdSale.Api.Middleware
 {

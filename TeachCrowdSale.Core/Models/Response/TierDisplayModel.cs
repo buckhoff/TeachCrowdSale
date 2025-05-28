@@ -1,4 +1,4 @@
-﻿namespace TeachCrowdSale.Api.Models
+﻿namespace TeachCrowdSale.Core.Models.Response
 {
     /// <summary>
     /// Tier display model for API

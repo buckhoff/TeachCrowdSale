@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TeachCrowdSale.Api.Models;
+namespace TeachCrowdSale.Core.Models.Response;
 
-public class TokenStatsModel
+public class TokenInfoModel
 {
     [Range(0, double.MaxValue)]
     public decimal TotalSupply { get; set; }
@@ -14,10 +14,4 @@ public class TokenStatsModel
     public decimal MarketCap { get; set; }
     [Range(0, int.MaxValue)]
     public int HoldersCount { get; set; }
-    [Range(0, double.MaxValue)]
-    public decimal BurnedTokens { get; set; }
-    [Range(0, double.MaxValue)]
-    public decimal StakedTokens { get; set; }
-    [Range(0, double.MaxValue)]
-    public decimal LiquidityTokens { get; set; }
 }

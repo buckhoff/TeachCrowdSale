@@ -1,45 +1,38 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
-using System.Diagnostics;
-using TeachCrowdSale.Core.Interfaces;
-using TeachCrowdSale.Core.Models;
-using TeachCrowdSale.Api.Models;
+using System.Text.Json;
+using TeachCrowdSale.Core.Models.Response;
 
-namespace TeachCrowdSale.Api.Controllers
+namespace TeachCrowdSale.Web.Controllers
 {
     [Route("")]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly IPresaleService _presaleService;
-        private readonly ITokenContractService _tokenService;
-        private readonly IBlockchainService _blockchainService;
+        private readonly HttpClient _httpClient;
         private readonly IMemoryCache _cache;
+        private readonly ILogger<HomeController> _logger;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        // Cache keys for different data types
+        // Cache keys and durations
         private const string CACHE_KEY_HOME_DATA = "home_page_data";
-        private const string CACHE_KEY_PRESALE_STATS = "presale_stats";
-        private const string CACHE_KEY_TOKEN_INFO = "token_info";
+        private const string CACHE_KEY_LIVE_STATS = "live_stats";
         private const string CACHE_KEY_TIERS = "tier_data";
-
-        // Cache durations
         private readonly TimeSpan _shortCacheDuration = TimeSpan.FromMinutes(2);
+        private readonly TimeSpan _liveCacheDuration = TimeSpan.FromMinutes(1);
         private readonly TimeSpan _mediumCacheDuration = TimeSpan.FromMinutes(10);
-        private readonly TimeSpan _longCacheDuration = TimeSpan.FromMinutes(30);
 
         public HomeController(
-            ILogger<HomeController> logger,
-            IPresaleService presaleService,
-            ITokenContractService tokenService,
-            IBlockchainService blockchainService,
-            IMemoryCache cache)
+            IHttpClientFactory httpClientFactory,
+            IMemoryCache cache,
+            ILogger<HomeController> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _presaleService = presaleService ?? throw new ArgumentNullException(nameof(presaleService));
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
-            _blockchainService = blockchainService ?? throw new ArgumentNullException(nameof(blockchainService));
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _httpClient = httpClientFactory.CreateClient("TeachAPI");
+            _cache = cache;
+            _logger = logger;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
         }
 
         /// <summary>
@@ -51,12 +44,10 @@ namespace TeachCrowdSale.Api.Controllers
         {
             try
             {
-                // Load initial data for server-side rendering
-                var homeData = await GetHomePageData();
+                var homeData = await GetHomePageDataAsync();
 
-                // Pass data to view for initial rendering
                 ViewBag.InitialData = homeData;
-                ViewBag.JsonData = System.Text.Json.JsonSerializer.Serialize(homeData);
+                ViewBag.JsonData = JsonSerializer.Serialize(homeData, _jsonOptions);
 
                 return View();
             }
@@ -64,9 +55,8 @@ namespace TeachCrowdSale.Api.Controllers
             {
                 _logger.LogError(ex, "Error loading home page");
 
-                // Return view with fallback data
                 ViewBag.InitialData = GetFallbackHomeData();
-                ViewBag.JsonData = System.Text.Json.JsonSerializer.Serialize(GetFallbackHomeData());
+                ViewBag.JsonData = JsonSerializer.Serialize(GetFallbackHomeData(), _jsonOptions);
 
                 return View();
             }
@@ -76,12 +66,12 @@ namespace TeachCrowdSale.Api.Controllers
         /// API endpoint for getting aggregated home page data
         /// </summary>
         [HttpGet("api/home/data")]
-        [ResponseCache(Duration = 120)] // 2 minutes client-side cache
+        [ResponseCache(Duration = 120)]
         public async Task<ActionResult<HomePageDataModel>> GetHomeData()
         {
             try
             {
-                var homeData = await GetHomePageData();
+                var homeData = await GetHomePageDataAsync();
                 return Ok(homeData);
             }
             catch (Exception ex)
@@ -92,60 +82,70 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         /// <summary>
-        /// API endpoint for live statistics (frequently updated)
+        /// API endpoint for live statistics
         /// </summary>
         [HttpGet("api/home/live-stats")]
-        [ResponseCache(Duration = 30)] // 30 seconds client-side cache
+        [ResponseCache(Duration = 30)]
         public async Task<ActionResult<LiveStatsModel>> GetLiveStats()
         {
             try
             {
-                var cacheKey = "live_stats";
-                if (_cache.TryGetValue(cacheKey, out LiveStatsModel cachedStats))
+                if (_cache.TryGetValue(CACHE_KEY_LIVE_STATS, out LiveStatsModel cachedStats))
                 {
                     return Ok(cachedStats);
                 }
 
                 var stats = new LiveStatsModel();
 
-                // Get real-time presale statistics
-                var presaleStats = await _presaleService.GetPresaleStatsAsync();
-                if (presaleStats != null)
+                // Get presale stats
+                var presaleResponse = await _httpClient.GetAsync("/api/presale/status");
+                if (presaleResponse.IsSuccessStatusCode)
                 {
-                    stats.TotalRaised = presaleStats.TotalRaised;
-                    stats.TokensSold = presaleStats.TokensSold;
-                    stats.ParticipantsCount = presaleStats.ParticipantsCount;
-                    stats.IsPresaleActive = presaleStats.IsActive;
+                    var presaleContent = await presaleResponse.Content.ReadAsStringAsync();
+                    var presaleStats = JsonSerializer.Deserialize<PresaleStatusModel>(presaleContent, _jsonOptions);
+
+                    if (presaleStats != null)
+                    {
+                        stats.TotalRaised = presaleStats.TotalRaised;
+                        stats.TokensSold = presaleStats.TokensSold;
+                        stats.ParticipantsCount = presaleStats.ParticipantsCount;
+                        stats.IsPresaleActive = true;
+                    }
                 }
 
-                // Get current tier information
-                var currentTier = await _presaleService.GetCurrentTierAsync();
-                if (currentTier != null)
+                // Get current tier
+                var tierResponse = await _httpClient.GetAsync("/api/presale/current-tier");
+                if (tierResponse.IsSuccessStatusCode)
                 {
-                    stats.CurrentTierPrice = currentTier.Price;
-                    stats.CurrentTierName = GetTierDisplayName(currentTier.Id);
-                    stats.CurrentTierProgress = currentTier.Allocation > 0 ?
-                        (currentTier.Sold / currentTier.Allocation) * 100 : 0;
+                    var tierContent = await tierResponse.Content.ReadAsStringAsync();
+                    var currentTier = JsonSerializer.Deserialize<TierModel>(tierContent, _jsonOptions);
+
+                    if (currentTier != null)
+                    {
+                        stats.CurrentTierPrice = currentTier.Price;
+                        stats.CurrentTierName = currentTier.Name;
+                        stats.CurrentTierProgress = currentTier.TotalAllocation > 0 ?
+                            (currentTier.Sold / currentTier.TotalAllocation) * 100 : 0;
+                    }
                 }
 
-                // Get token price from contract
-                try
+                // Get token info
+                var tokenResponse = await _httpClient.GetAsync("/api/tokeninfo");
+                if (tokenResponse.IsSuccessStatusCode)
                 {
-                    stats.TokenPrice = await _tokenService.GetTokenPriceAsync();
-                    stats.MarketCap = await _tokenService.CalculateMarketCapAsync();
-                    stats.HoldersCount = await _tokenService.GetHoldersCountAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Could not retrieve token contract data");
-                    // Use fallback values
-                    stats.TokenPrice = currentTier?.Price ?? 0.06m;
-                    stats.MarketCap = stats.TokenPrice * 3500000000m; // Estimated circulating supply
-                    stats.HoldersCount = 2847; // Fallback value
+                    var tokenContent = await tokenResponse.Content.ReadAsStringAsync();
+                    var tokenInfo = JsonSerializer.Deserialize<TokenInfoModel>(tokenContent, _jsonOptions);
+
+                    if (tokenInfo != null)
+                    {
+                        stats.TokenPrice = tokenInfo.CurrentPrice;
+                        stats.MarketCap = tokenInfo.MarketCap;
+                        stats.HoldersCount = tokenInfo.HoldersCount;
+                    }
                 }
 
-                // Cache for short duration due to frequent updates
-                _cache.Set(cacheKey, stats, TimeSpan.FromMinutes(1));
+                stats.UpdatedAt = DateTime.UtcNow;
+                _cache.Set(CACHE_KEY_LIVE_STATS, stats, _liveCacheDuration);
 
                 return Ok(stats);
             }
@@ -160,7 +160,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// API endpoint for tier information
         /// </summary>
         [HttpGet("api/home/tiers")]
-        [ResponseCache(Duration = 300)] // 5 minutes client-side cache
+        [ResponseCache(Duration = 300)]
         public async Task<ActionResult<List<TierDisplayModel>>> GetTiersInfo()
         {
             try
@@ -170,7 +170,15 @@ namespace TeachCrowdSale.Api.Controllers
                     return Ok(cachedTiers);
                 }
 
-                var tiers = await _presaleService.GetAllTiersAsync();
+                var response = await _httpClient.GetAsync("/api/presale/tiers");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return StatusCode(500, new { message = "Error retrieving tier data from API" });
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var tiers = JsonSerializer.Deserialize<List<TierModel>>(content, _jsonOptions);
+
                 var tierDisplayModels = new List<TierDisplayModel>();
 
                 if (tiers != null && tiers.Any())
@@ -180,19 +188,19 @@ namespace TeachCrowdSale.Api.Controllers
                         var displayModel = new TierDisplayModel
                         {
                             Id = tier.Id,
-                            Name = GetTierDisplayName(tier.Id),
+                            Name = tier.Name,
                             Price = tier.Price,
-                            TotalAllocation = tier.Allocation,
+                            TotalAllocation = tier.TotalAllocation,
                             Sold = tier.Sold,
-                            Remaining = tier.Allocation - tier.Sold,
-                            Progress = tier.Allocation > 0 ? (tier.Sold / tier.Allocation) * 100 : 0,
+                            Remaining = tier.TotalAllocation - tier.Sold,
+                            Progress = tier.TotalAllocation > 0 ? (tier.Sold / tier.TotalAllocation) * 100 : 0,
                             IsActive = tier.IsActive,
-                            IsSoldOut = tier.Sold >= tier.Allocation,
+                            IsSoldOut = tier.Sold >= tier.TotalAllocation,
                             MinPurchase = tier.MinPurchase,
                             MaxPurchase = tier.MaxPurchase,
                             VestingTGE = tier.VestingTGE,
                             VestingMonths = tier.VestingMonths,
-                            EndTime = await _presaleService.GetTierEndTimeAsync(tier.Id)
+                            EndTime = tier.EndTime
                         };
 
                         // Calculate tier status
@@ -216,9 +224,7 @@ namespace TeachCrowdSale.Api.Controllers
                     }
                 }
 
-                // Cache for medium duration
                 _cache.Set(CACHE_KEY_TIERS, tierDisplayModels, _mediumCacheDuration);
-
                 return Ok(tierDisplayModels);
             }
             catch (Exception ex)
@@ -229,24 +235,22 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         /// <summary>
-        /// API endpoint for contract addresses and network info
+        /// API endpoint for contract addresses
         /// </summary>
         [HttpGet("api/home/contracts")]
-        [ResponseCache(Duration = 3600)] // 1 hour client-side cache
-        public ActionResult<ContractInfoModel> GetContractInfo()
+        [ResponseCache(Duration = 3600)]
+        public async Task<ActionResult<ContractInfoModel>> GetContractInfo()
         {
             try
             {
-                var addresses = _blockchainService.GetContractAddresses();
-
-                var contractInfo = new ContractInfoModel
+                var response = await _httpClient.GetAsync("/api/presale/contracts");
+                if (!response.IsSuccessStatusCode)
                 {
-                    PresaleAddress = addresses.PresaleAddress,
-                    TokenAddress = addresses.TokenAddress,
-                    PaymentTokenAddress = addresses.PaymentTokenAddress,
-                    NetworkId = addresses.NetworkId,
-                    ChainName = addresses.ChainName
-                };
+                    return StatusCode(500, new { message = "Error retrieving contract data from API" });
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var contractInfo = JsonSerializer.Deserialize<ContractInfoModel>(content, _jsonOptions);
 
                 return Ok(contractInfo);
             }
@@ -258,46 +262,28 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         /// <summary>
-        /// Health check endpoint for the home page
+        /// Health check endpoint
         /// </summary>
         [HttpGet("api/home/health")]
         public async Task<ActionResult> HealthCheck()
         {
             try
             {
-                // Quick health check of core services
-                await _presaleService.GetPresaleStatsAsync();
-
-                return Ok(new
+                var response = await _httpClient.GetAsync("/health");
+                if (response.IsSuccessStatusCode)
                 {
-                    status = "healthy",
-                    timestamp = DateTime.UtcNow,
-                    version = "1.0.0"
-                });
+                    return Ok(new { status = "healthy", timestamp = DateTime.UtcNow, version = "1.0.0" });
+                }
+                else
+                {
+                    return StatusCode(503, new { status = "degraded", message = "API unavailable", timestamp = DateTime.UtcNow });
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Health check failed");
-                return StatusCode(503, new
-                {
-                    status = "degraded",
-                    message = "Some services may be unavailable",
-                    timestamp = DateTime.UtcNow
-                });
+                return StatusCode(503, new { status = "degraded", message = "API connection failed", timestamp = DateTime.UtcNow });
             }
-        }
-
-        /// <summary>
-        /// Error page
-        /// </summary>
-        [HttpGet("error")]
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel
-            {
-                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
-            });
         }
 
         #region Private Helper Methods
@@ -305,7 +291,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// <summary>
         /// Get comprehensive home page data
         /// </summary>
-        private async Task<HomePageDataModel> GetHomePageData()
+        private async Task<HomePageDataModel> GetHomePageDataAsync()
         {
             if (_cache.TryGetValue(CACHE_KEY_HOME_DATA, out HomePageDataModel cachedData))
             {
@@ -317,66 +303,72 @@ namespace TeachCrowdSale.Api.Controllers
             try
             {
                 // Get presale statistics
-                var presaleStats = await _presaleService.GetPresaleStatsAsync();
-                if (presaleStats != null)
+                var presaleResponse = await _httpClient.GetAsync("/api/presale/status");
+                if (presaleResponse.IsSuccessStatusCode)
                 {
-                    homeData.PresaleStats = new PresaleStatsModel
+                    var presaleContent = await presaleResponse.Content.ReadAsStringAsync();
+                    var presaleStats = JsonSerializer.Deserialize<PresaleStatusModel>(presaleContent, _jsonOptions);
+
+                    if (presaleStats != null)
                     {
-                        TotalRaised = presaleStats.TotalRaised,
-                        FundingGoal = presaleStats.FundingGoal,
-                        TokensSold = presaleStats.TokensSold,
-                        TokensRemaining = presaleStats.TokensRemaining,
-                        ParticipantsCount = presaleStats.ParticipantsCount,
-                        IsActive = presaleStats.IsActive,
-                        FundingProgress = presaleStats.FundingGoal > 0 ?
-                            (presaleStats.TotalRaised / presaleStats.FundingGoal) * 100 : 0
-                    };
+                        homeData.PresaleStats = new PresaleStatsModel
+                        {
+                            TotalRaised = presaleStats.TotalRaised,
+                            FundingGoal = presaleStats.FundingGoal,
+                            TokensSold = presaleStats.TokensSold,
+                            TokensRemaining = 5000000000m - presaleStats.TokensSold, // Total supply - sold
+                            ParticipantsCount = presaleStats.ParticipantsCount,
+                            IsActive = true,
+                            FundingProgress = presaleStats.FundingGoal > 0 ?
+                                (presaleStats.TotalRaised / presaleStats.FundingGoal) * 100 : 0
+                        };
+                    }
                 }
 
                 // Get current tier
-                var currentTier = await _presaleService.GetCurrentTierAsync();
-                if (currentTier != null)
+                var tierResponse = await _httpClient.GetAsync("/api/presale/current-tier");
+                if (tierResponse.IsSuccessStatusCode)
                 {
-                    homeData.CurrentTier = new CurrentTierModel
+                    var tierContent = await tierResponse.Content.ReadAsStringAsync();
+                    var currentTier = JsonSerializer.Deserialize<TierModel>(tierContent, _jsonOptions);
+
+                    if (currentTier != null)
                     {
-                        Id = currentTier.Id,
-                        Name = GetTierDisplayName(currentTier.Id),
-                        Price = currentTier.Price,
-                        Progress = currentTier.Allocation > 0 ?
-                            (currentTier.Sold / currentTier.Allocation) * 100 : 0,
-                        Sold = currentTier.Sold,
-                        Remaining = currentTier.Allocation - currentTier.Sold,
-                        IsActive = currentTier.IsActive
-                    };
+                        homeData.CurrentTier = new CurrentTierModel
+                        {
+                            Id = currentTier.Id,
+                            Name = currentTier.Name,
+                            Price = currentTier.Price,
+                            Progress = currentTier.TotalAllocation > 0 ?
+                                (currentTier.Sold / currentTier.TotalAllocation) * 100 : 0,
+                            Sold = currentTier.Sold,
+                            Remaining = currentTier.TotalAllocation - currentTier.Sold,
+                            IsActive = currentTier.IsActive
+                        };
+                    }
                 }
 
                 // Get token information
-                try
+                var tokenResponse = await _httpClient.GetAsync("/api/tokeninfo");
+                if (tokenResponse.IsSuccessStatusCode)
                 {
-                    var totalSupply = await _tokenService.GetTotalSupplyAsync();
-                    var circulatingSupply = await _tokenService.GetCirculatingSupplyAsync();
-                    var tokenPrice = await _tokenService.GetTokenPriceAsync();
-                    var holdersCount = await _tokenService.GetHoldersCountAsync();
+                    var tokenContent = await tokenResponse.Content.ReadAsStringAsync();
+                    var tokenInfo = JsonSerializer.Deserialize<TokenInfoModel>(tokenContent, _jsonOptions);
 
-                    homeData.TokenInfo = new TokenInfoModel
+                    if (tokenInfo != null)
                     {
-                        TotalSupply = totalSupply,
-                        CirculatingSupply = circulatingSupply,
-                        CurrentPrice = tokenPrice,
-                        MarketCap = await _tokenService.CalculateMarketCapAsync(),
-                        HoldersCount = holdersCount
-                    };
+                        homeData.TokenInfo = tokenInfo;
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogWarning(ex, "Could not retrieve complete token information");
                     // Use fallback token info
                     homeData.TokenInfo = new TokenInfoModel
                     {
-                        TotalSupply = 5000000000m, // 5B total supply
-                        CirculatingSupply = 1000000000m, // 1B circulating
-                        CurrentPrice = currentTier?.Price ?? 0.06m,
-                        MarketCap = (currentTier?.Price ?? 0.06m) * 1000000000m,
+                        TotalSupply = 5000000000m,
+                        CirculatingSupply = 1000000000m,
+                        CurrentPrice = homeData.CurrentTier?.Price ?? 0.06m,
+                        MarketCap = (homeData.CurrentTier?.Price ?? 0.06m) * 1000000000m,
                         HoldersCount = 2847
                     };
                 }
@@ -384,9 +376,7 @@ namespace TeachCrowdSale.Api.Controllers
                 // Get investment highlights
                 homeData.InvestmentHighlights = GetInvestmentHighlights();
 
-                // Cache the complete data
                 _cache.Set(CACHE_KEY_HOME_DATA, homeData, _shortCacheDuration);
-
                 return homeData;
             }
             catch (Exception ex)
@@ -473,20 +463,6 @@ namespace TeachCrowdSale.Api.Controllers
             };
         }
 
-        /// <summary>
-        /// Get display name for tier
-        /// </summary>
-        private string GetTierDisplayName(int tierId)
-        {
-            return tierId switch
-            {
-                1 => "Seed Round",
-                2 => "Community Round",
-                3 => "Growth Round",
-                4 => "Final Round",
-                _ => $"Tier {tierId}"
-            };
-        }
-
         #endregion
     }
+}

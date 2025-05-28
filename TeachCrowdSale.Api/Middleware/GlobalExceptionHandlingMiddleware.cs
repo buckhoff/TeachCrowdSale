@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TeachCrowdSale.Api.Models;
+using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Models.Response;
 
 namespace TeachCrowdSale.Api.Middleware

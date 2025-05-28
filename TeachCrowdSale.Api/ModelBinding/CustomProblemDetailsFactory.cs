@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
-using TeachCrowdSale.Api.Models;
+using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Models.Response;
 
 namespace TeachCrowdSale.Api.ModelBinding

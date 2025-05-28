@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using TeachCrowdSale.Core.Attributes;
 
-namespace TeachCrowdSale.Api.Models;
+namespace TeachCrowdSale.Core.Models.Response;
 
 public class SupplyModel
 {

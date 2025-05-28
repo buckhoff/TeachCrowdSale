@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using TeachCrowdSale.Api.Models;
+using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models;
 using Microsoft.Extensions.Logging;

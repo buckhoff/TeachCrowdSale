@@ -1,5 +1,21 @@
 var builder = WebApplication.CreateBuilder(args);
 
+// Add MVC services
+builder.Services.AddControllersWithViews();
+
+// Add memory cache
+builder.Services.AddMemoryCache();
+
+// Add HTTP client for API calls
+builder.Services.AddHttpClient("TeachAPI", client =>
+{
+    var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7054";
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+builder.Services.AddResponseCompression();
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 
@@ -14,10 +30,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseResponseCompression();
 
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapStaticAssets();
 app.MapRazorPages()
