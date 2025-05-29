@@ -151,6 +151,13 @@ namespace TeachCrowdSale.Api.Extensions
                     options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                     options.QueueLimit = 3;
                 });
+                options.AddFixedWindowLimiter("BuyTrade", options =>
+                {
+                    options.PermitLimit = 50;
+                    options.Window = TimeSpan.FromMinutes(1);
+                    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    options.QueueLimit = 10;
+                });
             });
 
             return services;

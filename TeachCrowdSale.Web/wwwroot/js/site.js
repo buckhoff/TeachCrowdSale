@@ -5,7 +5,7 @@
 // GLOBAL CONFIGURATION
 // ================================================
 const CONFIG = {
-    API_BASE_URL: '/api',
+    BASE_URL: '', // Web controller endpoints
     ANIMATION_DURATION: 1000,
     UPDATE_INTERVAL: 30000, // 30 seconds
     COUNTER_ANIMATION_SPEED: 2000,
@@ -102,16 +102,15 @@ const Utils = {
 };
 
 // ================================================
-// API SERVICE
+// API SERVICE (Web Controller Endpoints)
 // ================================================
 const ApiService = {
     // Generic API call wrapper
     async makeRequest(endpoint, options = {}) {
         try {
-            const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, {
+            const response = await fetch(`${CONFIG.BASE_URL}${endpoint}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.getAuthToken()}`,
                     ...options.headers
                 },
                 ...options
@@ -123,39 +122,34 @@ const ApiService = {
 
             return await response.json();
         } catch (error) {
-            console.error(`API request failed for ${endpoint}:`, error);
+            console.error(`Web API request failed for ${endpoint}:`, error);
             return null;
         }
     },
 
-    // Get authentication token (implement based on your auth system)
-    getAuthToken() {
-        return localStorage.getItem('auth_token') || '';
+    // Fetch live statistics
+    async getLiveStats() {
+        return await this.makeRequest('/Home/GetLiveStats');
     },
 
-    // Fetch presale statistics
-    async getPresaleStats() {
-        return await this.makeRequest('/presale/status');
+    // Fetch tier data
+    async getTierData() {
+        return await this.makeRequest('/Home/GetTierData');
     },
 
-    // Fetch current tier information
-    async getCurrentTier() {
-        return await this.makeRequest('/presale/current-tier');
+    // Fetch contract information
+    async getContractInfo() {
+        return await this.makeRequest('/Home/GetContractInfo');
     },
 
-    // Fetch all tiers
-    async getAllTiers() {
-        return await this.makeRequest('/presale/tiers');
+    // Fetch investment highlights
+    async getInvestmentHighlights() {
+        return await this.makeRequest('/Home/GetInvestmentHighlights');
     },
 
-    // Fetch token information
-    async getTokenInfo() {
-        return await this.makeRequest('/tokeninfo');
-    },
-
-    // Fetch contract addresses
-    async getContractAddresses() {
-        return await this.makeRequest('/presale/contracts');
+    // Health check
+    async checkHealth() {
+        return await this.makeRequest('/Home/HealthCheck');
     }
 };
 
@@ -341,8 +335,8 @@ const ChartManager = {
         if (!chartContainer) return;
 
         try {
-            const tiersData = await ApiService.getAllTiers();
-            if (!tiersData) return;
+            const tiersData = await ApiService.getTierData();
+            if (!tiersData || tiersData.error) return;
 
             const data = tiersData.map(tier => ({
                 tier: tier.name || `Tier ${tier.id}`,
@@ -440,7 +434,7 @@ const ChartManager = {
             background: 'transparent',
             tooltip: {
                 enable: true,
-                format: 'Date: ${point.x}<br/>Price: $${point.y}'
+                format: 'Date: ${point.x}<br/>Price: ${point.y}'
             }
         });
 
@@ -456,18 +450,26 @@ const DataManager = {
     // Load all initial data
     async loadInitialData() {
         try {
-            const [presaleStats, currentTier, allTiers, tokenInfo] = await Promise.all([
-                ApiService.getPresaleStats(),
-                ApiService.getCurrentTier(),
-                ApiService.getAllTiers(),
-                ApiService.getTokenInfo()
+            // Check if we have initial data from server
+            if (window.initialData) {
+                AppState.apiData = window.initialData;
+                this.updateUI();
+                return true;
+            }
+
+            // Otherwise fetch from endpoints
+            const [liveStats, tierData, contractInfo, highlights] = await Promise.all([
+                ApiService.getLiveStats(),
+                ApiService.getTierData(),
+                ApiService.getContractInfo(),
+                ApiService.getInvestmentHighlights()
             ]);
 
             AppState.apiData = {
-                presaleStats,
-                currentTier,
-                allTiers,
-                tokenInfo
+                liveStats,
+                tierData,
+                contractInfo,
+                highlights
             };
 
             this.updateUI();
@@ -488,63 +490,52 @@ const DataManager = {
 
     // Update hero section statistics
     updateHeroStats() {
-        const { presaleStats, tokenInfo } = AppState.apiData;
+        const { liveStats } = AppState.apiData;
 
-        if (presaleStats) {
-            this.updateElement('[data-stat="totalRaised"]', presaleStats.totalRaised, 'currency');
-            this.updateElement('[data-stat="tokensSold"]', presaleStats.tokensSold, 'number');
-            this.updateElement('[data-stat="participants"]', presaleStats.participantsCount, 'number');
-        }
-
-        if (tokenInfo) {
-            this.updateElement('[data-stat="currentPrice"]', tokenInfo.currentPrice, 'currency');
-            this.updateElement('[data-stat="marketCap"]', tokenInfo.marketCap, 'currency');
-            this.updateElement('[data-stat="holders"]', tokenInfo.holdersCount, 'number');
+        if (liveStats && !liveStats.error) {
+            this.updateElement('[data-stat="totalRaised"]', liveStats.totalRaised, 'currency');
+            this.updateElement('[data-stat="tokensSold"]', liveStats.tokensSold, 'number');
+            this.updateElement('[data-stat="participants"]', liveStats.participantsCount, 'number');
+            this.updateElement('[data-stat="currentPrice"]', liveStats.tokenPrice, 'currency');
+            this.updateElement('[data-stat="marketCap"]', liveStats.marketCap, 'currency');
+            this.updateElement('[data-stat="holders"]', liveStats.holdersCount, 'number');
         }
     },
 
     // Update metric cards
     updateMetricCards() {
-        const { presaleStats, currentTier, tokenInfo } = AppState.apiData;
+        const { liveStats } = AppState.apiData;
 
-        if (currentTier) {
-            this.updateElement('[data-metric="currentTierPrice"]', currentTier.price, 'currency');
-            this.updateElement('[data-metric="currentTierName"]', currentTier.name, 'text');
+        if (liveStats && !liveStats.error) {
+            this.updateElement('[data-metric="currentTierPrice"]', liveStats.currentTierPrice, 'currency');
+            this.updateElement('[data-metric="currentTierName"]', liveStats.currentTierName, 'text');
+            this.updateProgressBar('[data-progress="currentTier"]', liveStats.currentTierProgress);
 
-            const progressPercentage = currentTier.totalAllocation > 0 ?
-                (currentTier.sold / currentTier.totalAllocation) * 100 : 0;
-            this.updateProgressBar('[data-progress="currentTier"]', progressPercentage);
-        }
+            this.updateElement('[data-metric="totalRaised"]', liveStats.totalRaised, 'currency');
 
-        if (presaleStats) {
-            this.updateElement('[data-metric="totalRaised"]', presaleStats.totalRaised, 'currency');
-            this.updateElement('[data-metric="fundingGoal"]', presaleStats.fundingGoal, 'currency');
-
-            const fundingProgress = presaleStats.fundingGoal > 0 ?
-                (presaleStats.totalRaised / presaleStats.fundingGoal) * 100 : 0;
+            // Calculate funding progress if we have both values
+            const fundingGoal = 87500000; // From fallback data
+            const fundingProgress = liveStats.totalRaised > 0 ?
+                (liveStats.totalRaised / fundingGoal) * 100 : 0;
             this.updateProgressBar('[data-progress="funding"]', fundingProgress);
         }
     },
 
     // Update tier cards
     updateTierCards() {
-        const { allTiers } = AppState.apiData;
+        const { tierData } = AppState.apiData;
 
-        if (allTiers && Array.isArray(allTiers)) {
-            allTiers.forEach((tier, index) => {
+        if (tierData && Array.isArray(tierData) && !tierData.error) {
+            tierData.forEach((tier) => {
                 const tierCard = document.querySelector(`[data-tier="${tier.id}"]`);
                 if (tierCard) {
-                    const progressPercentage = tier.totalAllocation > 0 ?
-                        (tier.sold / tier.totalAllocation) * 100 : 0;
-
                     this.updateElement(tierCard.querySelector('[data-tier-price]'), tier.price, 'currency');
                     this.updateElement(tierCard.querySelector('[data-tier-sold]'), tier.sold, 'number');
-                    this.updateElement(tierCard.querySelector('[data-tier-remaining]'),
-                        tier.totalAllocation - tier.sold, 'number');
+                    this.updateElement(tierCard.querySelector('[data-tier-remaining]'), tier.remaining, 'number');
 
                     const progressBar = tierCard.querySelector('.progress-fill');
                     if (progressBar) {
-                        progressBar.dataset.percentage = progressPercentage;
+                        progressBar.dataset.percentage = tier.progress;
                     }
 
                     if (tier.isActive) {

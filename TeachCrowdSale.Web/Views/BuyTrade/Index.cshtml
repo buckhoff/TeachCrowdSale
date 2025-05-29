@@ -1,0 +1,621 @@
+﻿@{
+    ViewData["Title"] = ViewData["Title"] ?? "Buy TEACH Token - Direct Presale & DEX Trading";
+    ViewData["Description"] = ViewData["Description"] ?? "Purchase TEACH tokens directly from our presale or trade on decentralized exchanges. Multi-year treasury runway with early investor pricing.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Buy TEACH Token - TeachToken Platform" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/teachtoken-buy-og.jpg" />
+    <meta property="og:url" content="https://teachtoken.io/buy" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Buy TEACH Token - TeachToken Platform" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="/" class="logo">TeachToken</a>
+
+                <ul class="nav-menu">
+                    <li><a href="/#tokenomics" class="nav-link">Tokenomics</a></li>
+                    <li><a href="/#presale" class="nav-link">Presale</a></li>
+                    <li><a href="/buy" class="nav-link active">Buy TEACH</a></li>
+                    <li><a href="/#roadmap" class="nav-link">Roadmap</a></li>
+                    <li><a href="/#community" class="nav-link">Community</a></li>
+                </ul>
+
+                <button class="nav-cta" id="connectWalletBtn">
+                    Connect Wallet
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="buy-hero-section">
+        <div class="container">
+            <div class="buy-hero-container">
+                <div class="buy-hero-content">
+                    <h1>
+                        Buy <span class="highlight">TEACH Token</span>
+                    </h1>
+                    <p class="buy-hero-subtitle">
+                        Join the presale with early investor pricing or trade on decentralized exchanges.
+                        Secure your position in the future of education funding.
+                    </p>
+
+                    <!-- Purchase Methods -->
+                    <div class="purchase-methods">
+                        <div class="method-tab active" data-method="presale">
+                            <span class="method-icon">🎯</span>
+                            <span>Presale</span>
+                            <span class="method-badge">Best Price</span>
+                        </div>
+                        <div class="method-tab" data-method="dex">
+                            <span class="method-icon">🔄</span>
+                            <span>DEX Trading</span>
+                            <span class="method-badge">Live Soon</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Stats Card -->
+                <div class="buy-stats-card">
+                    <h3>Live Statistics</h3>
+                    <div class="buy-stats-grid">
+                        <div class="buy-stat">
+                            <span class="buy-stat-label">Current Price</span>
+                            <span class="buy-stat-value" data-stat="currentPrice">$0.06</span>
+                        </div>
+                        <div class="buy-stat">
+                            <span class="buy-stat-label">Total Raised</span>
+                            <span class="buy-stat-value" data-stat="totalRaised">$12.5M</span>
+                        </div>
+                        <div class="buy-stat">
+                            <span class="buy-stat-label">Tokens Sold</span>
+                            <span class="buy-stat-value" data-stat="tokensSold">750M</span>
+                        </div>
+                        <div class="buy-stat">
+                            <span class="buy-stat-label">Participants</span>
+                            <span class="buy-stat-value" data-stat="participants">2,847</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Purchase Interface Section -->
+    <section class="purchase-interface-section" id="presale-section">
+        <div class="container">
+            <div class="purchase-container">
+                <!-- Purchase Form -->
+                <div class="purchase-form-container">
+                    <div class="purchase-form-header">
+                        <h2>Purchase TEACH Tokens</h2>
+                        <p>Get early investor pricing with our structured tier system</p>
+                    </div>
+
+                    <!-- Current Tier Display -->
+                    <div class="current-tier-display">
+                        <div class="tier-info">
+                            <h3 id="currentTierName">Community Round</h3>
+                            <div class="tier-price">
+                                <span class="price-value" id="currentTierPrice">$0.06</span>
+                                <span class="price-label">per TEACH</span>
+                            </div>
+                        </div>
+                        <div class="tier-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="currentTierProgress" data-percentage="45"></div>
+                            </div>
+                            <div class="progress-stats">
+                                <span id="tierSold">169M sold</span>
+                                <span id="tierRemaining">206M remaining</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Purchase Form -->
+                    <form class="purchase-form" id="purchaseForm">
+                        <!-- Wallet Connection -->
+                        <div class="form-group wallet-section" id="walletSection">
+                            <label class="form-label">Wallet Address</label>
+                            <div class="wallet-input-group">
+                                <input type="text" id="walletAddress" class="form-input" placeholder="Connect wallet or enter address" readonly>
+                                <button type="button" class="btn-connect" id="connectWalletFormBtn">
+                                    Connect
+                                </button>
+                            </div>
+                            <div class="wallet-info" id="walletInfo" style="display: none;">
+                                <div class="wallet-balance">
+                                    <span>USDC Balance: <span id="usdcBalance">0.00</span></span>
+                                    <span>TEACH Owned: <span id="teachBalance">0.00</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Amount -->
+                        <div class="form-group">
+                            <label class="form-label">Purchase Amount (USD)</label>
+                            <div class="amount-input-group">
+                                <input type="number" id="purchaseAmount" class="form-input"
+                                       placeholder="Enter amount" min="100" step="0.01">
+                                <div class="amount-presets">
+                                    <button type="button" class="preset-btn" data-amount="500">$500</button>
+                                    <button type="button" class="preset-btn" data-amount="1000">$1K</button>
+                                    <button type="button" class="preset-btn" data-amount="5000">$5K</button>
+                                    <button type="button" class="preset-btn" data-amount="10000">$10K</button>
+                                </div>
+                            </div>
+                            <div class="amount-limits">
+                                <span>Min: $<span id="minPurchase">100</span></span>
+                                <span>Max: $<span id="maxPurchase">25,000</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Calculation -->
+                        <div class="purchase-calculation" id="purchaseCalculation" style="display: none;">
+                            <div class="calc-row">
+                                <span>Tokens to receive:</span>
+                                <span id="tokensToReceive">0 TEACH</span>
+                            </div>
+                            <div class="calc-row">
+                                <span>Platform fee (2.5%):</span>
+                                <span id="platformFee">$0.00</span>
+                            </div>
+                            <div class="calc-row">
+                                <span>Network fee:</span>
+                                <span id="networkFee">$5.00</span>
+                            </div>
+                            <div class="calc-row total">
+                                <span>Total cost:</span>
+                                <span id="totalCost">$0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Vesting Information -->
+                        <div class="vesting-info">
+                            <h4>Token Vesting Schedule</h4>
+                            <div class="vesting-breakdown">
+                                <div class="vesting-item">
+                                    <span class="vesting-label">At TGE (20%):</span>
+                                    <span class="vesting-value" id="tgeTokens">0 TEACH</span>
+                                </div>
+                                <div class="vesting-item">
+                                    <span class="vesting-label">Linear vesting (6 months):</span>
+                                    <span class="vesting-value" id="vestedTokens">0 TEACH</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Button -->
+                        <button type="submit" class="btn-purchase" id="purchaseBtn" disabled>
+                            <span class="btn-text">Connect Wallet to Continue</span>
+                            <span class="btn-icon">🚀</span>
+                        </button>
+
+                        <!-- Error/Success Messages -->
+                        <div class="form-messages">
+                            <div class="message error" id="errorMessage" style="display: none;"></div>
+                            <div class="message success" id="successMessage" style="display: none;"></div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Purchase Options -->
+                <div class="purchase-options-container">
+                    <h3>Payment Methods</h3>
+                    <div class="payment-methods" id="paymentMethods">
+                        <!-- Payment methods will be loaded here -->
+                    </div>
+
+                    <!-- Security Features -->
+                    <div class="security-features">
+                        <h4>Security & Trust</h4>
+                        <div class="security-list">
+                            <div class="security-item">
+                                <span class="security-icon">🔒</span>
+                                <span>Smart contract audited</span>
+                            </div>
+                            <div class="security-item">
+                                <span class="security-icon">✅</span>
+                                <span>Multi-signature wallet</span>
+                            </div>
+                            <div class="security-item">
+                                <span class="security-icon">⚡</span>
+                                <span>Instant token allocation</span>
+                            </div>
+                            <div class="security-item">
+                                <span class="security-icon">📊</span>
+                                <span>Transparent vesting</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- All Tiers Overview -->
+    <section class="tiers-overview-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">All Presale Tiers</h2>
+                <p class="section-subtitle">
+                    Structured pricing with early investor advantages
+                </p>
+            </div>
+
+            <div class="tiers-comparison" id="tiersComparison">
+                <!-- Tier cards will be loaded here -->
+            </div>
+
+            <!-- Investment Benefits -->
+            <div class="investment-benefits">
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">🔒</div>
+                        <h4>Financial Security</h4>
+                        <p>10+ year operational runway through multi-layered treasury management</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">📈</div>
+                        <h4>Price Appreciation</h4>
+                        <p>Limited supply with 80% of tokens locked for multi-year vesting</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">🎯</div>
+                        <h4>Real Utility</h4>
+                        <p>Direct use case in $6T education market with measurable impact</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">⚡</div>
+                        <h4>First Mover</h4>
+                        <p>First blockchain solution specifically designed for education funding</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DEX Trading Section -->
+    <section class="dex-trading-section" id="dex-section" style="display: none;">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">DEX Trading</h2>
+                <p class="section-subtitle">
+                    Trade TEACH tokens on decentralized exchanges after TGE
+                </p>
+            </div>
+
+            <!-- DEX Status -->
+            <div class="dex-status-card">
+                <div class="status-header">
+                    <h3>Trading Status</h3>
+                    <div class="status-badge upcoming">
+                        <span class="status-dot"></span>
+                        <span>Coming Soon</span>
+                    </div>
+                </div>
+                <div class="status-content">
+                    <p>DEX trading will be available after Token Generation Event (TGE)</p>
+                    <div class="launch-countdown">
+                        <span class="countdown-label">Estimated Launch:</span>
+                        <span class="countdown-value" id="dexLaunchDate">Q2 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEX Integrations -->
+            <div class="dex-integrations">
+                <h3>Available on Launch</h3>
+                <div class="dex-grid" id="dexGrid">
+                    <!-- DEX integrations will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Trading Pairs Preview -->
+            <div class="trading-pairs-preview">
+                <h3>Planned Trading Pairs</h3>
+                <div class="pairs-grid">
+                    <div class="pair-card">
+                        <div class="pair-info">
+                            <div class="pair-tokens">
+                                <img src="/images/teach-logo.png" alt="TEACH" class="token-logo">
+                                <span class="pair-separator">/</span>
+                                <img src="/images/usdc-logo.png" alt="USDC" class="token-logo">
+                            </div>
+                            <h4>TEACH/USDC</h4>
+                        </div>
+                        <div class="pair-stats">
+                            <div class="stat">
+                                <span class="stat-label">Liquidity</span>
+                                <span class="stat-value">TBA</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Volume 24h</span>
+                                <span class="stat-value">TBA</span>
+                            </div>
+                        </div>
+                        <div class="pair-dex">
+                            <img src="/images/uniswap-logo.png" alt="Uniswap" class="dex-logo">
+                            <span>Uniswap V3</span>
+                        </div>
+                    </div>
+
+                    <div class="pair-card">
+                        <div class="pair-info">
+                            <div class="pair-tokens">
+                                <img src="/images/teach-logo.png" alt="TEACH" class="token-logo">
+                                <span class="pair-separator">/</span>
+                                <img src="/images/eth-logo.png" alt="ETH" class="token-logo">
+                            </div>
+                            <h4>TEACH/ETH</h4>
+                        </div>
+                        <div class="pair-stats">
+                            <div class="stat">
+                                <span class="stat-label">Liquidity</span>
+                                <span class="stat-value">TBA</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Volume 24h</span>
+                                <span class="stat-value">TBA</span>
+                            </div>
+                        </div>
+                        <div class="pair-dex">
+                            <img src="/images/sushiswap-logo.png" alt="SushiSwap" class="dex-logo">
+                            <span>SushiSwap</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Chart Placeholder -->
+            <div class="chart-container">
+                <h3 class="chart-title">Price Chart (Post-Launch)</h3>
+                <div id="priceChart" style="height: 400px;">
+                    <div class="chart-placeholder">
+                        <div class="placeholder-icon">📊</div>
+                        <h4>Price Chart Coming Soon</h4>
+                        <p>Live price charts will be available after DEX launch</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Dashboard Section (Hidden by default) -->
+    <section class="user-dashboard-section" id="userDashboard" style="display: none;">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Your TEACH Holdings</h2>
+                <p class="section-subtitle">
+                    Track your investments and claim vested tokens
+                </p>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Portfolio Overview -->
+                <div class="dashboard-card portfolio-card">
+                    <h3>Portfolio Overview</h3>
+                    <div class="portfolio-stats">
+                        <div class="portfolio-stat">
+                            <span class="stat-label">Total TEACH Purchased</span>
+                            <span class="stat-value" id="userTotalTokens">0</span>
+                        </div>
+                        <div class="portfolio-stat">
+                            <span class="stat-label">Total USD Invested</span>
+                            <span class="stat-value" id="userTotalUsd">$0.00</span>
+                        </div>
+                        <div class="portfolio-stat">
+                            <span class="stat-label">Average Price</span>
+                            <span class="stat-value" id="userAvgPrice">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vesting & Claims -->
+                <div class="dashboard-card vesting-card">
+                    <h3>Vesting & Claims</h3>
+                    <div class="vesting-stats">
+                        <div class="vesting-stat">
+                            <span class="stat-label">Claimable Now</span>
+                            <span class="stat-value highlight" id="userClaimableTokens">0</span>
+                        </div>
+                        <div class="vesting-stat">
+                            <span class="stat-label">Next Vesting</span>
+                            <span class="stat-value" id="userNextVesting">--</span>
+                        </div>
+                        <div class="vesting-stat">
+                            <span class="stat-label">Next Amount</span>
+                            <span class="stat-value" id="userNextAmount">0</span>
+                        </div>
+                    </div>
+                    <button class="btn-claim" id="claimBtn" disabled>
+                        <span>Claim Tokens</span>
+                        <span>🎯</span>
+                    </button>
+                </div>
+
+                <!-- Purchase History -->
+                <div class="dashboard-card history-card">
+                    <h3>Purchase History</h3>
+                    <div class="purchase-history" id="purchaseHistory">
+                        <!-- Purchase history will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-subtitle">
+                    Everything you need to know about buying TEACH tokens
+                </p>
+            </div>
+
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>How do I purchase TEACH tokens?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Connect your wallet, select the amount you want to purchase, and confirm the transaction. You can pay with USDC, ETH, or credit card. Tokens are allocated instantly and vest according to the tier schedule.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>What is the vesting schedule?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>All presale tiers have 20% unlocked at TGE (Token Generation Event) and the remaining 80% vested linearly over 6 months. This ensures sustainable price action and rewards long-term holders.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>When will DEX trading be available?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>DEX trading will launch alongside TGE, estimated for Q2 2024. TEACH will be available on major DEXs including Uniswap V3 and SushiSwap, with TEACH/USDC and TEACH/ETH pairs.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>What wallets are supported?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We support all major Ethereum wallets including MetaMask, Coinbase Wallet, WalletConnect-compatible wallets, and hardware wallets like Ledger and Trezor.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Are there any purchase limits?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, each tier has minimum and maximum purchase limits. Current tier limits are $100 minimum and $25,000 maximum per wallet. These limits ensure fair participation across our community.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>How secure is the smart contract?</h4>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our smart contracts have been professionally audited and use multi-signature security. We follow industry best practices and have implemented comprehensive testing and security measures.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <p>Revolutionary education funding through blockchain technology</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Buy TEACH</h4>
+                    <ul>
+                        <li><a href="/buy">Presale</a></li>
+                        <li><a href="/buy#dex-section">DEX Trading</a></li>
+                        <li><a href="/#tokenomics">Tokenomics</a></li>
+                        <li><a href="#">How to Buy Guide</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#">Contact Support</a></li>
+                        <li><a href="#">Wallet Help</a></li>
+                        <li><a href="#">Transaction Issues</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Risk Disclosure</a></li>
+                        <li><a href="#">Audit Reports</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Risk Warning</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Syncfusion JS -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="~/js/buy-trade.js" asp-append-version="true"></script>
+
+    <!-- Page-specific styles -->
+    <style>
+      
+    </style>
+
+    <!-- Initialize page data -->
+    <script>
+        // Pass server data to JavaScript
+        window.BuyTradePageData = @Html.Raw(ViewBag.JsonData ?? "{}");
+    </script>
+</body>
+</html>

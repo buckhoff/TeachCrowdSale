@@ -1,3 +1,6 @@
+using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Infrastructure.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add MVC services
@@ -12,7 +15,12 @@ builder.Services.AddHttpClient("TeachAPI", client =>
     var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7054";
     client.BaseAddress = new Uri(apiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
+
+builder.Services.AddScoped<IHomeService, HomeService>();
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddResponseCompression();
 
