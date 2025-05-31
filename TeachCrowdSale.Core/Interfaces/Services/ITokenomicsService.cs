@@ -5,7 +5,7 @@ using TeachCrowdSale.Core.Models.Treasury;
 using TeachCrowdSale.Core.Models.Utility;
 using TeachCrowdSale.Core.Models.Vesting;
 
-namespace TeachCrowdSale.Core.Interfaces
+namespace TeachCrowdSale.Core.Interfaces.Services
 {
     /// <summary>
     /// Service interface for tokenomics data operations

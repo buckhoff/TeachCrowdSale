@@ -1,4 +1,4 @@
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);

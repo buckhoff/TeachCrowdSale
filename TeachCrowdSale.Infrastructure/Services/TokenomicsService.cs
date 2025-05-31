@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models.Burning;
 using TeachCrowdSale.Core.Models.Governance;
 using TeachCrowdSale.Core.Models.Tokenomics;

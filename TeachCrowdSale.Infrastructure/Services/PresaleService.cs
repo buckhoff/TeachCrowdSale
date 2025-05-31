@@ -4,8 +4,11 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using TeachCrowdSale.Core.Data.Entities;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Data.Enum;
+using TeachCrowdSale.Core.Interfaces.Repositories;
+using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models;
+using TeachCrowdSale.Core.Models.Vesting;
 
 namespace TeachCrowdSale.Infrastructure.Services
 {
@@ -304,7 +307,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
         
-        public async Task<VestingMilestone> GetNextVestingMilestoneAsync(string address)
+        public async Task<VestingMilestoneModel> GetNextVestingMilestoneAsync(string address)
         {
             try
             {
@@ -325,9 +328,9 @@ namespace TeachCrowdSale.Infrastructure.Services
                     return null; // No more vesting milestones
                 }
                 
-                return new VestingMilestone
+                return new VestingMilestoneModel
                 {
-                    Timestamp = DateTimeOffset.FromUnixTimeSeconds((long)timestamp).DateTime,
+                    FormattedDate = DateTimeOffset.FromUnixTimeSeconds((long)timestamp).DateTime.ToLongDateString(),
                     Amount = ConvertFromWei(amount, 18) // TEACH has 18 decimals
                 };
             }

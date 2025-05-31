@@ -2,11 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TeachCrowdSale.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Models.Response;
 using Microsoft.AspNetCore.RateLimiting;
+using TeachCrowdSale.Core.Interfaces.Services;
 
 namespace TeachCrowdSale.Api.Controllers
 {

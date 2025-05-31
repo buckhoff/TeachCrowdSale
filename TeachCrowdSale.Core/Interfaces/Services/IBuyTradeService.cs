@@ -1,7 +1,7 @@
 ﻿using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Models.Response;
 
-namespace TeachCrowdSale.Core.Interfaces;
+namespace TeachCrowdSale.Core.Interfaces.Services;
 
 /// <summary>
 /// Service interface for buy/trade page operations

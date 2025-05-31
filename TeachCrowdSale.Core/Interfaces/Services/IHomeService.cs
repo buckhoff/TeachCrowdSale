@@ -1,6 +1,6 @@
 ﻿using TeachCrowdSale.Core.Models.Response;
 
-namespace TeachCrowdSale.Core.Interfaces;
+namespace TeachCrowdSale.Core.Interfaces.Services;
 
 /// <summary>
 /// Service interface for home page data operations

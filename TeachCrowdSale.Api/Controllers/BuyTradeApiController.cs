@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Models.Response;
 

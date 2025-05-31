@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TeachCrowdSale.Core.Models.Response;
-using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models;
 using Microsoft.Extensions.Logging;
 using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Models.Response;
 using Microsoft.AspNetCore.RateLimiting;
 using TeachCrowdSale.Api.Validator;
+using TeachCrowdSale.Core.Interfaces.Services;
 
 namespace TeachCrowdSale.Api.Controllers
 {
@@ -167,7 +167,7 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         [HttpGet("next-vesting/{address}")]
-        public async Task<ActionResult<VestingMilestoneModel>> GetNextVestingMilestone([FromRoute] string address)
+        public async Task<ActionResult<VestingMilestone>> GetNextVestingMilestone([FromRoute] string address)
         {
             try
             {
@@ -183,7 +183,7 @@ namespace TeachCrowdSale.Api.Controllers
                     return NotFound($"No vesting schedule found for address {address}");
                 }
 
-                return Ok(new VestingMilestoneModel
+                return Ok(new VestingMilestone
                 {
                     Timestamp = nextVesting.Timestamp,
                     Amount = nextVesting.Amount,

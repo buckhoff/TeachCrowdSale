@@ -1,4 +1,4 @@
-namespace TeachCrowdSale.Core.Interfaces;
+namespace TeachCrowdSale.Core.Interfaces.Services;
 
 public interface ITokenContractService
 {

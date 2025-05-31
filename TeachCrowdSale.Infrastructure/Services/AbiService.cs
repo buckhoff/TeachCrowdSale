@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Services;
 
 namespace TeachCrowdSale.Infrastructure.Services
 {

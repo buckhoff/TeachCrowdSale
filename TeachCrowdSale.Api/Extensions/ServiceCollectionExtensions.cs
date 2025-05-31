@@ -10,12 +10,13 @@ using System.Threading.RateLimiting;
 using TeachCrowdSale.Api.Converter;
 using TeachCrowdSale.Api.ModelBinding;
 using TeachCrowdSale.Api.Validator;
-using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Infrastructure.Configuration;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using TeachCrowdSale.Infrastructure.Repositories;
 using TeachCrowdSale.Infrastructure.Services;
 using TeachCrowdSale.Infrastructure.Web3;
+using TeachCrowdSale.Core.Interfaces.Services;
+using TeachCrowdSale.Core.Interfaces.Repositories;
 
 namespace TeachCrowdSale.Api.Extensions
 {
@@ -49,6 +50,19 @@ namespace TeachCrowdSale.Api.Extensions
                 options.JsonSerializerOptions.Converters.Add(new EthereumAddressJsonConverter());
             })
             .AddApiControllerConventions();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Add all tokenomics-related services and configurations
+        /// </summary>
+        public static IServiceCollection AddTokenomicsModule(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddTokenomicsServices(configuration);
+            services.AddTokenomicsRateLimiting();
+            services.AddTokenomicsCaching();
+            services.AddTokenomicsBackgroundServices();
 
             return services;
         }
@@ -124,7 +138,7 @@ namespace TeachCrowdSale.Api.Extensions
                         factory: partition => new FixedWindowRateLimiterOptions
                         {
                             AutoReplenishment = true,
-                            PermitLimit = 100,
+                            PermitLimit = 200,
                             Window = TimeSpan.FromMinutes(1)
                         }));
 
@@ -157,6 +171,22 @@ namespace TeachCrowdSale.Api.Extensions
                     options.Window = TimeSpan.FromMinutes(1);
                     options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                     options.QueueLimit = 10;
+                });
+    
+                options.AddFixedWindowLimiter("Tokenomics", options =>
+                {
+                    options.PermitLimit = 100;
+                    options.Window = TimeSpan.FromMinutes(1);
+                    options.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+                    options.QueueLimit = 10;
+                });
+
+                options.AddFixedWindowLimiter("LiveMetrics", options =>
+                {
+                    options.PermitLimit = 60;
+                    options.Window = TimeSpan.FromMinutes(1);
+                    options.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+                    options.QueueLimit = 5;
                 });
             });
 

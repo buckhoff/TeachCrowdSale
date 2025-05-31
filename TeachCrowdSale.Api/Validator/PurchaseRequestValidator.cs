@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using FluentValidation;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models.Request;
 
 namespace TeachCrowdSale.Api.Validator;

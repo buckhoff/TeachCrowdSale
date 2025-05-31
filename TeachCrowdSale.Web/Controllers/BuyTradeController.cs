@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Models.Response;
 

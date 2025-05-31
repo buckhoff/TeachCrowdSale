@@ -45,6 +45,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddRateLimitingServices();
 builder.Services.AddCorsServices();
 builder.Services.AddCompressionServices();
+builder.Services.AddTokenomicsModule(builder.Configuration);
 
 var app = builder.Build();
 

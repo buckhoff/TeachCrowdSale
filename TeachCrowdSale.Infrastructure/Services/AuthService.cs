@@ -5,9 +5,9 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TeachCrowdSale.Infrastructure.Configuration;
-using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models;
 using TeachCrowdSale.Infrastructure.Configuration;
+using TeachCrowdSale.Core.Interfaces.Services;
 
 namespace TeachCrowdSale.Infrastructure.Services;
 

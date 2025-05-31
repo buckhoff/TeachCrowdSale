@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TeachCrowdSale.Core.Interfaces
+namespace TeachCrowdSale.Core.Interfaces.Services
 {
     public interface IAbiService
     {

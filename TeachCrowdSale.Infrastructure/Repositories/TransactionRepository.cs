@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TeachCrowdSale.Core.Data.Entities;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Infrastructure.Data.Context;
 
 namespace TeachCrowdSale.Infrastructure.Repositories

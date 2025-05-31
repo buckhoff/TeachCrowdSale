@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models;
 
 namespace TeachCrowdSale.Infrastructure.Services

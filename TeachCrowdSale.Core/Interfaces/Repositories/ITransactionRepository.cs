@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TeachCrowdSale.Core.Data.Entities;
 
-namespace TeachCrowdSale.Core.Interfaces
+namespace TeachCrowdSale.Core.Interfaces.Repositories
 {
     public interface ITransactionRepository
     {
