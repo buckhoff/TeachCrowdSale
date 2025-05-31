@@ -1,0 +1,1267 @@
+﻿/* TeachToken - Buy/Trade Page Specific Styles */
+
+/* ================================================
+   BUY/TRADE PAGE SPECIFIC STYLES
+================================================ */
+
+/* Buy Hero Section */
+.buy-hero-section {
+    padding: 120px 0 80px;
+    background: radial-gradient(ellipse at center, rgba(79, 70, 229, 0.15) 0%, var(--primary-bg) 70%);
+    position: relative;
+}
+
+.buy-hero-container {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 60px;
+    align-items: start;
+}
+
+.buy-hero-content h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.buy-hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* Purchase Methods Tabs */
+.purchase-methods {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.method-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 20px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+    .method-tab:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .method-tab.active {
+        border-color: var(--primary-color);
+        background: rgba(79, 70, 229, 0.1);
+        box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+    }
+
+.method-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--gradient-primary);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-primary, .nav-cta, [data-action="buy-tokens"] {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-bounce);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 44px;
+}
+
+    .btn-primary:hover, .nav-cta:hover, [data-action="buy-tokens"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+    }
+
+/* Buy Stats Card */
+.buy-stats-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 100px;
+    backdrop-filter: blur(20px);
+}
+
+    .buy-stats-card h3 {
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+.buy-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.buy-stat {
+    text-align: center;
+}
+
+.buy-stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.buy-stat-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Purchase Interface Section */
+.purchase-interface-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.purchase-container {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 3rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Purchase Form Container */
+.purchase-form-container {
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+}
+
+.purchase-form-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+    .purchase-form-header h2 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .purchase-form-header p {
+        color: var(--text-secondary);
+    }
+
+/* Current Tier Display */
+.current-tier-display {
+    background: rgba(79, 70, 229, 0.1);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--primary-color);
+    backdrop-filter: blur(10px);
+}
+
+.tier-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+    .tier-info h3 {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+.tier-price {
+    text-align: right;
+}
+
+.price-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.price-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--accent-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--transition-smooth);
+}
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: var(--text-muted);
+    }
+
+/* Wallet Input Group */
+.wallet-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+    .wallet-input-group .form-input {
+        flex: 1;
+    }
+
+.btn-connect {
+    padding: 12px 20px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    white-space: nowrap;
+}
+
+    .btn-connect:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-connect:disabled {
+        background: var(--success-color);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+/* Wallet Info */
+.wallet-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 8px;
+    border: 1px solid var(--success-color);
+}
+
+.wallet-balance {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--success-color);
+}
+
+/* Amount Input Group */
+.amount-input-group {
+    position: relative;
+}
+
+.amount-presets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.preset-btn {
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .preset-btn:hover,
+    .preset-btn.active {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: rgba(79, 70, 229, 0.1);
+    }
+
+.amount-limits {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Purchase Calculation */
+.purchase-calculation {
+    background: var(--accent-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+    .calc-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .calc-row.total {
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+/* Vesting Info */
+.vesting-info {
+    background: rgba(139, 92, 246, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--accent-color);
+}
+
+    .vesting-info h4 {
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        color: var(--accent-color);
+    }
+
+.vesting-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.vesting-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.vesting-label {
+    color: var(--text-secondary);
+}
+
+.vesting-value {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+/* Purchase Button */
+.btn-purchase {
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-bounce);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+    .btn-purchase:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-purchase:disabled {
+        background: var(--accent-bg);
+        color: var(--text-secondary);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+/* Purchase Options Container */
+.purchase-options-container {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+    .purchase-options-container h3 {
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+    }
+
+/* Payment Methods */
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.payment-method {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .payment-method:hover,
+    .payment-method.active {
+        border-color: var(--primary-color);
+        background: rgba(79, 70, 229, 0.05);
+    }
+
+    .payment-method.recommended {
+        border-color: var(--success-color);
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+.method-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.method-info {
+    flex: 1;
+}
+
+.method-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.method-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.method-recommended {
+    background: var(--success-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* Security Features */
+.security-features h4 {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.security-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.security-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.security-icon {
+    font-size: 1rem;
+}
+
+/* Tiers Overview Section */
+.tiers-overview-section {
+    padding: var(--section-padding);
+    background: var(--primary-bg);
+}
+
+.tiers-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Tier Comparison Cards */
+.tier-comparison-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    transition: var(--transition-smooth);
+}
+
+    .tier-comparison-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .tier-comparison-card.active {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 30px rgba(79, 70, 229, 0.3);
+    }
+
+    .tier-comparison-card.sold-out {
+        opacity: 0.6;
+    }
+
+.tier-status {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+    .tier-status.active {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .tier-status.sold-out {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .tier-status.upcoming {
+        background: var(--warning-color);
+        color: white;
+    }
+
+.tier-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.tier-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tier-price .price-value {
+    font-size: 2rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tier-price .price-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.tier-features {
+    margin-top: 1.5rem;
+}
+
+.feature-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+}
+
+    .feature-item:last-child {
+        border-bottom: none;
+    }
+
+.feature-label {
+    color: var(--text-secondary);
+}
+
+.feature-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.btn-tier-select {
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    margin-top: 1rem;
+}
+
+    .btn-tier-select:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+    }
+
+/* Investment Benefits */
+.investment-benefits {
+    margin-top: 4rem;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.benefit-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    transition: var(--transition-smooth);
+}
+
+    .benefit-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+    }
+
+.benefit-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.benefit-card h4 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.benefit-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* DEX Trading Section */
+.dex-trading-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.dex-status-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+    .status-badge.upcoming {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning-color);
+    }
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+}
+
+.launch-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.countdown-label {
+    color: var(--text-secondary);
+}
+
+.countdown-value {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* DEX Integrations */
+.dex-integrations {
+    margin-bottom: 3rem;
+}
+
+    .dex-integrations h3 {
+        margin-bottom: 2rem;
+        font-size: 1.3rem;
+    }
+
+.dex-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.dex-integration-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    transition: var(--transition-smooth);
+}
+
+    .dex-integration-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+    }
+
+.dex-logo {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+}
+
+.dex-status .status-active {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.dex-status .status-upcoming {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+/* Trading Pairs Preview */
+.trading-pairs-preview {
+    margin-bottom: 3rem;
+}
+
+    .trading-pairs-preview h3 {
+        margin-bottom: 2rem;
+        font-size: 1.3rem;
+    }
+
+.pairs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.pair-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition-smooth);
+}
+
+    .pair-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+    }
+
+.pair-info {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.pair-tokens {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.token-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.pair-separator {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+.pair-info h4 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.pair-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.pair-dex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Chart Placeholder */
+.chart-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    padding: 4rem 2rem;
+}
+
+.placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.chart-placeholder h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+/* User Dashboard Section */
+.user-dashboard-section {
+    padding: var(--section-padding);
+    background: var(--primary-bg);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.dashboard-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition-smooth);
+}
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+    }
+
+    .dashboard-card h3 {
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+    }
+
+/* Portfolio and Vesting Stats */
+.portfolio-stats,
+.vesting-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.portfolio-stat,
+.vesting-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+    .portfolio-stat:last-child,
+    .vesting-stat:last-child {
+        border-bottom: none;
+    }
+
+.stat-label {
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+    .stat-value.highlight {
+        color: var(--success-color);
+        font-weight: 700;
+    }
+
+/* Claim Button */
+.btn-claim {
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--gradient-accent);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+    .btn-claim:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-claim:disabled {
+        background: var(--accent-bg);
+        color: var(--text-secondary);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+/* Purchase History */
+.purchase-history {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+    .history-item:last-child {
+        border-bottom: none;
+    }
+
+.history-tier {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.history-amount {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.no-history {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    background: var(--card-bg);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    transition: var(--transition-smooth);
+}
+
+    .faq-item:hover {
+        border-color: var(--primary-color);
+    }
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .faq-question:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .faq-question h4 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+.faq-toggle {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    transition: var(--transition-smooth);
+    width: 30px;
+    text-align: center;
+}
+
+.faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    padding: 0 1.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faq-item.active .faq-answer {
+    max-height: 200px;
+    padding: 0 1.5rem 1.5rem;
+}
+
+.faq-answer p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Form Messages */
+.form-messages {
+    margin-top: 1rem;
+}
+
+.message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+    .message.error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--danger-color);
+        color: var(--danger-color);
+    }
+
+    .message.success {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid var(--success-color);
+        color: var(--success-color);
+    }
+
+/* Notification Styles */
+.notification {
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+}
+
+.notification-message {
+    flex: 1;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 0.5rem;
+}
+
+/* ================================================
+   RESPONSIVE DESIGN
+================================================ */
+@media (max-width: 1024px) {
+    .buy-hero-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .buy-stats-card {
+        position: static;
+    }
+
+    .purchase-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .purchase-options-container {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .buy-hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .purchase-methods {
+        flex-direction: column;
+    }
+
+    .method-tab {
+        justify-content: center;
+    }
+
+    .buy-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .tiers-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .benefits-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pairs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dex-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .amount-presets {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .status-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .launch-countdown {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .purchase-form-container,
+    .purchase-options-container {
+        padding: 1.5rem;
+    }
+
+    .preset-btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .buy-hero-content h1 {
+        font-size: 2rem;
+    }
+
+    .tier-comparison-card {
+        padding: 1.5rem;
+    }
+
+    .dashboard-card {
+        padding: 1.5rem;
+    }
+}

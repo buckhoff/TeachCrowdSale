@@ -1,0 +1,644 @@
+﻿@model TeachCrowdSale.Core.Models.Tokenomics.TokenomicsDisplayModel
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "TEACH Token Tokenomics - Complete Financial Architecture";
+    ViewData["Description"] = ViewData["Description"] ?? "Explore TEACH token's institutional-grade tokenomics with multi-year treasury runway, deflationary mechanics, and sustainable value creation.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TEACH Token Tokenomics - TeachToken Platform" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/teachtoken-tokenomics-og.jpg" />
+    <meta property="og:url" content="https://teachtoken.io/tokenomics" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TEACH Token Tokenomics - TeachToken Platform" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tokenomics.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="/" class="logo">TeachToken</a>
+
+                <ul class="nav-menu">
+                    <li><a href="/#home" class="nav-link">Home</a></li>
+                    <li><a href="/tokenomics" class="nav-link active">Tokenomics</a></li>
+                    <li><a href="/buy" class="nav-link">Buy TEACH</a></li>
+                    <li><a href="/#roadmap" class="nav-link">Roadmap</a></li>
+                    <li><a href="/#community" class="nav-link">Community</a></li>
+                </ul>
+
+                <a href="/buy" class="nav-cta">
+                    Buy TEACH
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="tokenomics-hero-section">
+        <div class="container">
+            <div class="tokenomics-hero-container">
+                <div class="tokenomics-hero-content">
+                    <h1>
+                        <span class="highlight">TEACH Token</span> Tokenomics
+                    </h1>
+                    <p class="tokenomics-hero-subtitle">
+                        Institutional-grade financial architecture designed for sustainability, growth, and real-world impact.
+                        Explore our multi-year treasury runway and deflationary token mechanics.
+                    </p>
+
+                    <!-- Key Metrics -->
+                    <div class="hero-metrics-grid">
+                        <div class="hero-metric">
+                            <span class="metric-value" data-metric="totalSupply">5B</span>
+                            <span class="metric-label">Total Supply</span>
+                        </div>
+                        <div class="hero-metric">
+                            <span class="metric-value" data-metric="lockedPercentage">80%</span>
+                            <span class="metric-label">Tokens Locked</span>
+                        </div>
+                        <div class="hero-metric">
+                            <span class="metric-value" data-metric="runwayYears">10+</span>
+                            <span class="metric-label">Year Runway</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Metrics Card -->
+                <div class="live-metrics-card">
+                    <h3>Live Token Metrics</h3>
+                    <div class="live-metrics-grid">
+                        <div class="live-metric">
+                            <span class="live-metric-label">Current Price</span>
+                            <span class="live-metric-value" data-live="currentPrice">$0.065</span>
+                        </div>
+                        <div class="live-metric">
+                            <span class="live-metric-label">Market Cap</span>
+                            <span class="live-metric-value" data-live="marketCap">$325M</span>
+                        </div>
+                        <div class="live-metric">
+                            <span class="live-metric-label">24h Volume</span>
+                            <span class="live-metric-value" data-live="volume24h">$2.5M</span>
+                        </div>
+                        <div class="live-metric">
+                            <span class="live-metric-label">24h Change</span>
+                            <span class="live-metric-value positive" data-live="priceChange24h">+4.8%</span>
+                        </div>
+                        <div class="live-metric">
+                            <span class="live-metric-label">Holders</span>
+                            <span class="live-metric-value" data-live="holdersCount">3,247</span>
+                        </div>
+                        <div class="live-metric">
+                            <span class="live-metric-label">Total Value Locked</span>
+                            <span class="live-metric-value" data-live="totalValueLocked">$15M</span>
+                        </div>
+                    </div>
+                    <div class="last-updated">
+                        Last updated: <span id="lastUpdated">Just now</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Token Distribution Section -->
+    <section class="token-distribution-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Token Distribution</h2>
+                <p class="section-subtitle">
+                    Strategic allocation designed for long-term sustainability and stakeholder alignment
+                </p>
+            </div>
+
+            <div class="distribution-container">
+                <!-- Distribution Chart -->
+                <div class="distribution-chart-container">
+                    <div class="chart-container">
+                        <h3 class="chart-title">TEACH Token Allocation</h3>
+                        <div id="tokenDistributionChart" style="height: 450px;"></div>
+                    </div>
+                </div>
+
+                <!-- Distribution Details -->
+                <div class="distribution-details">
+                    <div class="allocation-list" id="allocationList">
+                        <!-- Allocation items will be loaded here -->
+                    </div>
+
+                    <!-- Supply Metrics -->
+                    <div class="supply-metrics">
+                        <h4>Supply Metrics</h4>
+                        <div class="metrics-grid">
+                            <div class="supply-metric">
+                                <span class="supply-metric-label">Max Supply</span>
+                                <span class="supply-metric-value" data-supply="maxSupply">5,000,000,000</span>
+                            </div>
+                            <div class="supply-metric">
+                                <span class="supply-metric-label">Circulating Supply</span>
+                                <span class="supply-metric-value" data-supply="circulatingSupply">1,000,000,000</span>
+                            </div>
+                            <div class="supply-metric">
+                                <span class="supply-metric-label">Locked Supply</span>
+                                <span class="supply-metric-value" data-supply="lockedSupply">4,000,000,000</span>
+                            </div>
+                            <div class="supply-metric">
+                                <span class="supply-metric-label">Burned Supply</span>
+                                <span class="supply-metric-value" data-supply="burnedSupply">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vesting Schedule Section -->
+    <section class="vesting-schedule-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Vesting Schedule</h2>
+                <p class="section-subtitle">
+                    Multi-year vesting ensures sustainable token release and long-term value creation
+                </p>
+            </div>
+
+            <div class="vesting-container">
+                <!-- Vesting Timeline Chart -->
+                <div class="vesting-chart-container">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Token Unlock Timeline</h3>
+                        <div id="vestingTimelineChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+
+                <!-- Vesting Categories -->
+                <div class="vesting-categories">
+                    <h3>Vesting Categories</h3>
+                    <div class="vesting-categories-list" id="vestingCategoriesList">
+                        <!-- Vesting categories will be loaded here -->
+                    </div>
+
+                    <!-- Vesting Summary -->
+                    <div class="vesting-summary">
+                        <h4>Vesting Summary</h4>
+                        <div class="summary-stats">
+                            <div class="summary-stat">
+                                <span class="stat-label">Total Vested Tokens</span>
+                                <span class="stat-value" data-vesting="totalVested">4,000,000,000</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="stat-label">Currently Unlocked</span>
+                                <span class="stat-value" data-vesting="currentlyUnlocked">1,000,000,000</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="stat-label">Next Unlock Date</span>
+                                <span class="stat-value" data-vesting="nextUnlockDate">TGE + 90 days</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="stat-label">Next Unlock Amount</span>
+                                <span class="stat-value" data-vesting="nextUnlockAmount">250,000,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Treasury Analytics Section -->
+    <section class="treasury-analytics-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Treasury Analytics</h2>
+                <p class="section-subtitle">
+                    Multi-layered financial fortress with 10+ year operational runway
+                </p>
+            </div>
+
+            <div class="treasury-container">
+                <!-- Treasury Overview -->
+                <div class="treasury-overview">
+                    <div class="treasury-card">
+                        <h3>Treasury Overview</h3>
+                        <div class="treasury-metrics">
+                            <div class="treasury-metric primary">
+                                <span class="metric-icon">🏛️</span>
+                                <div class="metric-info">
+                                    <span class="metric-value" data-treasury="totalValue">$87.5M</span>
+                                    <span class="metric-label">Total Treasury Value</span>
+                                </div>
+                            </div>
+                            <div class="treasury-metric secondary">
+                                <span class="metric-icon">⏰</span>
+                                <div class="metric-info">
+                                    <span class="metric-value" data-treasury="runwayYears">10.5</span>
+                                    <span class="metric-label">Years Operational Runway</span>
+                                </div>
+                            </div>
+                            <div class="treasury-metric success">
+                                <span class="metric-icon">💰</span>
+                                <div class="metric-info">
+                                    <span class="metric-value" data-treasury="monthlyBurn">$695K</span>
+                                    <span class="metric-label">Monthly Burn Rate</span>
+                                </div>
+                            </div>
+                            <div class="treasury-metric warning">
+                                <span class="metric-icon">🛡️</span>
+                                <div class="metric-info">
+                                    <span class="metric-value" data-treasury="safetyFund">$8.75M</span>
+                                    <span class="metric-label">Emergency Safety Fund</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Treasury Allocation Chart -->
+                <div class="treasury-allocation-container">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Treasury Allocation</h3>
+                        <div id="treasuryAllocationChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+
+                <!-- Scenario Analysis -->
+                <div class="scenario-analysis">
+                    <h3>Scenario Analysis</h3>
+                    <div class="scenarios-grid" id="scenariosGrid">
+                        <!-- Scenarios will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Burn Mechanics Section -->
+    <section class="burn-mechanics-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Burn Mechanics</h2>
+                <p class="section-subtitle">
+                    Deflationary mechanisms designed to create sustainable value appreciation
+                </p>
+            </div>
+
+            <div class="burn-container">
+                <!-- Burn Statistics -->
+                <div class="burn-stats-card">
+                    <h3>Burn Statistics</h3>
+                    <div class="burn-stats-grid">
+                        <div class="burn-stat">
+                            <span class="burn-stat-value" data-burn="totalBurned">0</span>
+                            <span class="burn-stat-label">Total Burned</span>
+                        </div>
+                        <div class="burn-stat">
+                            <span class="burn-stat-value" data-burn="burnedPercentage">0%</span>
+                            <span class="burn-stat-label">% of Supply Burned</span>
+                        </div>
+                        <div class="burn-stat">
+                            <span class="burn-stat-value" data-burn="estimatedAnnualBurn">25M</span>
+                            <span class="burn-stat-label">Est. Annual Burn</span>
+                        </div>
+                        <div class="burn-stat">
+                            <span class="burn-stat-value" data-burn="burnRate">0.5%</span>
+                            <span class="burn-stat-label">Current Burn Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Burn Mechanisms -->
+                <div class="burn-mechanisms">
+                    <h3>Burn Mechanisms</h3>
+                    <div class="burn-mechanisms-grid" id="burnMechanismsGrid">
+                        <!-- Burn mechanisms will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Burn Projection Chart -->
+                <div class="burn-projection-container">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Burn Projection (5-Year)</h3>
+                        <div id="burnProjectionChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Utility Features Section -->
+    <section class="utility-features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Token Utility</h2>
+                <p class="section-subtitle">
+                    Real-world utility driving sustainable demand and ecosystem growth
+                </p>
+            </div>
+
+            <div class="utility-container">
+                <!-- Utility Categories -->
+                <div class="utility-categories-grid" id="utilityCategoriesGrid">
+                    <!-- Utility categories will be loaded here -->
+                </div>
+
+                <!-- Utility Metrics -->
+                <div class="utility-metrics-card">
+                    <h3>Utility Metrics</h3>
+                    <div class="utility-metrics-grid">
+                        <div class="utility-metric">
+                            <span class="utility-metric-value" data-utility="totalVolume">$0</span>
+                            <span class="utility-metric-label">Total Utility Volume</span>
+                        </div>
+                        <div class="utility-metric">
+                            <span class="utility-metric-value" data-utility="activeUtilities">0</span>
+                            <span class="utility-metric-label">Active Utilities</span>
+                        </div>
+                        <div class="utility-metric">
+                            <span class="utility-metric-value" data-utility="uniqueUsers">0</span>
+                            <span class="utility-metric-label">Unique Users</span>
+                        </div>
+                        <div class="utility-metric">
+                            <span class="utility-metric-value" data-utility="growthRate">0%</span>
+                            <span class="utility-metric-label">Monthly Growth</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Utility Roadmap -->
+                <div class="utility-roadmap">
+                    <h3>Utility Roadmap</h3>
+                    <div class="roadmap-timeline" id="utilityRoadmapTimeline">
+                        <!-- Roadmap items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Governance Section -->
+    <section class="governance-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Governance</h2>
+                <p class="section-subtitle">
+                    Community-driven decision making for sustainable platform evolution
+                </p>
+            </div>
+
+            <div class="governance-container">
+                <!-- Governance Overview -->
+                <div class="governance-overview-card">
+                    <h3>Governance Overview</h3>
+                    <div class="governance-overview-grid">
+                        <div class="governance-overview-item">
+                            <span class="governance-value" data-governance="totalVotingPower">0</span>
+                            <span class="governance-label">Total Voting Power</span>
+                        </div>
+                        <div class="governance-overview-item">
+                            <span class="governance-value" data-governance="activeProposals">0</span>
+                            <span class="governance-label">Active Proposals</span>
+                        </div>
+                        <div class="governance-overview-item">
+                            <span class="governance-value" data-governance="participationRate">0%</span>
+                            <span class="governance-label">Participation Rate</span>
+                        </div>
+                        <div class="governance-overview-item">
+                            <span class="governance-value" data-governance="proposalThreshold">1M</span>
+                            <span class="governance-label">Proposal Threshold</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Governance Features -->
+                <div class="governance-features">
+                    <h3>Governance Features</h3>
+                    <div class="governance-features-grid" id="governanceFeaturesGrid">
+                        <!-- Governance features will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Active Proposals -->
+                <div class="active-proposals">
+                    <h3>Recent Proposals</h3>
+                    <div class="proposals-list" id="proposalsList">
+                        <div class="no-proposals">
+                            <span class="no-proposals-icon">🗳️</span>
+                            <h4>No Active Proposals</h4>
+                            <p>Governance will be available after TGE. Token holders will be able to create and vote on proposals.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Financial Fortress Explanation -->
+    <section class="financial-fortress-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">The Financial Fortress Model</h2>
+                <p class="section-subtitle">
+                    Understanding our multi-layered approach to financial sustainability
+                </p>
+            </div>
+
+            <div class="fortress-container">
+                <div class="fortress-layers">
+                    <div class="fortress-layer">
+                        <div class="layer-number">1</div>
+                        <div class="layer-content">
+                            <h4>Primary Operations Funding</h4>
+                            <p>Platform fees, transaction revenues, and subscription income fund day-to-day operations.</p>
+                            <span class="layer-status active">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="fortress-layer">
+                        <div class="layer-number">2</div>
+                        <div class="layer-content">
+                            <h4>Token Allocation Reserves</h4>
+                            <p>Team, community, and ecosystem allocations provide 5+ years of operational funding.</p>
+                            <span class="layer-status ready">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="fortress-layer">
+                        <div class="layer-number">3</div>
+                        <div class="layer-content">
+                            <h4>Stability Fund Treasury</h4>
+                            <p>Accumulated platform revenues create an additional safety net for extreme scenarios.</p>
+                            <span class="layer-status building">Building</span>
+                        </div>
+                    </div>
+
+                    <div class="fortress-layer">
+                        <div class="layer-number">4</div>
+                        <div class="layer-content">
+                            <h4>Emergency Reserve Fund</h4>
+                            <p>Final layer protection for black swan events and governance-controlled emergency access.</p>
+                            <span class="layer-status secured">Secured</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fortress Benefits -->
+                <div class="fortress-benefits">
+                    <h3>Financial Fortress Benefits</h3>
+                    <div class="benefits-grid">
+                        <div class="benefit-card">
+                            <span class="benefit-icon">🛡️</span>
+                            <h4>Recession Proof</h4>
+                            <p>Multiple funding layers ensure survival through any market condition</p>
+                        </div>
+                        <div class="benefit-card">
+                            <span class="benefit-icon">⏰</span>
+                            <h4>Long-term Vision</h4>
+                            <p>10+ year runway allows for patient product development and market building</p>
+                        </div>
+                        <div class="benefit-card">
+                            <span class="benefit-icon">📈</span>
+                            <h4>Value Appreciation</h4>
+                            <p>Financial stability creates confidence and sustainable token value growth</p>
+                        </div>
+                        <div class="benefit-card">
+                            <span class="benefit-icon">🎯</span>
+                            <h4>Mission Focus</h4>
+                            <p>Financial security allows focus on education impact rather than fundraising</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="tokenomics-cta-section">
+        <div class="container">
+            <div class="cta-container">
+                <div class="cta-content">
+                    <h2>Invest in Sustainable Tokenomics</h2>
+                    <p>
+                        Join the first education funding token built with institutional-grade financial architecture.
+                        Early investor pricing available now.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="/buy" class="btn-primary">
+                            <span>Join Presale</span>
+                            <span>🚀</span>
+                        </a>
+                        <a href="#" class="btn-secondary">
+                            <span>Download Whitepaper</span>
+                            <span>📄</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="cta-stats">
+                    <div class="cta-stat">
+                        <span class="cta-stat-value">10+</span>
+                        <span class="cta-stat-label">Year Runway</span>
+                    </div>
+                    <div class="cta-stat">
+                        <span class="cta-stat-value">80%</span>
+                        <span class="cta-stat-label">Tokens Locked</span>
+                    </div>
+                    <div class="cta-stat">
+                        <span class="cta-stat-value">$87.5M</span>
+                        <span class="cta-stat-label">Treasury Goal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <p>Revolutionary education funding through blockchain technology</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Tokenomics</h4>
+                    <ul>
+                        <li><a href="#token-distribution">Token Distribution</a></li>
+                        <li><a href="#vesting-schedule">Vesting Schedule</a></li>
+                        <li><a href="#treasury-analytics">Treasury Analytics</a></li>
+                        <li><a href="#burn-mechanics">Burn Mechanics</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Governance</h4>
+                    <ul>
+                        <li><a href="#governance">Governance Model</a></li>
+                        <li><a href="#">Proposal System</a></li>
+                        <li><a href="#">Voting Power</a></li>
+                        <li><a href="#">Treasury Votes</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Whitepaper</a></li>
+                        <li><a href="#">Audit Report</a></li>
+                        <li><a href="#">Financial Model</a></li>
+                        <li><a href="#">Documentation</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Risk Disclosure</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Syncfusion JS -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="~/js/tokenomics.js" asp-append-version="true"></script>
+
+    <!-- Initialize page data -->
+    <script>
+        // Pass server data to JavaScript
+        window.TokenomicsPageData = @Html.Raw(ViewBag.JsonData ?? "{}");
+    </script>
+</body>
+</html>

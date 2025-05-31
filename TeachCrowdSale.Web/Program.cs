@@ -8,6 +8,7 @@ builder.Services.AddControllersWithViews();
 
 // Add memory cache
 builder.Services.AddMemoryCache();
+builder.Services.AddResponseCompression();
 
 // Add HTTP client for API calls
 builder.Services.AddHttpClient("TeachAPI", client =>
@@ -19,10 +20,10 @@ builder.Services.AddHttpClient("TeachAPI", client =>
 });
 
 builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<IBuyTradeService, BuyTradeService>();
 
-builder.Services.AddMemoryCache();
 
-builder.Services.AddResponseCompression();
+
 
 // Add services to the container.
 builder.Services.AddRazorPages();

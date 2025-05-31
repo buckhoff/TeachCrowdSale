@@ -6,3 +6,4 @@ riderModule.iml
 /TeachCrowdSale.Api/.env
 /TeachCrowdSale.Api/appsettings.json
 /TeachCrowdSale.Api/appsettings.Development.json
+.vs/

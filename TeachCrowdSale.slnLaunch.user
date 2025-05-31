@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "TeachCrowdSale.Web\\TeachCrowdSale.Web.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

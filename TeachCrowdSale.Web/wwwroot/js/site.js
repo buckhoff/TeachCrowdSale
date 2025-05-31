@@ -89,6 +89,12 @@ const Utils = {
         }
     },
 
+    // Navigate to buy page
+    navigateToBuyPage(tierId = null) {
+        const url = tierId ? `/buy?tier=${tierId}` : '/buy';
+        window.location.href = url;
+    },
+
     // Check if element is in viewport
     isInViewport(element, threshold = 0.1) {
         const rect = element.getBoundingClientRect();
@@ -689,17 +695,18 @@ const EventHandlers = {
     handleButtonAction(action, event) {
         switch (action) {
             case 'buy-tokens':
-                Utils.scrollToElement('tier-section');
+                const tierId = event.target.dataset.tierId;
+                Utils.navigateToBuyPage(tierId);
                 break;
             case 'view-tokenomics':
-                Utils.scrollToElement('metrics-section');
+                Utils.scrollToElement('tokenomics');
                 break;
             case 'connect-wallet':
                 this.handleWalletConnection();
                 break;
             case 'view-tier':
-                const tierId = event.target.dataset.tierId;
-                this.showTierDetails(tierId);
+                const tierIdView = event.target.dataset.tierId;
+                this.showTierDetails(tierIdView);
                 break;
             default:
                 console.log(`Action not implemented: ${action}`);

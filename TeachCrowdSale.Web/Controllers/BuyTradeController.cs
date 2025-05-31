@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using System.Text.Json;
+using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Models.Response;
 
@@ -10,27 +10,16 @@ namespace TeachCrowdSale.Web.Controllers
     [Route("trade")]
     public class BuyTradeController : Controller
     {
-        private readonly HttpClient _httpClient;
-        private readonly IMemoryCache _cache;
+        private readonly IBuyTradeService _buyTradeService;
         private readonly ILogger<BuyTradeController> _logger;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        // Cache keys and durations
-        private const string CACHE_KEY_BUYTRADE_DATA = "buytrade_page_data";
-        private const string CACHE_KEY_DEX_INFO = "dex_info";
-        private const string CACHE_KEY_PURCHASE_OPTIONS = "purchase_options";
-        private readonly TimeSpan _shortCacheDuration = TimeSpan.FromMinutes(2);
-        private readonly TimeSpan _mediumCacheDuration = TimeSpan.FromMinutes(10);
-        private readonly TimeSpan _longCacheDuration = TimeSpan.FromMinutes(30);
-
         public BuyTradeController(
-            IHttpClientFactory httpClientFactory,
-            IMemoryCache cache,
+            IBuyTradeService buyTradeService,
             ILogger<BuyTradeController> logger)
         {
-            _httpClient = httpClientFactory.CreateClient("TeachAPI");
-            _cache = cache;
-            _logger = logger;
+            _buyTradeService = buyTradeService ?? throw new ArgumentNullException(nameof(buyTradeService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -47,7 +36,7 @@ namespace TeachCrowdSale.Web.Controllers
         {
             try
             {
-                var buyTradeData = await GetBuyTradeDataAsync();
+                var buyTradeData = await _buyTradeService.GetBuyTradeDataAsync();
 
                 ViewBag.InitialData = buyTradeData;
                 ViewBag.JsonData = JsonSerializer.Serialize(buyTradeData, _jsonOptions);
@@ -62,404 +51,236 @@ namespace TeachCrowdSale.Web.Controllers
             {
                 _logger.LogError(ex, "Error loading buy/trade page");
 
-                ViewBag.InitialData = GetFallbackBuyTradeData();
-                ViewBag.JsonData = JsonSerializer.Serialize(GetFallbackBuyTradeData(), _jsonOptions);
+                var fallbackData = _buyTradeService.GetFallbackBuyTradeData();
+                ViewBag.InitialData = fallbackData;
+                ViewBag.JsonData = JsonSerializer.Serialize(fallbackData, _jsonOptions);
 
                 return View();
             }
         }
 
         /// <summary>
-        /// endpoint for getting aggregated buy/trade page data
+        /// AJAX endpoint for getting aggregated buy/trade page data
         /// </summary>
-        [HttpGet("data")]
+        [HttpGet("GetBuyTradeData")]
         [ResponseCache(Duration = 30)]
         public async Task<IActionResult> GetBuyTradeData()
         {
             try
             {
-                var response = await _httpClient.GetAsync("/api/buytrade/data");
-                var content = await response.Content.ReadAsStringAsync();
-                return Content(content, "application/json");
+                var data = await _buyTradeService.GetBuyTradeDataAsync();
+                return Json(data);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving buy/trade page data");
-                return StatusCode(500, new { message = "Error retrieving data", error = ex.Message });
+
+                var fallbackData = _buyTradeService.GetFallbackBuyTradeData();
+                return Json(fallbackData);
             }
         }
 
         /// <summary>
-        /// endpoint for price calculation
+        /// AJAX endpoint for price calculation
         /// </summary>
-        [HttpPost("calculate-price")]
+        [HttpPost("CalculatePrice")]
         public async Task<ActionResult<PriceCalculationModel>> CalculatePrice([FromBody] PriceCalculationRequest request)
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("/api/buytrade/calculate-price", request);
-
-                if (!response.IsSuccessStatusCode)
+                if (!ModelState.IsValid)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, errorContent);
+                    return BadRequest(new ErrorResponse
+                    {
+                        Message = "Invalid request data",
+                        ValidationErrors = ModelState.ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                        )
+                    });
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
-                var calculation = JsonSerializer.Deserialize<PriceCalculationModel>(content, _jsonOptions);
+                var calculation = await _buyTradeService.CalculatePriceAsync(
+                    request.Address,
+                    request.TierId,
+                    request.UsdAmount);
 
-                return Ok(calculation);
+                return Json(calculation);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calculating price for purchase");
-                return StatusCode(500, new { message = "Error calculating price" });
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error calculating purchase price",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
 
         /// <summary>
-        /// endpoint for user trade information
+        /// AJAX endpoint for user trade information
         /// </summary>
-        [HttpGet("user/{address}")]
+        [HttpGet("GetUserTradeInfo/{address}")]
         [ResponseCache(Duration = 60)]
         public async Task<ActionResult<UserTradeInfoModel>> GetUserTradeInfo([FromRoute] string address)
         {
             try
             {
-                var response = await _httpClient.GetAsync($"/api/buytrade/user/{address}");
-
-                if (!response.IsSuccessStatusCode)
+                if (string.IsNullOrWhiteSpace(address) || !IsValidEthereumAddress(address))
                 {
-                    return StatusCode((int)response.StatusCode, new { message = "Error retrieving user data" });
+                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
-                var userInfo = JsonSerializer.Deserialize<UserTradeInfoModel>(content, _jsonOptions);
-
-                return Ok(userInfo);
+                var userInfo = await _buyTradeService.GetUserTradeInfoAsync(address);
+                return Json(userInfo);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving user trade info for {Address}", address);
-                return StatusCode(500, new { message = "Error retrieving user data" });
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving user trade information",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
 
         /// <summary>
-        /// API endpoint for DEX information
+        /// AJAX endpoint for DEX information
         /// </summary>
-        [HttpGet("dex-info")]
+        [HttpGet("GetDexInfo")]
         [ResponseCache(Duration = 300)]
         public async Task<ActionResult<DexInfoModel>> GetDexInfo()
         {
             try
             {
-                if (_cache.TryGetValue(CACHE_KEY_DEX_INFO, out DexInfoModel cachedDexInfo))
-                {
-                    return Ok(cachedDexInfo);
-                }
-
-                var response = await _httpClient.GetAsync("/api/buytrade/dex-info");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    return StatusCode(500, new { message = "Error retrieving DEX information" });
-                }
-
-                var content = await response.Content.ReadAsStringAsync();
-                var dexInfo = JsonSerializer.Deserialize<DexInfoModel>(content, _jsonOptions);
-
-                _cache.Set(CACHE_KEY_DEX_INFO, dexInfo, _mediumCacheDuration);
-                return Ok(dexInfo);
+                var dexInfo = await _buyTradeService.GetDexInfoAsync();
+                return Json(dexInfo);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving DEX information");
-                return StatusCode(500, new { message = "Error retrieving DEX data" });
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving DEX information",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
 
         /// <summary>
-        /// Purchase validation endpoint
+        /// AJAX endpoint for purchase validation
         /// </summary>
-        [HttpPost("validate-purchase")]
-        public async Task<ActionResult> ValidatePurchase([FromBody] PriceCalculationRequest request)
+        [HttpPost("ValidatePurchase")]
+        public async Task<ActionResult<PurchaseValidationModel>> ValidatePurchase([FromBody] PriceCalculationRequest request)
         {
             try
             {
-                // Forward to the presale API for validation
-                var response = await _httpClient.PostAsJsonAsync("/api/presale/purchase-validation", new
+                if (!ModelState.IsValid)
                 {
-                    Address = request.Address,
-                    TierId = request.TierId,
-                    Amount = request.UsdAmount
-                });
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, errorContent);
+                    return BadRequest(new ErrorResponse
+                    {
+                        Message = "Invalid request data",
+                        ValidationErrors = ModelState.ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                        )
+                    });
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
-                return Ok(JsonSerializer.Deserialize<object>(content, _jsonOptions));
+                var validation = await _buyTradeService.ValidatePurchaseAsync(
+                    request.Address,
+                    request.TierId,
+                    request.UsdAmount);
+
+                return Json(validation);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating purchase");
-                return StatusCode(500, new { message = "Error validating purchase" });
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error validating purchase",
+                    TraceId = HttpContext.TraceIdentifier
+                });
             }
         }
 
         /// <summary>
-        /// Wallet connection helper endpoint
+        /// AJAX endpoint for wallet connection helper
         /// </summary>
-        [HttpGet("wallet-info/{address}")]
+        [HttpGet("GetWalletInfo/{address}")]
         [ResponseCache(Duration = 30)]
-        public async Task<ActionResult> GetWalletInfo([FromRoute] string address)
+        public async Task<ActionResult<WalletInfoModel>> GetWalletInfo([FromRoute] string address)
         {
             try
             {
-                // Get wallet balances and info
-                var tasks = new[]
+                if (string.IsNullOrWhiteSpace(address) || !IsValidEthereumAddress(address))
                 {
-                    _httpClient.GetAsync($"/api/buytrade/user/{address}"),
-                    _httpClient.GetAsync($"/api/presale/claimable/{address}")
-                };
+                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
+                }
 
-                var responses = await Task.WhenAll(tasks);
-                var contents = await Task.WhenAll(responses.Select(r => r.Content.ReadAsStringAsync()));
-
-                var walletInfo = new
-                {
-                    userInfo = responses[0].IsSuccessStatusCode ?
-                        JsonSerializer.Deserialize<UserTradeInfoModel>(contents[0], _jsonOptions) : null,
-                    claimableInfo = responses[1].IsSuccessStatusCode ?
-                        JsonSerializer.Deserialize<object>(contents[1], _jsonOptions) : null,
-                    isConnected = true
-                };
-
-                return Ok(walletInfo);
+                var walletInfo = await _buyTradeService.GetWalletInfoAsync(address);
+                return Json(walletInfo);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving wallet info for {Address}", address);
-                return StatusCode(500, new { message = "Error retrieving wallet information" });
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving wallet information",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
+        /// AJAX endpoint for service health check
+        /// </summary>
+        [HttpGet("HealthCheck")]
+        public async Task<IActionResult> HealthCheck()
+        {
+            try
+            {
+                var isHealthy = await _buyTradeService.CheckServiceHealthAsync();
+                return Json(new
+                {
+                    status = isHealthy ? "healthy" : "degraded",
+                    timestamp = DateTime.UtcNow,
+                    version = "1.0.0"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Health check failed");
+                return Json(new
+                {
+                    status = "degraded",
+                    message = "Health check failed",
+                    timestamp = DateTime.UtcNow
+                });
             }
         }
 
         #region Private Helper Methods
 
         /// <summary>
-        /// Get comprehensive buy/trade page data
+        /// Validate Ethereum address format
         /// </summary>
-        private async Task<BuyTradeDataModel> GetBuyTradeDataAsync()
+        private bool IsValidEthereumAddress(string address)
         {
-            if (_cache.TryGetValue(CACHE_KEY_BUYTRADE_DATA, out BuyTradeDataModel cachedData))
-            {
-                return cachedData;
-            }
+            if (string.IsNullOrWhiteSpace(address))
+                return false;
 
-            try
-            {
-                var response = await _httpClient.GetAsync("/api/buytrade/data");
+            // Check if it starts with 0x and is 42 characters long
+            if (!address.StartsWith("0x") || address.Length != 42)
+                return false;
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var buyTradeData = JsonSerializer.Deserialize<BuyTradeDataModel>(content, _jsonOptions);
-
-                    if (buyTradeData != null)
-                    {
-                        _cache.Set(CACHE_KEY_BUYTRADE_DATA, buyTradeData, _shortCacheDuration);
-                        return buyTradeData;
-                    }
-                }
-
-                return GetFallbackBuyTradeData();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading comprehensive buy/trade data");
-                return GetFallbackBuyTradeData();
-            }
-        }
-
-        /// <summary>
-        /// Get fallback data when API calls fail
-        /// </summary>
-        private BuyTradeDataModel GetFallbackBuyTradeData()
-        {
-            return new BuyTradeDataModel
-            {
-                CurrentTier = new TierDisplayModel
-                {
-                    Id = 2,
-                    Name = "Community Round",
-                    Price = 0.06m,
-                    TotalAllocation = 375000000m,
-                    Sold = 168750000m,
-                    Remaining = 206250000m,
-                    Progress = 45.0m,
-                    IsActive = true,
-                    IsSoldOut = false,
-                    MinPurchase = 100m,
-                    MaxPurchase = 25000m,
-                    VestingTGE = 20,
-                    VestingMonths = 6,
-                    EndTime = DateTime.UtcNow.AddDays(30),
-                    Status = "ACTIVE",
-                    StatusClass = "active"
-                },
-                AllTiers = GetFallbackTiers(),
-                PresaleStats = new PresaleStatsModel
-                {
-                    TotalRaised = 12500000m,
-                    FundingGoal = 87500000m,
-                    TokensSold = 750000000m,
-                    TokensRemaining = 4250000000m,
-                    ParticipantsCount = 2847,
-                    IsActive = true,
-                    FundingProgress = 14.3m
-                },
-                TokenInfo = new TokenInfoModel
-                {
-                    TotalSupply = 5000000000m,
-                    CirculatingSupply = 1000000000m,
-                    CurrentPrice = 0.06m,
-                    MarketCap = 60000000m,
-                    HoldersCount = 2847
-                },
-                ContractInfo = new ContractInfoModel
-                {
-                    PresaleAddress = "0x1234567890123456789012345678901234567890",
-                    TokenAddress = "0x0987654321098765432109876543210987654321",
-                    PaymentTokenAddress = "0xA0b86a33E6441d0B0d7FAB4D4b6bBB8a4d8fC6c8",
-                    NetworkId = 1,
-                    ChainName = "Ethereum Mainnet"
-                },
-                PurchaseOptions = GetFallbackPurchaseOptions(),
-                DexIntegrations = GetFallbackDexIntegrations()
-            };
-        }
-
-        private List<TierDisplayModel> GetFallbackTiers()
-        {
-            return new List<TierDisplayModel>
-            {
-                new TierDisplayModel
-                {
-                    Id = 1,
-                    Name = "Seed Round",
-                    Price = 0.04m,
-                    TotalAllocation = 250000000m,
-                    Sold = 250000000m,
-                    Remaining = 0m,
-                    Progress = 100m,
-                    IsActive = false,
-                    IsSoldOut = true,
-                    Status = "SOLD OUT",
-                    StatusClass = "sold-out"
-                },
-                new TierDisplayModel
-                {
-                    Id = 2,
-                    Name = "Community Round",
-                    Price = 0.06m,
-                    TotalAllocation = 375000000m,
-                    Sold = 168750000m,
-                    Remaining = 206250000m,
-                    Progress = 45.0m,
-                    IsActive = true,
-                    IsSoldOut = false,
-                    Status = "ACTIVE",
-                    StatusClass = "active"
-                },
-                new TierDisplayModel
-                {
-                    Id = 3,
-                    Name = "Growth Round",
-                    Price = 0.08m,
-                    TotalAllocation = 375000000m,
-                    Sold = 0m,
-                    Remaining = 375000000m,
-                    Progress = 0m,
-                    IsActive = false,
-                    IsSoldOut = false,
-                    Status = "UPCOMING",
-                    StatusClass = "upcoming"
-                },
-                new TierDisplayModel
-                {
-                    Id = 4,
-                    Name = "Final Round",
-                    Price = 0.10m,
-                    TotalAllocation = 250000000m,
-                    Sold = 0m,
-                    Remaining = 250000000m,
-                    Progress = 0m,
-                    IsActive = false,
-                    IsSoldOut = false,
-                    Status = "UPCOMING",
-                    StatusClass = "upcoming"
-                }
-            };
-        }
-
-        private List<PurchaseOptionModel> GetFallbackPurchaseOptions()
-        {
-            return new List<PurchaseOptionModel>
-            {
-                new PurchaseOptionModel
-                {
-                    Method = "USDC",
-                    Name = "USD Coin",
-                    Logo = "/images/usdc-logo.png",
-                    Description = "Purchase directly with USDC",
-                    IsRecommended = true,
-                    MinAmount = 100,
-                    MaxAmount = 100000,
-                    ProcessingTime = "Instant",
-                    Fees = "2.5% + Network fees"
-                },
-                new PurchaseOptionModel
-                {
-                    Method = "ETH",
-                    Name = "Ethereum",
-                    Logo = "/images/eth-logo.png",
-                    Description = "Purchase with ETH (converted to USDC)",
-                    IsRecommended = false,
-                    MinAmount = 0.05m,
-                    MaxAmount = 50,
-                    ProcessingTime = "1-2 minutes",
-                    Fees = "3% + Network fees + Slippage"
-                }
-            };
-        }
-
-        private List<DexIntegrationModel> GetFallbackDexIntegrations()
-        {
-            return new List<DexIntegrationModel>
-            {
-                new DexIntegrationModel
-                {
-                    Name = "1inch",
-                    Logo = "/images/1inch-logo.png",
-                    Description = "Best price aggregation across multiple DEXs",
-                    WidgetUrl = "https://app.1inch.io/",
-                    IsActive = false,
-                    LaunchDate = DateTime.UtcNow.AddDays(90)
-                },
-                new DexIntegrationModel
-                {
-                    Name = "0x Protocol",
-                    Logo = "/images/0x-logo.png",
-                    Description = "Professional trading interface",
-                    WidgetUrl = "https://matcha.xyz/",
-                    IsActive = false,
-                    LaunchDate = DateTime.UtcNow.AddDays(90)
-                }
-            };
+            // Check if the remaining 40 characters are valid hex
+            return System.Text.RegularExpressions.Regex.IsMatch(
+                address.Substring(2),
+                "^[0-9a-fA-F]{40}$");
         }
 
         #endregion
