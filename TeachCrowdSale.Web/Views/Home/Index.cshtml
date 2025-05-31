@@ -1,4 +1,7 @@
 ﻿@{
+    Layout = null;
+}
+@{
     ViewData["Title"] = "TeachToken - Revolutionary Education Funding Token";
     ViewData["Description"] = "Invest in the future of education with TEACH token. Multi-year treasury runway, sustainable tokenomics, and real-world utility in educational funding.";
 }
@@ -41,10 +44,15 @@
     <nav class="navbar" id="navbar">
         <div class="container">
             <div class="nav-container">
-                <a href="/" class="logo">TeachToken</a>
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">
+                        <span class="brand-icon">🎓</span>
+                        <span class="brand-text">TeachToken</span>
+                    </a>
+                </div>
 
                 <ul class="nav-menu">
-                    <li><a href="#tokenomics" class="nav-link">Tokenomics</a></li>
+                    <li><a href="/tokenomics" class="nav-link">Tokenomics</a></li>
                     <li><a href="#presale" class="nav-link">Presale</a></li>
                     <li><a href="/buy" class="nav-link">Buy TEACH</a></li>
                     <li><a href="#platform" class="nav-link">Platform</a></li>

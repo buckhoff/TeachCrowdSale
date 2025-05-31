@@ -1,9 +1,177 @@
-﻿},
+﻿// TeacherSupport Platform - Tokenomics Page JavaScript
+'use strict';
 
-// Get color from CSS variable
-getCSSColor(colorName) {
-    return getComputedStyle(document.documentElement).getPropertyValue(colorName).trim();
-}
+// ================================================
+// GLOBAL CONFIGURATION
+// ================================================
+const CONFIG = {
+    BASE_URL: '/tokenomics',
+    ANIMATION_DURATION: 1000,
+    UPDATE_INTERVAL: 60000, // 1 minute for live metrics
+    COUNTER_ANIMATION_SPEED: 2000,
+    CHART_THEME: 'Material3Dark'
+};
+
+// Global state management
+const TokenomicsState = {
+    isLoaded: false,
+    pageData: {},
+    charts: {},
+    animationQueues: [],
+    lastUpdate: null
+};
+
+// ================================================
+// UTILITY FUNCTIONS
+// ================================================
+const Utils = {
+    // Format numbers with appropriate suffixes
+    formatNumber(num, decimals = 2) {
+        if (num === null || num === undefined) return '0';
+
+        const absNum = Math.abs(num);
+
+        if (absNum >= 1e9) {
+            return (num / 1e9).toFixed(decimals) + 'B';
+        } else if (absNum >= 1e6) {
+            return (num / 1e6).toFixed(decimals) + 'M';
+        } else if (absNum >= 1e3) {
+            return (num / 1e3).toFixed(decimals) + 'K';
+        }
+
+        return num.toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: decimals
+        });
+    },
+
+    // Format currency values
+    formatCurrency(amount, currency = 'USD', decimals = 2) {
+        if (amount === null || amount === undefined) return '$0.00';
+
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(amount);
+    },
+
+    // Format percentage
+    formatPercentage(value, decimals = 1) {
+        if (value === null || value === undefined) return '0%';
+        return `${value.toFixed(decimals)}%`;
+    },
+
+    // Format dates
+    formatDate(date, format = 'short') {
+        if (!date) return 'TBA';
+
+        const dateObj = new Date(date);
+
+        if (format === 'short') {
+            return dateObj.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        } else if (format === 'relative') {
+            const now = new Date();
+            const diffTime = dateObj - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                return `${Math.abs(diffDays)} days ago`;
+            } else if (diffDays === 0) {
+                return 'Today';
+            } else if (diffDays === 1) {
+                return 'Tomorrow';
+            } else {
+                return `In ${diffDays} days`;
+            }
+        }
+
+        return dateObj.toLocaleDateString();
+    },
+
+    // Debounce function
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    },
+
+    // Check if element is in viewport
+    isInViewport(element, threshold = 0.1) {
+        const rect = element.getBoundingClientRect();
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+        return (
+            rect.top <= windowHeight * (1 - threshold) &&
+            rect.bottom >= windowHeight * threshold
+        );
+    },
+
+    // Show notification
+    showNotification(message, type = 'info', duration = 5000) {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <span class="notification-message">${message}</span>
+            <button class="notification-close">&times;</button>
+        `;
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: ${type === 'error' ? 'var(--danger-color)' :
+                type === 'success' ? 'var(--success-color)' :
+                    type === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)'};
+            color: white;
+            border-radius: 8px;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 400px;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Auto remove
+        const removeNotification = () => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        };
+
+        setTimeout(removeNotification, duration);
+
+        // Manual close
+        notification.querySelector('.notification-close').addEventListener('click', removeNotification);
+    },
+
+    // Get color from CSS variable
+    getCSSColor(colorName) {
+        return getComputedStyle(document.documentElement).getPropertyValue(colorName).trim();
+    }
 };
 
 // ================================================
@@ -151,384 +319,48 @@ const AnimationController = {
         const valueElement = metric.querySelector('.metric-value');
         if (valueElement) {
             const targetValue = parseFloat(valueElement.dataset.value || valueElement.textContent.replace(/[^\d.-]/g, ''));
-            const isCurrency = valueElement.textContent.includes('// TeacherSupport Platform - Tokenomics Page JavaScript
-'use strict';
+            const isCurrency = valueElement.textContent.includes('$');
 
-            // ================================================
-            // GLOBAL CONFIGURATION
-            // ================================================
-            const CONFIG = {
-                BASE_URL: '/tokenomics',
-                ANIMATION_DURATION: 1000,
-                UPDATE_INTERVAL: 60000, // 1 minute for live metrics
-                COUNTER_ANIMATION_SPEED: 2000,
-                CHART_THEME: 'Material3Dark'
-            };
+            const formatter = isCurrency ?
+                (val) => Utils.formatCurrency(val, 'USD', 1) :
+                (val) => Utils.formatNumber(val, 1);
 
-            // Global state management
-            const TokenomicsState = {
-                isLoaded: false,
-                pageData: {},
-                charts: {},
-                animationQueues: [],
-                lastUpdate: null
-            };
-
-            // ================================================
-            // UTILITY FUNCTIONS
-            // ================================================
-            const Utils = {
-                // Format numbers with appropriate suffixes
-                formatNumber(num, decimals = 2) {
-                    if (num === null || num === undefined) return '0';
-
-                    const absNum = Math.abs(num);
-
-                    if (absNum >= 1e9) {
-                        return (num / 1e9).toFixed(decimals) + 'B';
-                    } else if (absNum >= 1e6) {
-                        return (num / 1e6).toFixed(decimals) + 'M';
-                    } else if (absNum >= 1e3) {
-                        return (num / 1e3).toFixed(decimals) + 'K';
-                    }
-
-                    return num.toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: decimals
-                    });
-                },
-
-                // Format currency values
-                formatCurrency(amount, currency = 'USD', decimals = 2) {
-                    if (amount === null || amount === undefined) return '$0.00';
-
-                    return new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: currency,
-                        minimumFractionDigits: decimals,
-                        maximumFractionDigits: decimals
-                    }).format(amount);
-                },
-
-                // Format percentage
-                formatPercentage(value, decimals = 1) {
-                    if (value === null || value === undefined) return '0%';
-                    return `${value.toFixed(decimals)}%`;
-                },
-
-                // Format dates
-                formatDate(date, format = 'short') {
-                    if (!date) return 'TBA';
-
-                    const dateObj = new Date(date);
-
-                    if (format === 'short') {
-                        return dateObj.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                    } else if (format === 'relative') {
-                        const now = new Date();
-                        const diffTime = dateObj - now;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                        if (diffDays < 0) {
-                            return `${Math.abs(diffDays)} days ago`;
-                        } else if (diffDays === 0) {
-                            return 'Today';
-                        } else if (diffDays === 1) {
-                            return 'Tomorrow';
-                        } else {
-                            return `In ${diffDays} days`;
-                        }
-                    }
-
-                    return dateObj.toLocaleDateString();
-                },
-
-                // Debounce function
-                debounce(func, wait) {
-                    let timeout;
-                    return function executedFunction(...args) {
-                        const later = () => {
-                            clearTimeout(timeout);
-                            func(...args);
-                        };
-                        clearTimeout(timeout);
-                        timeout = setTimeout(later, wait);
-                    };
-                },
-
-                // Check if element is in viewport
-                isInViewport(element, threshold = 0.1) {
-                    const rect = element.getBoundingClientRect();
-                    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-
-                    return (
-                        rect.top <= windowHeight * (1 - threshold) &&
-                        rect.bottom >= windowHeight * threshold
-                    );
-                },
-
-                // Show notification
-                showNotification(message, type = 'info', duration = 5000) {
-                    const notification = document.createElement('div');
-                    notification.className = `notification notification-${type}`;
-                    notification.innerHTML = `
-            <span class="notification-message">${message}</span>
-            <button class="notification-close">&times;</button>
-        `;
-
-                    notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            background: ${type === 'error' ? 'var(--danger-color)' :
-                            type === 'success' ? 'var(--success-color)' :
-                                type === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)'};
-            color: white;
-            border-radius: 8px;
-            z-index: 10000;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            max-width: 400px;
-        `;
-
-                    document.body.appendChild(notification);
-
-                    // Animate in
-                    setTimeout(() => {
-                        notification.style.opacity = '1';
-                        notification.style.transform = 'translateX(0)';
-                    }, 100);
-
-                    // Auto remove
-                    const removeNotification = () => {
-                        notification.style.opacity = '0';
-                        notification.style.transform = 'translateX(100%)';
-                        setTimeout(() => notification.remove(), 300);
-                    };
-
-                    setTimeout(removeNotification, duration);
-
-                    // Manual close
-                    notification.querySelector('.notification-close').addEventListener('click', removeNotification);
-    );
-
-const formatter = isCurrency ?
-    (val) => Utils.formatCurrency(val, 'USD', 1) :
-    (val) => Utils.formatNumber(val, 1);
-
-this.animateCounter(valueElement, targetValue, CONFIG.COUNTER_ANIMATION_SPEED, formatter);
+            this.animateCounter(valueElement, targetValue, CONFIG.COUNTER_ANIMATION_SPEED, formatter);
         }
     },
 
-// Animate burn statistics
-animateBurnStat(stat) {
-    const valueElement = stat.querySelector('.burn-stat-value');
-    if (valueElement) {
-        const targetValue = parseFloat(valueElement.dataset.value || valueElement.textContent.replace(/[^\d.-]/g, ''));
-        const isPercentage = valueElement.textContent.includes('%');
+    // Animate burn statistics
+    animateBurnStat(stat) {
+        const valueElement = stat.querySelector('.burn-stat-value');
+        if (valueElement) {
+            const targetValue = parseFloat(valueElement.dataset.value || valueElement.textContent.replace(/[^\d.-]/g, ''));
+            const isPercentage = valueElement.textContent.includes('%');
 
-        const formatter = isPercentage ?
-            (val) => Utils.formatPercentage(val) :
-            (val) => Utils.formatNumber(val);
+            const formatter = isPercentage ?
+                (val) => Utils.formatPercentage(val) :
+                (val) => Utils.formatNumber(val);
 
-        this.animateCounter(valueElement, targetValue, CONFIG.COUNTER_ANIMATION_SPEED, formatter);
+            this.animateCounter(valueElement, targetValue, CONFIG.COUNTER_ANIMATION_SPEED, formatter);
+        }
+    },
+
+    // Animate live metrics
+    animateLiveMetric(metric) {
+        const targetValue = parseFloat(metric.dataset.value || metric.textContent.replace(/[^\d.-]/g, ''));
+        const isCurrency = metric.textContent.includes('$');
+        const isPercentage = metric.textContent.includes('%');
+
+        let formatter;
+        if (isCurrency) {
+            formatter = (val) => Utils.formatCurrency(val, 'USD', 2);
+        } else if (isPercentage) {
+            formatter = (val) => Utils.formatPercentage(val);
+        } else {
+            formatter = (val) => Utils.formatNumber(val);
+        }
+
+        this.animateCounter(metric, targetValue, CONFIG.COUNTER_ANIMATION_SPEED, formatter);
     }
-},
-
-// Animate live metrics
-animateLiveMetric(metric) {
-    const targetValue = parseFloat(metric.dataset.value || metric.textContent.replace(/[^\d.-]/g, ''));
-    const isCurrency = metric.textContent.includes('// TeacherSupport Platform - Tokenomics Page JavaScript
-'use strict';
-
-    // ================================================
-    // GLOBAL CONFIGURATION
-    // ================================================
-    const CONFIG = {
-        BASE_URL: '/tokenomics',
-        ANIMATION_DURATION: 1000,
-        UPDATE_INTERVAL: 60000, // 1 minute for live metrics
-        COUNTER_ANIMATION_SPEED: 2000,
-        CHART_THEME: 'Material3Dark'
-    };
-
-    // Global state management
-    const TokenomicsState = {
-        isLoaded: false,
-        pageData: {},
-        charts: {},
-        animationQueues: [],
-        lastUpdate: null
-    };
-
-    // ================================================
-    // UTILITY FUNCTIONS
-    // ================================================
-    const Utils = {
-        // Format numbers with appropriate suffixes
-        formatNumber(num, decimals = 2) {
-            if (num === null || num === undefined) return '0';
-
-            const absNum = Math.abs(num);
-
-            if (absNum >= 1e9) {
-                return (num / 1e9).toFixed(decimals) + 'B';
-            } else if (absNum >= 1e6) {
-                return (num / 1e6).toFixed(decimals) + 'M';
-            } else if (absNum >= 1e3) {
-                return (num / 1e3).toFixed(decimals) + 'K';
-            }
-
-            return num.toLocaleString(undefined, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: decimals
-            });
-        },
-
-        // Format currency values
-        formatCurrency(amount, currency = 'USD', decimals = 2) {
-            if (amount === null || amount === undefined) return '$0.00';
-
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: currency,
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals
-            }).format(amount);
-        },
-
-        // Format percentage
-        formatPercentage(value, decimals = 1) {
-            if (value === null || value === undefined) return '0%';
-            return `${value.toFixed(decimals)}%`;
-        },
-
-        // Format dates
-        formatDate(date, format = 'short') {
-            if (!date) return 'TBA';
-
-            const dateObj = new Date(date);
-
-            if (format === 'short') {
-                return dateObj.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-            } else if (format === 'relative') {
-                const now = new Date();
-                const diffTime = dateObj - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays < 0) {
-                    return `${Math.abs(diffDays)} days ago`;
-                } else if (diffDays === 0) {
-                    return 'Today';
-                } else if (diffDays === 1) {
-                    return 'Tomorrow';
-                } else {
-                    return `In ${diffDays} days`;
-                }
-            }
-
-            return dateObj.toLocaleDateString();
-        },
-
-        // Debounce function
-        debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        },
-
-        // Check if element is in viewport
-        isInViewport(element, threshold = 0.1) {
-            const rect = element.getBoundingClientRect();
-            const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-
-            return (
-                rect.top <= windowHeight * (1 - threshold) &&
-                rect.bottom >= windowHeight * threshold
-            );
-        },
-
-        // Show notification
-        showNotification(message, type = 'info', duration = 5000) {
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.innerHTML = `
-            <span class="notification-message">${message}</span>
-            <button class="notification-close">&times;</button>
-        `;
-
-            notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            background: ${type === 'error' ? 'var(--danger-color)' :
-                    type === 'success' ? 'var(--success-color)' :
-                        type === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)'};
-            color: white;
-            border-radius: 8px;
-            z-index: 10000;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            max-width: 400px;
-        `;
-
-            document.body.appendChild(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.style.opacity = '1';
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-
-            // Auto remove
-            const removeNotification = () => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => notification.remove(), 300);
-            };
-
-            setTimeout(removeNotification, duration);
-
-            // Manual close
-            notification.querySelector('.notification-close').addEventListener('click', removeNotification);
-    );
-    const isPercentage = metric.textContent.includes('%');
-
-    let formatter;
-    if (isCurrency) {
-        formatter = (val) => Utils.formatCurrency(val, 'USD', 2);
-    } else if (isPercentage) {
-        formatter = (val) => Utils.formatPercentage(val);
-    } else {
-        formatter = (val) => Utils.formatNumber(val);
-    }
-
-    this.animateCounter(metric, targetValue, CONFIG.COUNTER_ANIMATION_SPEED, formatter);
-}
 };
 
 // ================================================
@@ -1097,171 +929,423 @@ const DataManager = {
         if (governanceData.Overview) {
             const overview = governanceData.Overview;
             this.updateElement('[data-governance="totalVotingPower"]', overview.TotalVotingPower, 'number');
-            this.updateElement('[data-governance="activeProposals"]', overview.Active// TeacherSupport Platform - Tokenomics Page JavaScript
-'use strict';
+            this.updateElement('[data-governance="activeProposals"]', overview.ActiveProposals, 'number');
+            this.updateElement('[data-governance="passedProposals"]', overview.PassedProposals, 'number');
+            this.updateElement('[data-governance="participationRate"]', overview.ParticipationRate, 'percentage');
+        }
 
-            // ================================================
-            // GLOBAL CONFIGURATION
-            // ================================================
-            const CONFIG = {
-                BASE_URL: '/tokenomics',
-                ANIMATION_DURATION: 1000,
-                UPDATE_INTERVAL: 60000, // 1 minute for live metrics
-                COUNTER_ANIMATION_SPEED: 2000,
-                CHART_THEME: 'Material3Dark'
-            };
+        // Update governance features
+        const featuresGrid = document.getElementById('governanceFeaturesGrid');
+        if (featuresGrid && governanceData.Features) {
+            featuresGrid.innerHTML = governanceData.Features.map(feature => `
+                <div class="governance-feature-card">
+                    <div class="governance-feature-header">
+                        <h4 class="governance-feature-name">${feature.Name}</h4>
+                        <span class="governance-feature-status ${feature.IsImplemented ? 'implemented' : 'pending'}">
+                            ${feature.IsImplemented ? 'Implemented' : 'Pending'}
+                        </span>
+                    </div>
+                    <p class="governance-feature-description">${feature.Description}</p>
+                    <div class="governance-feature-impact">${feature.Impact}</div>
+                </div>
+            `).join('');
+        }
 
-            // Global state management
-            const TokenomicsState = {
-                isLoaded: false,
-                pageData: {},
-                charts: {},
-                animationQueues: [],
-                lastUpdate: null
-            };
+        // Update active proposals
+        const proposalsList = document.getElementById('activeProposalsList');
+        if (proposalsList) {
+            if (governanceData.ActiveProposals && governanceData.ActiveProposals.length > 0) {
+                proposalsList.innerHTML = governanceData.ActiveProposals.map(proposal => `
+                    <div class="proposal-item">
+                        <h5>${proposal.Title}</h5>
+                        <p>${proposal.Description}</p>
+                        <div class="proposal-voting">
+                            <span>For: ${Utils.formatNumber(proposal.VotesFor)}</span>
+                            <span>Against: ${Utils.formatNumber(proposal.VotesAgainst)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                proposalsList.innerHTML = `
+                    <div class="no-proposals">
+                        <span class="no-proposals-icon">🗳️</span>
+                        <h4>No Active Proposals</h4>
+                        <p>The governance system is being prepared. Proposal functionality will be available after TGE.</p>
+                    </div>
+                `;
+            }
+        }
+    },
 
-            // ================================================
-            // UTILITY FUNCTIONS
-            // ================================================
-            const Utils = {
-                // Format numbers with appropriate suffixes
-                formatNumber(num, decimals = 2) {
-                    if (num === null || num === undefined) return '0';
+    // Update last updated timestamp
+    updateLastUpdated() {
+        const timestampElements = document.querySelectorAll('.last-updated');
+        const currentTime = new Date().toLocaleString();
 
-                    const absNum = Math.abs(num);
+        timestampElements.forEach(element => {
+            element.textContent = `Last updated: ${currentTime}`;
+        });
 
-                    if (absNum >= 1e9) {
-                        return (num / 1e9).toFixed(decimals) + 'B';
-                    } else if (absNum >= 1e6) {
-                        return (num / 1e6).toFixed(decimals) + 'M';
-                    } else if (absNum >= 1e3) {
-                        return (num / 1e3).toFixed(decimals) + 'K';
+        TokenomicsState.lastUpdate = new Date();
+    },
+
+    // Helper function to update individual elements
+    updateElement(selector, value, type = 'text') {
+        const element = document.querySelector(selector);
+        if (!element) return;
+
+        element.dataset.value = value;
+
+        switch (type) {
+            case 'currency':
+                element.textContent = Utils.formatCurrency(value);
+                break;
+            case 'number':
+                element.textContent = Utils.formatNumber(value);
+                break;
+            case 'percentage':
+                element.textContent = Utils.formatPercentage(value);
+                break;
+            case 'text':
+            default:
+                element.textContent = value;
+                break;
+        }
+    },
+
+    // Convert to camelCase for API property matching
+    toCamelCase(str) {
+        return str.replace(/[A-Z]/g, letter => letter.toLowerCase())
+            .replace(/^[a-z]/, letter => letter.toLowerCase());
+    },
+
+    // Fallback page data
+    getFallbackPageData() {
+        return {
+            LiveMetrics: {
+                CurrentPrice: 0.065,
+                MarketCap: 325000000,
+                Volume24h: 2500000,
+                PriceChange24h: 4.8,
+                HoldersCount: 3247,
+                TotalValueLocked: 15000000
+            },
+            SupplyBreakdown: {
+                Allocations: ChartManager.getFallbackDistributionData(),
+                Metrics: {
+                    MaxSupply: 5000000000,
+                    CirculatingSupply: 1000000000,
+                    LockedSupply: 4000000000,
+                    BurnedSupply: 0
+                }
+            },
+            VestingSchedule: {
+                Categories: [
+                    {
+                        Category: 'Public Presale',
+                        TotalTokens: 1250000000,
+                        TgePercentage: 20,
+                        VestingMonths: 6,
+                        StartDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+                        EndDate: new Date(Date.now() + 270 * 24 * 60 * 60 * 1000)
                     }
+                ],
+                Summary: {
+                    TotalVestedTokens: 4000000000,
+                    CurrentlyUnlocked: 1000000000,
+                    NextUnlockDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+                    NextUnlockAmount: 250000000
+                }
+            },
+            TreasuryAnalytics: {
+                Overview: {
+                    TotalValue: 87500000,
+                    OperationalRunwayYears: 10.5,
+                    MonthlyBurnRate: 695000,
+                    SafetyFundValue: 8750000
+                },
+                Scenarios: [
+                    {
+                        Name: 'Bull Market',
+                        Description: 'Strong adoption and revenue growth',
+                        Probability: 30,
+                        ProjectedRunway: 15.8,
+                        Severity: 'Positive'
+                    }
+                ]
+            },
+            BurnMechanics: {
+                Statistics: {
+                    TotalBurned: 0,
+                    BurnedPercentage: 0,
+                    EstimatedAnnualBurn: 25000000,
+                    BurnRate: 0.5
+                },
+                Mechanisms: [
+                    {
+                        Name: 'Transaction Burn',
+                        Description: '0.1% of all platform transactions burned',
+                        TriggerPercentage: 0.1,
+                        Frequency: 'Per Transaction',
+                        IsActive: false,
+                        Icon: '🔥'
+                    }
+                ]
+            },
+            UtilityFeatures: {
+                Categories: [
+                    {
+                        Name: 'Staking & Rewards',
+                        Description: 'Earn rewards by staking TEACH tokens',
+                        Icon: '💰',
+                        IsLive: false,
+                        Features: [
+                            {
+                                Name: 'Single-sided Staking',
+                                IsActive: false
+                            }
+                        ]
+                    }
+                ],
+                Metrics: {
+                    TotalUtilityVolume: 0,
+                    ActiveUtilities: 0,
+                    UniqueUsers: 0,
+                    MonthlyGrowthRate: 0
+                }
+            },
+            GovernanceInfo: {
+                Overview: {
+                    TotalVotingPower: 0,
+                    ActiveProposals: 0,
+                    PassedProposals: 0,
+                    ParticipationRate: 0
+                },
+                Features: [
+                    {
+                        Name: 'Proposal System',
+                        Description: 'Create and vote on governance proposals',
+                        IsImplemented: false,
+                        Impact: 'Community-driven decision making'
+                    }
+                ],
+                ActiveProposals: []
+            }
+        };
+    }
+};
 
-                    return num.toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: decimals
+// ================================================
+// LIVE DATA UPDATES
+// ================================================
+const LiveUpdates = {
+    updateInterval: null,
+
+    // Start live updates
+    start() {
+        this.updateInterval = setInterval(async () => {
+            await this.refreshLiveMetrics();
+        }, CONFIG.UPDATE_INTERVAL);
+    },
+
+    // Stop live updates
+    stop() {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+            this.updateInterval = null;
+        }
+    },
+
+    // Refresh live metrics
+    async refreshLiveMetrics() {
+        try {
+            const liveMetrics = await ApiService.getLiveMetrics();
+            if (liveMetrics) {
+                TokenomicsState.pageData.LiveMetrics = liveMetrics;
+                DataManager.updateLiveMetrics(liveMetrics);
+                DataManager.updateLastUpdated();
+            }
+        } catch (error) {
+            console.warn('Failed to refresh live metrics:', error);
+        }
+    }
+};
+
+// ================================================
+// EVENT HANDLERS
+// ================================================
+const EventHandlers = {
+    // Initialize all event handlers
+    init() {
+        this.initRefreshButtons();
+        this.initScrollEffects();
+        this.initResponsiveHandlers();
+    },
+
+    // Refresh button handlers
+    initRefreshButtons() {
+        const refreshButtons = document.querySelectorAll('[data-refresh]');
+        refreshButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const section = button.dataset.refresh;
+                await this.refreshSection(section);
+            });
+        });
+    },
+
+    // Refresh specific section
+    async refreshSection(section) {
+        const button = document.querySelector(`[data-refresh="${section}"]`);
+        if (button) {
+            button.classList.add('loading');
+            button.disabled = true;
+        }
+
+        try {
+            let data = null;
+            switch (section) {
+                case 'live-metrics':
+                    data = await ApiService.getLiveMetrics();
+                    if (data) DataManager.updateLiveMetrics(data);
+                    break;
+                case 'supply':
+                    data = await ApiService.getSupplyBreakdown();
+                    if (data) DataManager.updateSupplyBreakdown(data);
+                    break;
+                case 'vesting':
+                    data = await ApiService.getVestingSchedule();
+                    if (data) DataManager.updateVestingSchedule(data);
+                    break;
+                case 'treasury':
+                    data = await ApiService.getTreasuryAnalytics();
+                    if (data) DataManager.updateTreasuryAnalytics(data);
+                    break;
+                case 'burn':
+                    data = await ApiService.getBurnMechanics();
+                    if (data) DataManager.updateBurnMechanics(data);
+                    break;
+                case 'utility':
+                    data = await ApiService.getUtilityFeatures();
+                    if (data) DataManager.updateUtilityFeatures(data);
+                    break;
+                case 'governance':
+                    data = await ApiService.getGovernanceInfo();
+                    if (data) DataManager.updateGovernanceInfo(data);
+                    break;
+            }
+
+            Utils.showNotification(`${section} data refreshed successfully`, 'success');
+        } catch (error) {
+            console.error(`Error refreshing ${section}:`, error);
+            Utils.showNotification(`Failed to refresh ${section} data`, 'error');
+        } finally {
+            if (button) {
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+    },
+
+    // Scroll effects
+    initScrollEffects() {
+        const sections = document.querySelectorAll('.tokenomics-section');
+        const navLinks = document.querySelectorAll('.tokenomics-nav a');
+
+        if (sections.length === 0 || navLinks.length === 0) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    navLinks.forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
                     });
-                },
+                }
+            });
+        }, { threshold: 0.3 });
 
-                // Format currency values
-                formatCurrency(amount, currency = 'USD', decimals = 2) {
-                    if (amount === null || amount === undefined) return '$0.00';
+        sections.forEach(section => observer.observe(section));
+    },
 
-                    return new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: currency,
-                        minimumFractionDigits: decimals,
-                        maximumFractionDigits: decimals
-                    }).format(amount);
-                },
+    // Responsive handlers
+    initResponsiveHandlers() {
+        const debouncedResize = Utils.debounce(() => {
+            // Refresh charts on resize
+            Object.values(TokenomicsState.charts).forEach(chart => {
+                if (chart && chart.refresh) {
+                    chart.refresh();
+                }
+            });
+        }, 250);
 
-                // Format percentage
-                formatPercentage(value, decimals = 1) {
-                    if (value === null || value === undefined) return '0%';
-                    return `${value.toFixed(decimals)}%`;
-                },
+        window.addEventListener('resize', debouncedResize);
+    }
+};
 
-                // Format dates
-                formatDate(date, format = 'short') {
-                    if (!date) return 'TBA';
+// ================================================
+// MAIN INITIALIZATION
+// ================================================
+const TokenomicsApp = {
+    // Initialize the entire application
+    async init() {
+        try {
+            console.log('Initializing Tokenomics page...');
 
-                    const dateObj = new Date(date);
+            // Load page data
+            await DataManager.loadPageData();
 
-                    if (format === 'short') {
-                        return dateObj.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                    } else if (format === 'relative') {
-                        const now = new Date();
-                        const diffTime = dateObj - now;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            // Initialize charts
+            await ChartManager.initializeCharts();
 
-                        if (diffDays < 0) {
-                            return `${Math.abs(diffDays)} days ago`;
-                        } else if (diffDays === 0) {
-                            return 'Today';
-                        } else if (diffDays === 1) {
-                            return 'Tomorrow';
-                        } else {
-                            return `In ${diffDays} days`;
-                        }
-                    }
+            // Initialize animations
+            AnimationController.initScrollAnimations();
+            AnimationController.fadeInElements('.tokenomics-section', 200, 100);
 
-                    return dateObj.toLocaleDateString();
-                },
+            // Initialize event handlers
+            EventHandlers.init();
 
-                // Debounce function
-                debounce(func, wait) {
-                    let timeout;
-                    return function executedFunction(...args) {
-                        const later = () => {
-                            clearTimeout(timeout);
-                            func(...args);
-                        };
-                        clearTimeout(timeout);
-                        timeout = setTimeout(later, wait);
-                    };
-                },
+            // Start live updates
+            LiveUpdates.start();
 
-                // Check if element is in viewport
-                isInViewport(element, threshold = 0.1) {
-                    const rect = element.getBoundingClientRect();
-                    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+            // Mark as loaded
+            TokenomicsState.isLoaded = true;
 
-                    return (
-                        rect.top <= windowHeight * (1 - threshold) &&
-                        rect.bottom >= windowHeight * threshold
-                    );
-                },
+            console.log('Tokenomics page initialized successfully');
+            Utils.showNotification('Tokenomics page loaded successfully', 'success', 3000);
 
-                // Show notification
-                showNotification(message, type = 'info', duration = 5000) {
-                    const notification = document.createElement('div');
-                    notification.className = `notification notification-${type}`;
-                    notification.innerHTML = `
-            <span class="notification-message">${message}</span>
-            <button class="notification-close">&times;</button>
-        `;
+        } catch (error) {
+            console.error('Error initializing Tokenomics page:', error);
+            Utils.showNotification('Error initializing page. Some features may not work correctly.', 'error');
+        }
+    },
 
-                    notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            background: ${type === 'error' ? 'var(--danger-color)' :
-                            type === 'success' ? 'var(--success-color)' :
-                                type === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)'};
-            color: white;
-            border-radius: 8px;
-            z-index: 10000;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            max-width: 400px;
-        `;
+    // Cleanup on page unload
+    cleanup() {
+        LiveUpdates.stop();
 
-                    document.body.appendChild(notification);
+        // Dispose charts
+        Object.values(TokenomicsState.charts).forEach(chart => {
+            if (chart && chart.destroy) {
+                chart.destroy();
+            }
+        });
 
-                    // Animate in
-                    setTimeout(() => {
-                        notification.style.opacity = '1';
-                        notification.style.transform = 'translateX(0)';
-                    }, 100);
+        console.log('Tokenomics page cleaned up');
+    }
+};
 
-                    // Auto remove
-                    const removeNotification = () => {
-                        notification.style.opacity = '0';
-                        notification.style.transform = 'translateX(100%)';
-                        setTimeout(() => notification.remove(), 300);
-                    };
+// ================================================
+// AUTO-INITIALIZATION
+// ================================================
+document.addEventListener('DOMContentLoaded', () => {
+    TokenomicsApp.init();
+});
 
-                    setTimeout(removeNotification, duration);
+window.addEventListener('beforeunload', () => {
+    TokenomicsApp.cleanup();
+});
 
-                    // Manual close
-                    notification.querySelector('.notification-close').addEventListener('click', removeNotification);
+// Expose global API for debugging and external access
+window.TokenomicsApp = TokenomicsApp;
+window.TokenomicsState = TokenomicsState;

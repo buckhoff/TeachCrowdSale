@@ -21,7 +21,7 @@ builder.Services.AddHttpClient("TeachAPI", client =>
 
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IBuyTradeService, BuyTradeService>();
-
+builder.Services.AddScoped<ITokenomicsService, TokenomicsService>();
 
 
 
