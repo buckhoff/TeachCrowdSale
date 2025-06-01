@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TeachCrowdSale.Core.Models;
+namespace TeachCrowdSale.Core.Models.Response;
 
 public class VestingMilestone
 {
     public DateTime Timestamp { get; set; }
     [Range(0, double.MaxValue)]
     public decimal Amount { get; set; }
+    public string FormattedDate { get; set; }
 }

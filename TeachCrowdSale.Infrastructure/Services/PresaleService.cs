@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using TeachCrowdSale.Core.Data.Entities;
 using TeachCrowdSale.Core.Data.Enum;
 using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models;
+using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Models.Vesting;
 
 namespace TeachCrowdSale.Infrastructure.Services
@@ -307,7 +307,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
         
-        public async Task<VestingMilestoneModel> GetNextVestingMilestoneAsync(string address)
+        public async Task<VestingMilestone> GetNextVestingMilestoneAsync(string address)
         {
             try
             {
@@ -328,7 +328,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     return null; // No more vesting milestones
                 }
                 
-                return new VestingMilestoneModel
+                return new VestingMilestone
                 {
                     FormattedDate = DateTimeOffset.FromUnixTimeSeconds((long)timestamp).DateTime.ToLongDateString(),
                     Amount = ConvertFromWei(amount, 18) // TEACH has 18 decimals
@@ -354,7 +354,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     throw new InvalidOperationException($"Tier with ID {tierId} does not exist");
                 }
 
-                var purchase = new PurchaseTransaction
+                var purchase = new Core.Data.Entities.PurchaseTransaction
                 {
                     WalletAddress = address.ToLowerInvariant(),
                     TierId = tierId,
@@ -402,7 +402,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 if (claimableTokens <= 0) return false;
 
                 // Log claim as pending
-                var claim = new ClaimTransaction
+                var claim = new Core.Data.Entities.ClaimTransaction
                 {
                     WalletAddress = address.ToLowerInvariant(),
                     TokenAmount = claimableTokens,
@@ -456,7 +456,7 @@ namespace TeachCrowdSale.Infrastructure.Services
         private async Task UpdateUserBalanceAsync(string address)
         {
             var userBalance = await _transactionRepository.GetUserBalanceAsync(address)
-                ?? new UserBalance { WalletAddress = address.ToLowerInvariant() };
+                ?? new Core.Data.Entities.UserBalance { WalletAddress = address.ToLowerInvariant() };
 
             var purchases = await _transactionRepository.GetUserPurchasesAsync(address);
             var claims = await _transactionRepository.GetUserClaimsAsync(address);
@@ -474,5 +474,6 @@ namespace TeachCrowdSale.Infrastructure.Services
 
             await _transactionRepository.UpdateUserBalanceAsync(userBalance);
         }
+
     }
 }

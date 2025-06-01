@@ -11,4 +11,5 @@ public interface IBlockchainService
     Task<bool> ApproveTokenSpendingAsync(string ownerAddress, string spenderAddress, decimal amount, string tokenAddress);
     Task<string> ExecuteContractFunctionAsync(string contractAddress, string functionSignature, params object[] parameters);
     Task<T> CallContractFunctionAsync<T>(string contractAddress, string functionSignature, params object[] parameters);
+    Task<bool> IsConnectedAsync();
 }

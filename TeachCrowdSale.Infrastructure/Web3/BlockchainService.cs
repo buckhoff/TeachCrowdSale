@@ -148,6 +148,21 @@ namespace TeachCrowdSale.Infrastructure.Web3
                 return Erc20Abi;
             }
         }
+        public async Task<bool> IsConnectedAsync()
+        {
+            try
+            {
+                // Check if web3 provider is connected
+                using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+                var response = await client.GetAsync("https://polygon-rpc.com/");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Blockchain connectivity check failed");
+                return false;
+            }
+        }
 
         // Contract ABIs - would be stored in separate files in a real application
         private const string PresaleAbi = @"[
@@ -659,4 +674,5 @@ namespace TeachCrowdSale.Infrastructure.Web3
             }
         ]";
     }
+
 }

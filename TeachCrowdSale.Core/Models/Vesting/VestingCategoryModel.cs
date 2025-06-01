@@ -17,5 +17,6 @@ namespace TeachCrowdSale.Core.Models.Vesting
         public DateTime EndDate { get; set; }
         public string Color { get; set; } = string.Empty;
         public List<VestingMilestoneModel> Milestones { get; set; } = new();
+        public bool IsActive { get; set; } = true;
     }
 }

@@ -9,10 +9,10 @@ namespace TeachCrowdSale.Core.Data.Entities
     public class SupplySnapshot
     {
         public int Id { get; set; }
-        public long TotalSupply { get; set; } = 5_000_000_000;
-        public long CirculatingSupply { get; set; }
-        public long LockedSupply { get; set; }
-        public long BurnedSupply { get; set; }
+        public decimal TotalSupply { get; set; } = 5_000_000_000;
+        public decimal CirculatingSupply { get; set; }
+        public decimal LockedSupply { get; set; }
+        public decimal BurnedSupply { get; set; }
         public decimal CirculatingPercent { get; set; }
         public decimal LockedPercent { get; set; }
         public decimal BurnedPercent { get; set; }

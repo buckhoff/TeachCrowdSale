@@ -8,11 +8,11 @@ namespace TeachCrowdSale.Core.Models.Tokenomics
 {
     public class SupplyMetricsModel
     {
-        public long MaxSupply { get; set; } = 5_000_000_000;
-        public long CurrentSupply { get; set; }
-        public long CirculatingSupply { get; set; }
-        public long LockedSupply { get; set; }
-        public long BurnedSupply { get; set; }
+        public decimal MaxSupply { get; set; } = 5_000_000_000;
+        public decimal CurrentSupply { get; set; }
+        public decimal CirculatingSupply { get; set; }
+        public decimal LockedSupply { get; set; }
+        public decimal BurnedSupply { get; set; }
         public decimal CirculatingPercent { get; set; }
         public decimal LockedPercent { get; set; }
         public decimal BurnedPercent { get; set; }

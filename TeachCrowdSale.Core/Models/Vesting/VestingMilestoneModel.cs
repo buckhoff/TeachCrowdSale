@@ -13,8 +13,5 @@ namespace TeachCrowdSale.Core.Models.Vesting
         public long TokensUnlocked { get; set; }
         public long CumulativeUnlocked { get; set; }
         public decimal PercentageUnlocked { get; set; }
-        [Range(0, double.MaxValue)]
-        public decimal Amount { get; set; }
-        public string FormattedDate { get; set; }
     }
 }

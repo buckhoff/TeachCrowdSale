@@ -1,4 +1,5 @@
 using TeachCrowdSale.Core.Models;
+using TeachCrowdSale.Core.Models.Response;
 
 namespace TeachCrowdSale.Core.Interfaces.Services;
 

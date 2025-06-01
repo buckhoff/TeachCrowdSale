@@ -18,5 +18,6 @@ namespace TeachCrowdSale.Core.Data.Entities
         public string? TransactionHash { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string FormattedDate { get; set; }
+        public decimal Amount { get; set; }
     }
 }

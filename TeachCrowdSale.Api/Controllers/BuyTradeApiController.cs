@@ -406,7 +406,7 @@ namespace TeachCrowdSale.Api.Controllers
             }
         }
 
-        private async Task<Core.Models.VestingMilestone?> GetNextVestingMilestoneSafely(string address)
+        private async Task<VestingMilestone?> GetNextVestingMilestoneSafely(string address)
         {
             try
             {

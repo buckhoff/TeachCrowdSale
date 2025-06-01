@@ -16,8 +16,8 @@ namespace TeachCrowdSale.Core.Data.Entities
         public decimal PriceChangePercent24h { get; set; }
         public decimal High24h { get; set; }
         public decimal Low24h { get; set; }
-        public long TotalSupply { get; set; } = 5_000_000_000;
-        public long CirculatingSupply { get; set; }
+        public decimal TotalSupply { get; set; } = 5_000_000_000;
+        public decimal CirculatingSupply { get; set; }
         public int HoldersCount { get; set; }
         public decimal TotalValueLocked { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;

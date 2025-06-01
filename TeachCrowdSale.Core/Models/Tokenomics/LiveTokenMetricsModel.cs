@@ -18,8 +18,8 @@ namespace TeachCrowdSale.Core.Models.Tokenomics
         public decimal PriceChangePercent24h { get; set; }
         public decimal High24h { get; set; }
         public decimal Low24h { get; set; }
-        public long TotalSupply { get; set; } = 5_000_000_000; // 5B total supply
-        public long CirculatingSupply { get; set; }
+        public decimal TotalSupply { get; set; } = 5_000_000_000; // 5B total supply
+        public decimal CirculatingSupply { get; set; }
         public int HoldersCount { get; set; }
         public decimal TotalValueLocked { get; set; }
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;

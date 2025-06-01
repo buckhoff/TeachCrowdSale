@@ -165,6 +165,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.TokensUnlocked).HasPrecision(18, 0);
                 entity.Property(e => e.CumulativeUnlocked).HasPrecision(18, 0);
                 entity.Property(e => e.PercentageUnlocked).HasPrecision(5, 2);
+                entity.Property(e => e.Amount).HasPrecision(32,18);
                 entity.HasOne<VestingCategory>()
                     .WithMany()
                     .HasForeignKey(e => e.CategoryId)
