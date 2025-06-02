@@ -95,11 +95,11 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<LiveTokenMetricsModel> GetLiveTokenMetricsAsync()
+        public async Task<TokenMetricsModel> GetLiveTokenMetricsAsync()
         {
             try
             {
-                if (_cache.TryGetValue(CACHE_KEY_LIVE_METRICS, out LiveTokenMetricsModel? cachedMetrics) && cachedMetrics != null)
+                if (_cache.TryGetValue(CACHE_KEY_LIVE_METRICS, out TokenMetricsModel? cachedMetrics) && cachedMetrics != null)
                 {
                     return cachedMetrics;
                 }
@@ -115,7 +115,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 var responses = await Task.WhenAll(tasks);
                 var contents = await Task.WhenAll(responses.Select(r => r.Content.ReadAsStringAsync()));
 
-                var metrics = new LiveTokenMetricsModel();
+                var metrics = new TokenMetricsModel();
 
                 // Parse token info
                 if (responses[0].IsSuccessStatusCode)
@@ -295,9 +295,9 @@ namespace TeachCrowdSale.Infrastructure.Services
             };
         }
 
-        private LiveTokenMetricsModel GetFallbackLiveMetrics()
+        private TokenMetricsModel GetFallbackLiveMetrics()
         {
-            return new LiveTokenMetricsModel
+            return new TokenMetricsModel
             {
                 CurrentPrice = 0.065m,
                 MarketCap = 325000000m,
@@ -317,9 +317,9 @@ namespace TeachCrowdSale.Infrastructure.Services
         {
             return new SupplyBreakdownModel
             {
-                Allocations = new List<SupplyAllocationModel>
+                Allocations = new List<TokenAllocationModel>
                 {
-                    new SupplyAllocationModel
+                    new TokenAllocationModel
                     {
                         Category = "Public Presale",
                         TokenAmount = 1_250_000_000,
@@ -330,7 +330,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                         VestingMonths = 6,
                         IsLocked = true
                     },
-                    new SupplyAllocationModel
+                    new TokenAllocationModel
                     {
                         Category = "Community Incentives",
                         TokenAmount = 1_200_000_000,
@@ -341,7 +341,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                         VestingMonths = 36,
                         IsLocked = true
                     },
-                    new SupplyAllocationModel
+                    new TokenAllocationModel
                     {
                         Category = "Platform Ecosystem",
                         TokenAmount = 1_000_000_000,
@@ -352,7 +352,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                         VestingMonths = 24,
                         IsLocked = true
                     },
-                    new SupplyAllocationModel
+                    new TokenAllocationModel
                     {
                         Category = "Initial Liquidity",
                         TokenAmount = 600_000_000,
@@ -363,7 +363,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                         VestingMonths = 0,
                         IsLocked = false
                     },
-                    new SupplyAllocationModel
+                    new TokenAllocationModel
                     {
                         Category = "Team & Development",
                         TokenAmount = 400_000_000,
@@ -374,7 +374,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                         VestingMonths = 24,
                         IsLocked = true
                     },
-                    new SupplyAllocationModel
+                    new TokenAllocationModel
                     {
                         Category = "Educational Partners",
                         TokenAmount = 350_000_000,
@@ -385,7 +385,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                         VestingMonths = 18,
                         IsLocked = true
                     },
-                    new SupplyAllocationModel
+                    new TokenAllocationModel
                     {
                         Category = "Reserve Fund",
                         TokenAmount = 200_000_000,

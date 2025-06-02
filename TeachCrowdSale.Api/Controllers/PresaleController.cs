@@ -151,7 +151,7 @@ namespace TeachCrowdSale.Api.Controllers
 
                 return Ok(new UserPurchaseModel
                 {
-                    Address = address,
+                    WalletAddress = address,
                     TotalTokens = userPurchase.Tokens,
                     UsdAmount = userPurchase.UsdAmount,
                     ClaimableTokens = claimableTokens,
@@ -165,7 +165,7 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         [HttpGet("next-vesting/{address}")]
-        public async Task<ActionResult<VestingMilestone>> GetNextVestingMilestone([FromRoute] string address)
+        public async Task<ActionResult<VestingMilestoneResponse>> GetNextVestingMilestone([FromRoute] string address)
         {
             try
             {
@@ -181,7 +181,7 @@ namespace TeachCrowdSale.Api.Controllers
                     return NotFound($"No vesting schedule found for address {address}");
                 }
 
-                return Ok(new VestingMilestone
+                return Ok(new VestingMilestoneResponse
                 {
                     Timestamp = nextVesting.Timestamp,
                     Amount = nextVesting.Amount,

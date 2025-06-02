@@ -115,11 +115,11 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<LiveTokenMetricsModel> GetLiveTokenMetricsAsync()
+        public async Task<TokenMetricsModel> GetLiveTokenMetricsAsync()
         {
             try
             {
-                if (_cache.TryGetValue(CACHE_KEY_LIVE_METRICS, out LiveTokenMetricsModel? cachedMetrics) && cachedMetrics != null)
+                if (_cache.TryGetValue(CACHE_KEY_LIVE_METRICS, out TokenMetricsModel? cachedMetrics) && cachedMetrics != null)
                 {
                     return cachedMetrics;
                 }
@@ -415,7 +415,7 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region Data Fetching Methods
 
-        private async Task<LiveTokenMetricsModel?> FetchLiveMetricsFromSources()
+        private async Task<TokenMetricsModel?> FetchLiveMetricsFromSources()
         {
             try
             {
@@ -429,7 +429,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 // Get DEX data if available
                 var dexData = await FetchDexAggregatorData();
 
-                return new LiveTokenMetricsModel
+                return new TokenMetricsModel
                 {
                     CurrentPrice = currentPrice,
                     MarketCap = marketCap,
@@ -491,7 +491,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                         LockedPercent = totalSupply > 0 ? (lockedSupply / totalSupply) * 100 : 0,
                         BurnedPercent = totalSupply > 0 ? (burnedSupply / totalSupply) * 100 : 0
                     },
-                    Allocations = new List<SupplyAllocationModel>() // Will be populated from database
+                    Allocations = new List<TokenAllocationModel>() // Will be populated from database
                 };
             }
             catch (Exception ex)
@@ -800,9 +800,9 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region Mapping Methods
 
-        private LiveTokenMetricsModel MapToLiveTokenMetricsModel(TokenMetricsSnapshot snapshot)
+        private TokenMetricsModel MapToLiveTokenMetricsModel(TokenMetricsSnapshot snapshot)
         {
-            return new LiveTokenMetricsModel
+            return new TokenMetricsModel
             {
                 CurrentPrice = snapshot.CurrentPrice,
                 MarketCap = snapshot.MarketCap,
@@ -819,7 +819,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             };
         }
 
-        private TokenMetricsSnapshot MapToTokenMetricsSnapshot(LiveTokenMetricsModel model)
+        private TokenMetricsSnapshot MapToTokenMetricsSnapshot(TokenMetricsModel model)
         {
             return new TokenMetricsSnapshot
             {
@@ -856,7 +856,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 BurnedPercent = snapshot.BurnedPercent
             } : GetFallbackSupplyBreakdown().Metrics;
 
-            var mappedAllocations = allocations.Select(a => new SupplyAllocationModel
+            var mappedAllocations = allocations.Select(a => new TokenAllocationModel
             {
                 Category = a.Category,
                 TokenAmount = a.TokenAmount,
@@ -1184,8 +1184,8 @@ namespace TeachCrowdSale.Infrastructure.Services
                     MinimumProposalThreshold = 1_000_000,
                     VotingPeriodDays = 7
                 },
-                ActiveProposals = new List<ProposalModel>(),
-                RecentProposals = new List<ProposalModel>(),
+                ActiveProposals = new List<GovernanceProposalModel>(),
+                RecentProposals = new List<GovernanceProposalModel>(),
                 Features = GetGovernanceFeatures(),
                 Stats = new GovernanceStatsModel
                 {
@@ -1340,7 +1340,7 @@ private GovernanceInfoModel MapToGovernanceInfoModel(List<GovernanceProposal> ac
         VotingPeriodDays = 7
     };
 
-    var mappedActiveProposals = activeProposals.Select(p => new ProposalModel
+    var mappedActiveProposals = activeProposals.Select(p => new GovernanceProposalModel
     {
         Id = p.Id,
         Title = p.Title,
@@ -1355,7 +1355,7 @@ private GovernanceInfoModel MapToGovernanceInfoModel(List<GovernanceProposal> ac
         ProposerAddress = p.ProposerAddress
     }).ToList();
 
-    var mappedRecentProposals = recentProposals.Take(10).Select(p => new ProposalModel
+    var mappedRecentProposals = recentProposals.Take(10).Select(p => new GovernanceProposalModel
     {
         Id = p.Id,
         Title = p.Title,
@@ -1630,9 +1630,9 @@ public TokenomicsDisplayModel GetFallbackTokenomicsData()
     };
 }
 
-private LiveTokenMetricsModel GetFallbackLiveMetrics()
+private TokenMetricsModel GetFallbackLiveMetrics()
 {
-    return new LiveTokenMetricsModel
+    return new TokenMetricsModel
     {
         CurrentPrice = 0.065m,
         MarketCap = 325_000_000m,
@@ -1651,9 +1651,9 @@ private LiveTokenMetricsModel GetFallbackLiveMetrics()
 
 private SupplyBreakdownModel GetFallbackSupplyBreakdown()
 {
-    var allocations = new List<SupplyAllocationModel>
+    var allocations = new List<TokenAllocationModel>
             {
-                new SupplyAllocationModel
+                new TokenAllocationModel
                 {
                     Category = "Public Presale",
                     TokenAmount = 1_250_000_000,
@@ -1664,7 +1664,7 @@ private SupplyBreakdownModel GetFallbackSupplyBreakdown()
                     VestingMonths = 6,
                     IsLocked = true
                 },
-                new SupplyAllocationModel
+                new TokenAllocationModel
                 {
                     Category = "Community Incentives",
                     TokenAmount = 1_200_000_000,
@@ -1675,7 +1675,7 @@ private SupplyBreakdownModel GetFallbackSupplyBreakdown()
                     VestingMonths = 36,
                     IsLocked = true
                 },
-                new SupplyAllocationModel
+                new TokenAllocationModel
                 {
                     Category = "Platform Ecosystem",
                     TokenAmount = 1_000_000_000,
@@ -1686,7 +1686,7 @@ private SupplyBreakdownModel GetFallbackSupplyBreakdown()
                     VestingMonths = 24,
                     IsLocked = true
                 },
-                new SupplyAllocationModel
+                new TokenAllocationModel
                 {
                     Category = "Initial Liquidity",
                     TokenAmount = 600_000_000,
@@ -1697,7 +1697,7 @@ private SupplyBreakdownModel GetFallbackSupplyBreakdown()
                     VestingMonths = 0,
                     IsLocked = false
                 },
-                new SupplyAllocationModel
+                new TokenAllocationModel
                 {
                     Category = "Team & Development",
                     TokenAmount = 400_000_000,
@@ -1708,7 +1708,7 @@ private SupplyBreakdownModel GetFallbackSupplyBreakdown()
                     VestingMonths = 24,
                     IsLocked = true
                 },
-                new SupplyAllocationModel
+                new TokenAllocationModel
                 {
                     Category = "Educational Partners",
                     TokenAmount = 350_000_000,
@@ -1719,7 +1719,7 @@ private SupplyBreakdownModel GetFallbackSupplyBreakdown()
                     VestingMonths = 18,
                     IsLocked = true
                 },
-                new SupplyAllocationModel
+                new TokenAllocationModel
                 {
                     Category = "Reserve Fund",
                     TokenAmount = 200_000_000,

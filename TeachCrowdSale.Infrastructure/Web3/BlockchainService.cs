@@ -27,7 +27,7 @@ namespace TeachCrowdSale.Infrastructure.Web3
             return _web3Helper.IsValidAddress(address);
         }
 
-        public ContractAddresses GetContractAddresses()
+        public ContractAddressesModel GetContractAddresses()
         {
             return _web3Helper.GetContractAddresses();
         }

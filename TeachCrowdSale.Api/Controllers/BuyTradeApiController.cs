@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TeachCrowdSale.Core.Interfaces.Services;
+using TeachCrowdSale.Core.Models;
 using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Models.Response;
 
@@ -120,7 +121,7 @@ namespace TeachCrowdSale.Api.Controllers
                 // Map token info
                 if (tokenInfo != null)
                 {
-                    data.TokenInfo = new TokenInfoModel
+                    data.TokenInfo = new Core.Models.Response.TokenInfoModel
                     {
                         TotalSupply = tokenInfo.TotalSupply,
                         CirculatingSupply = tokenInfo.CirculatingSupply,
@@ -351,7 +352,7 @@ namespace TeachCrowdSale.Api.Controllers
 
         #region Private Helper Methods
 
-        private async Task<Core.Models.TokenInfo?> GetTokenInfoSafely()
+        private async Task<Core.Models.TokenInfoModel?> GetTokenInfoSafely()
         {
             try
             {
@@ -361,7 +362,7 @@ namespace TeachCrowdSale.Api.Controllers
                 var marketCap = await _tokenService.CalculateMarketCapAsync();
                 var holdersCount = await _tokenService.GetHoldersCountAsync();
 
-                return new Core.Models.TokenInfo
+                return new Core.Models.TokenInfoModel
                 {
                     Name = "TeachToken",
                     Symbol = "TEACH",
@@ -380,7 +381,7 @@ namespace TeachCrowdSale.Api.Controllers
             }
         }
 
-        private async Task<Core.Models.UserPurchase?> GetUserPurchaseSafely(string address)
+        private async Task<UserBalanceModel?> GetUserPurchaseSafely(string address)
         {
             try
             {
@@ -406,7 +407,7 @@ namespace TeachCrowdSale.Api.Controllers
             }
         }
 
-        private async Task<VestingMilestone?> GetNextVestingMilestoneSafely(string address)
+        private async Task<VestingMilestoneResponse?> GetNextVestingMilestoneSafely(string address)
         {
             try
             {

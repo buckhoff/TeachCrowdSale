@@ -82,9 +82,9 @@ namespace TeachCrowdSale.Infrastructure.Web3
             }
         }
 
-        public ContractAddresses GetContractAddresses()
+        public ContractAddressesModel GetContractAddresses()
         {
-            return new ContractAddresses
+            return new ContractAddressesModel
             {
                 PresaleAddress = _settings.PresaleAddress,
                 TokenAddress = _settings.TokenAddress,

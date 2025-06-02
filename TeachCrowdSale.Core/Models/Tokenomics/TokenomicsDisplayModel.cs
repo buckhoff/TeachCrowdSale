@@ -16,7 +16,7 @@ namespace TeachCrowdSale.Core.Models.Tokenomics
     /// </summary>
     public class TokenomicsDisplayModel
     {
-        public LiveTokenMetricsModel LiveMetrics { get; set; } = new();
+        public TokenMetricsModel LiveMetrics { get; set; } = new();
         public SupplyBreakdownModel SupplyBreakdown { get; set; } = new();
         public VestingScheduleModel VestingSchedule { get; set; } = new();
         public BurnMechanicsModel BurnMechanics { get; set; } = new();

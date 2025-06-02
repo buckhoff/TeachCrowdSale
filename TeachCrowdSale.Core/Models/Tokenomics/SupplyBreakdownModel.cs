@@ -11,7 +11,7 @@ namespace TeachCrowdSale.Core.Models.Tokenomics
     /// </summary>
     public class SupplyBreakdownModel
     {
-        public List<SupplyAllocationModel> Allocations { get; set; } = new();
+        public List<TokenAllocationModel> Allocations { get; set; } = new();
         public SupplyMetricsModel Metrics { get; set; } = new();
         public List<SupplyTimelineModel> Timeline { get; set; } = new();
     }

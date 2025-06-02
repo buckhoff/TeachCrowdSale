@@ -224,7 +224,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
         
-        public async Task<UserPurchase> GetUserPurchaseAsync(string address)
+        public async Task<UserBalanceModel> GetUserPurchaseAsync(string address)
         {
             try
             {
@@ -267,9 +267,9 @@ namespace TeachCrowdSale.Infrastructure.Services
                     tierAmounts.Add(ConvertFromWei(tierAmount, 6)); // USDC has 6 decimals
                 }
                 
-                return new UserPurchase
+                return new UserBalanceModel
                 {
-                    Address = address,
+                    WalletAddress = address,
                     Tokens = tokens,
                     UsdAmount = usdAmount,
                     TierAmounts = tierAmounts,
@@ -307,7 +307,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
         
-        public async Task<VestingMilestone> GetNextVestingMilestoneAsync(string address)
+        public async Task<VestingMilestoneResponse> GetNextVestingMilestoneAsync(string address)
         {
             try
             {
@@ -328,7 +328,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     return null; // No more vesting milestones
                 }
                 
-                return new VestingMilestone
+                return new VestingMilestoneResponse
                 {
                     FormattedDate = DateTimeOffset.FromUnixTimeSeconds((long)timestamp).DateTime.ToLongDateString(),
                     Amount = ConvertFromWei(amount, 18) // TEACH has 18 decimals

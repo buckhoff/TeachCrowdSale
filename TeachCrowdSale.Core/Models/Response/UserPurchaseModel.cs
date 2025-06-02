@@ -6,7 +6,7 @@ namespace TeachCrowdSale.Core.Models.Response;
 public class UserPurchaseModel
 {
     [EthereumAddress]
-    public string Address { get; set; }
+    public string WalletAddress { get; set; }
     [Range(0, double.MaxValue)]
     public decimal TotalTokens { get; set; }
     [Range(0, double.MaxValue)]

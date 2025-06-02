@@ -20,7 +20,7 @@ namespace TeachCrowdSale.Core.Interfaces.Services
         /// <summary>
         /// Get live token metrics for real-time updates
         /// </summary>
-        Task<LiveTokenMetricsModel> GetLiveTokenMetricsAsync();
+        Task<TokenMetricsModel> GetLiveTokenMetricsAsync();
 
         /// <summary>
         /// Get detailed supply breakdown information

@@ -58,7 +58,7 @@ namespace TeachCrowdSale.Api.Controllers
         [HttpGet("live-metrics")]
         [EnableRateLimiting("LiveMetrics")]
         [ResponseCache(Duration = 60, VaryByHeader = "Authorization")]
-        public async Task<ActionResult<LiveTokenMetricsModel>> GetLiveMetrics()
+        public async Task<ActionResult<TokenMetricsModel>> GetLiveMetrics()
         {
             try
             {

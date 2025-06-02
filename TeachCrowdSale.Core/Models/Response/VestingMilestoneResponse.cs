@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeachCrowdSale.Core.Models.Response;
 
-public class VestingMilestone
+public class VestingMilestoneResponse
 {
     public DateTime Timestamp { get; set; }
     [Range(0, double.MaxValue)]

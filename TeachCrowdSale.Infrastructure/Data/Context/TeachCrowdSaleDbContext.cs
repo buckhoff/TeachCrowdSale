@@ -47,6 +47,12 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
         public DbSet<GovernanceProposal> GovernanceProposals { get; set; }
         public DbSet<GovernanceVote> GovernanceVotes { get; set; }
 
+        public DbSet<AnalyticsSnapshot> AnalyticsSnapshots { get; set; }
+        public DbSet<TierSnapshot> TierSnapshots { get; set; }
+        public DbSet<DailyAnalytics> DailyAnalytics { get; set; }
+        public DbSet<PerformanceMetric> PerformanceMetrics { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // PurchaseTransaction
