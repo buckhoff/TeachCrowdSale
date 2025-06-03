@@ -5,6 +5,4 @@
         public string Message { get; set; } = string.Empty;
         public GitHubApiCommitAuthor Author { get; set; } = new();
     }
-
-    #endregion
 }

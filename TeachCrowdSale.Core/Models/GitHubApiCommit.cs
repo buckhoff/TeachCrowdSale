@@ -6,6 +6,4 @@
         public string HtmlUrl { get; set; } = string.Empty;
         public GitHubApiCommitDetails Commit { get; set; } = new();
     }
-
-    #endregion
 }

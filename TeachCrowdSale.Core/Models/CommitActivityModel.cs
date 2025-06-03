@@ -1,4 +1,4 @@
-﻿namespace TeachCrowdSale.Core.Models;
+﻿namespace TeachCrowdSale.Core.Models { 
     /// <summary>
     /// Commit activity model
     /// </summary>

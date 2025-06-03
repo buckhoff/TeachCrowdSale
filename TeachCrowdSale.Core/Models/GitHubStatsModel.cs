@@ -35,6 +35,3 @@ namespace TeachCrowdSale.Core.Models
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     }
 }
-
-// TeachCrowdSale.Core/Models/Response/RepositoryStatsModel.cs
-using System.ComponentModel.DataAnnotations;

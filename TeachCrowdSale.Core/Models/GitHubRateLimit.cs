@@ -6,6 +6,4 @@
         public int Remaining { get; set; }
         public long Reset { get; set; }
     }
-
-    #endregion
 }

@@ -40,6 +40,3 @@ namespace TeachCrowdSale.Core.Models
         public int TotalTasksCount { get; set; }
     }
 }
-
-// TeachCrowdSale.Core/Models/Response/TaskDisplayModel.cs
-using System.ComponentModel.DataAnnotations;

@@ -19,8 +19,6 @@ namespace TeachCrowdSale.Api.Extensions
         /// </summary>
         public static IServiceCollection AddTokenomicsServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Add tokenomics database context
-            services.AddTokenomicsDatabase(configuration);
 
             // Add tokenomics repositories
             services.AddTokenomicsRepositories();
@@ -31,47 +29,7 @@ namespace TeachCrowdSale.Api.Extensions
             return services;
         }
 
-        /// <summary>
-        /// Add tokenomics database context
-        /// </summary>
-        public static IServiceCollection AddTokenomicsDatabase(this IServiceCollection services, IConfiguration configuration)
-        {
-            var connectionString = configuration.GetConnectionString("TokenomicsConnection")
-                ?? configuration.GetConnectionString("DefaultConnection");
-
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new InvalidOperationException("No connection string found for tokenomics database");
-            }
-
-            // Replace environment variables in connection string
-            connectionString = connectionString
-                ?.Replace("{DB_USER}", Environment.GetEnvironmentVariable("DB_USER") ?? "sa")
-                ?.Replace("{DB_PASSWORD}", Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "");
-
-            services.AddDbContext<TeachCrowdSaleDbContext>(options =>
-            {
-                options.UseSqlServer(connectionString, sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 3,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
-                        errorNumbersToAdd: null);
-
-                    sqlOptions.CommandTimeout(60);
-                });
-
-                // Enable sensitive data logging in development
-                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-                {
-                    options.EnableSensitiveDataLogging();
-                    options.EnableDetailedErrors();
-                }
-            });
-
-            return services;
-        }
-
+      
         /// <summary>
         /// Add tokenomics repositories
         /// </summary>

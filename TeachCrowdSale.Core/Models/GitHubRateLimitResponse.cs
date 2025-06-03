@@ -4,6 +4,4 @@
     {
         public GitHubRateLimit? Rate { get; set; }
     }
-
-    #endregion
 }

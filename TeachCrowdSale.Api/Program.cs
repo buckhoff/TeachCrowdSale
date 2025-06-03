@@ -35,6 +35,9 @@ builder.Services.AddProblemDetails();
 
 DotNetEnv.Env.Load();
 
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<GitHubService>();
+ 
 
 builder.Services.AddDatabaseServices(builder.Configuration);
 builder.Services.AddApiControllers();

@@ -1,7 +1,9 @@
-﻿namespace TeachCrowdSale.Core.Models;
+﻿namespace TeachCrowdSale.Core.Models {
+
     /// <summary>
     /// Release display model for UI
     /// </summary>
+    /// <!-- This model is used to represent a software release in the UI, including its details, status, and related information. -->-->
     public class ReleaseDisplayModel
     {
         public int Id { get; set; }
@@ -28,6 +30,3 @@
         public string TimeToRelease { get; set; } = string.Empty;
     }
 }
-
-// TeachCrowdSale.Core/Models/Response/DevelopmentStatsModel.cs
-using System.ComponentModel.DataAnnotations;

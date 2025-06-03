@@ -6,6 +6,4 @@
         public string AvatarUrl { get; set; } = string.Empty;
         public int Contributions { get; set; }
     }
-
-    #endregion
 }

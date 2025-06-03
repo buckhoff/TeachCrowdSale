@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TeachCrowdSale.Core.Data.Entities;
 using TeachCrowdSale.Core.Data.Enum;
 using TeachCrowdSale.Core.Interfaces.Repositories;
+using TeachCrowdSale.Core.Models;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using TaskStatus = TeachCrowdSale.Core.Data.Enum.TaskStatus;
 

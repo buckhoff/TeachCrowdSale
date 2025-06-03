@@ -2,6 +2,7 @@
 
 // TeachCrowdSale.Core/Interfaces/IRoadmapService.cs
 using TeachCrowdSale.Core.Data.Entities;
+using TeachCrowdSale.Core.Models;
 
 namespace TeachCrowdSale.Core.Interfaces.Repositories
 {

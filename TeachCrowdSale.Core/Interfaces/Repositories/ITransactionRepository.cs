@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TeachCrowdSale.Core.Data.Entities;
+using Task = System.Threading.Tasks.Task;
 
 namespace TeachCrowdSale.Core.Interfaces.Repositories
 {

@@ -1,3 +1,4 @@
+using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Infrastructure.Services;
 
@@ -9,6 +10,8 @@ builder.Services.AddControllersWithViews();
 // Add memory cache
 builder.Services.AddMemoryCache();
 builder.Services.AddResponseCompression();
+
+builder.Services.AddHttpClient();
 
 // Add HTTP client for API calls
 builder.Services.AddHttpClient("TeachAPI", client =>
@@ -22,6 +25,7 @@ builder.Services.AddHttpClient("TeachAPI", client =>
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IBuyTradeService, BuyTradeService>();
 builder.Services.AddScoped<ITokenomicsService, TokenomicsService>();
+builder.Services.AddScoped<IRoadmapService, RoadmapService>();
 
 
 

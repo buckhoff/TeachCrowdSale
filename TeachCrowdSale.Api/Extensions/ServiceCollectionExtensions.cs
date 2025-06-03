@@ -17,6 +17,9 @@ using TeachCrowdSale.Infrastructure.Services;
 using TeachCrowdSale.Infrastructure.Web3;
 using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Interfaces.Repositories;
+using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Infrastructure.Repositories.Analytics;
+using TeachCrowdSale.Infrastructure.Repositories.Liquidity;
 
 namespace TeachCrowdSale.Api.Extensions
 {
@@ -68,15 +71,27 @@ namespace TeachCrowdSale.Api.Extensions
         }
 
         public static IServiceCollection AddBusinessServices(this IServiceCollection services)
-        {
+        {  
             services.AddSingleton<Web3Helper>();
-            services.AddScoped<ITransactionRepository, TransactionRepository>();
+            services.AddScoped<IAbiService, AbiService>();
+            services.AddScoped<IAnalyticsService, AnalyticsService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IBlockchainService, BlockchainService>();
+            services.AddScoped<IDexIntegrationService,DexIntegrationService>();
+            services.AddScoped<IGitHubService, GitHubService>();
+            services.AddScoped<ILiquidityService,LiquidityService>();
             services.AddScoped<IPresaleService, PresaleService>();
             services.AddScoped<ITokenContractService, TokenContractService>();
+
+            services.AddScoped<IAnalyticsRepository,AnalyticsRepository>();
+            services.AddScoped<ILiquidityRepository,LiquidityRepository>();
+            services.AddScoped<IRoadmapRepository, RoadmapRepository>();
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
+
             services.AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
-            services.AddScoped<IAbiService, AbiService>();
-            services.AddScoped<IAuthService, AuthService>();
+            
+            
+
 
             return services;
         }

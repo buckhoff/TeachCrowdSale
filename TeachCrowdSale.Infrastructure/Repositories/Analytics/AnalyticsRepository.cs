@@ -6,6 +6,7 @@ using TeachCrowdSale.Core.Data.Entities;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Infrastructure.Data.Context;
+using Task = System.Threading.Tasks.Task;
 
 namespace TeachCrowdSale.Infrastructure.Repositories.Analytics
 {

@@ -1,8 +1,9 @@
-﻿
-/// <summary>
-/// Update display model for UI
-/// </summary>
-public class UpdateDisplayModel
+﻿namespace TeachCrowdSale.Core.Models
+{   
+    /// <summary>
+    /// Update display model for UI
+    /// </summary>
+    public class UpdateDisplayModel
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
