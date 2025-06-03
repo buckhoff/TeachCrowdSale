@@ -46,6 +46,8 @@ builder.Services.AddRateLimitingServices();
 builder.Services.AddCorsServices();
 builder.Services.AddCompressionServices();
 builder.Services.AddTokenomicsModule(builder.Configuration);
+builder.Services.AddStakingServices();
+builder.Services.AddStakingRateLimiting();
 
 var app = builder.Build();
 

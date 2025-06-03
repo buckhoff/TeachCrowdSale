@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TeachCrowdSale.Core.Models.Response
 {
-    public class AnalyticsChangesReponse
+    public class AnalyticsChangesResponse
     {
         public decimal TotalRaisedChange { get; set; }
         public decimal TokensSoldChange { get; set; }

@@ -6,6 +6,7 @@ using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models.Treasury;
+using Task = System.Threading.Tasks.Task;
 
 namespace TeachCrowdSale.Infrastructure.Services
 {
@@ -247,23 +248,23 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<TreasuryAnalyticsModel> GetTreasuryAnalyticsAsync()
+        public async Task<TreasuryAnalyticsResponse> GetTreasuryAnalyticsAsync()
         {
             try
             {
-                if (_cache.TryGetValue(CACHE_KEY_TREASURY_ANALYTICS, out TreasuryAnalyticsModel? cached) && cached != null)
+                if (_cache.TryGetValue(CACHE_KEY_TREASURY_ANALYTICS, out TreasuryAnalyticsResponse? cached) && cached != null)
                 {
                     return cached;
                 }
 
-                var treasuryAnalytics = new TreasuryAnalyticsModel();
+                var treasuryAnalytics = new TreasuryAnalyticsResponse();
 
                 // Get latest snapshot for treasury data
                 var latestSnapshot = await _analyticsRepository.GetLatestSnapshotAsync();
 
                 if (latestSnapshot != null)
                 {
-                    treasuryAnalytics.Overview = new Treasury.TreasuryOverviewModel
+                    treasuryAnalytics.Overview = new TreasuryOverviewModel
                     {
                         TotalValue = latestSnapshot.TreasuryBalance,
                         SafetyFundValue = latestSnapshot.StabilityFundBalance,
@@ -280,7 +281,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     treasuryAnalytics.Allocations = GetMockFundAllocations();
 
                     // Risk assessment
-                    treasuryAnalytics.Performance = new Treasury.TreasuryPerformanceModel
+                    treasuryAnalytics.Performance = new TreasuryPerformanceModel
                     {
                         EfficiencyRating = 85.5m,
                         CostPerUser = 12.50m,
@@ -798,9 +799,9 @@ namespace TeachCrowdSale.Infrastructure.Services
             return (int)(totalValue / monthlyBurnRate);
         }
 
-        private List<Treasury.TreasuryAllocationModel> GetMockFundAllocations()
+        private List<TreasuryAllocationModel> GetMockFundAllocations()
         {
-            return new List<Treasury.TreasuryAllocationModel>
+            return new List<TreasuryAllocationModel>
             {
                 new() { Category = "Development", Value = 26_250_000m, Percentage = 30m, Purpose = "Platform development and maintenance", Color = "#4F46E5" },
                 new() { Category = "Marketing", Value = 17_500_000m, Percentage = 20m, Purpose = "User acquisition and brand building", Color = "#059669" },
@@ -841,7 +842,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 var totalSold = snapshots.Last().Sold - snapshots.First().Sold;
                 var days = (snapshots.Last().Timestamp - snapshots.First().Timestamp).TotalDays;
 
-                return days > 0 ? (decimal)(totalSold / days) : 0m;
+                return days > 0 ? (decimal)(totalSold / (decimal)days) : 0m;
             }
             catch
             {
@@ -983,9 +984,9 @@ namespace TeachCrowdSale.Infrastructure.Services
             };
         }
 
-        private AnalyticsChangesReponse CalculateChanges(AnalyticsPeriodResponse period1, AnalyticsPeriodResponse period2)
+        private AnalyticsChangesResponse CalculateChanges(AnalyticsPeriodResponse period1, AnalyticsPeriodResponse period2)
         {
-            return new AnalyticsChangesReponse
+            return new AnalyticsChangesResponse
             {
                 TotalRaisedChange = period2.TotalRaised - period1.TotalRaised,
                 TotalRaisedChangePercent = period1.TotalRaised > 0 ? ((period2.TotalRaised - period1.TotalRaised) / period1.TotalRaised) * 100 : 0,

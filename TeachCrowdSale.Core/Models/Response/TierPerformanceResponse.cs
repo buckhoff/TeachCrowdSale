@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TeachCrowdSale.Core.Models.Response
 {
@@ -34,6 +29,13 @@ namespace TeachCrowdSale.Core.Models.Response
         public decimal RevenueGenerated { get; set; }
         public int ParticipantsCount { get; set; }
         public decimal AverageInvestment { get; set; }
+
+        // Daily/Weekly sales metrics
+        [Range(0, double.MaxValue)]
+        public decimal SoldToday { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal SoldThisWeek { get; set; }
 
         // Status
         public string Status { get; set; } = string.Empty; // Active, Completed, Upcoming

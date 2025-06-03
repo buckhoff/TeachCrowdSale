@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TeachCrowdSale.Core.Models.Treasury;
 
 namespace TeachCrowdSale.Core.Models.Response
 {
@@ -25,6 +26,10 @@ namespace TeachCrowdSale.Core.Models.Response
         public decimal MonthlyBurnRate { get; set; }
         public int OperationalRunwayMonths { get; set; }
         public int TotalRunwayMonths { get; set; }
+
+        public TreasuryOverviewModel Overview { get; set; } = new();
+        public List<TreasuryAllocationModel> Allocations { get; set; } = new();
+        public TreasuryPerformanceModel Performance { get; set; } = new();
 
         // Fund allocation breakdown
         public List<FundAllocationResponse> FundAllocations { get; set; } = new();

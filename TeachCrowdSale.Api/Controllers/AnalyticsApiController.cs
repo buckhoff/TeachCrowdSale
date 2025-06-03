@@ -30,7 +30,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("dashboard")]
         [ResponseCache(Duration = 120)] // 2 minutes cache
-        public async Task<ActionResult<AnalyticsDashboardModel>> GetAnalyticsDashboard()
+        public async Task<ActionResult<AnalyticsDashboardResponse>> GetAnalyticsDashboard()
         {
             try
             {
@@ -53,7 +53,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("token")]
         [ResponseCache(Duration = 300)] // 5 minutes cache
-        public async Task<ActionResult<TokenAnalyticsModel>> GetTokenAnalytics()
+        public async Task<ActionResult<TokenAnalyticsResponse>> GetTokenAnalytics()
         {
             try
             {
@@ -76,7 +76,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("presale")]
         [ResponseCache(Duration = 180)] // 3 minutes cache
-        public async Task<ActionResult<PresaleAnalyticsModel>> GetPresaleAnalytics()
+        public async Task<ActionResult<PresaleAnalyticsResponse>> GetPresaleAnalytics()
         {
             try
             {
@@ -99,7 +99,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("platform")]
         [ResponseCache(Duration = 600)] // 10 minutes cache (less frequent updates)
-        public async Task<ActionResult<PlatformAnalyticsModel>> GetPlatformAnalytics()
+        public async Task<ActionResult<PlatformAnalyticsResponse>> GetPlatformAnalytics()
         {
             try
             {
@@ -122,7 +122,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("treasury")]
         [ResponseCache(Duration = 900)] // 15 minutes cache
-        public async Task<ActionResult<TreasuryAnalyticsModel>> GetTreasuryAnalytics()
+        public async Task<ActionResult<TreasuryAnalyticsResponse>> GetTreasuryAnalytics()
         {
             try
             {
@@ -145,7 +145,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("tiers")]
         [ResponseCache(Duration = 300)] // 5 minutes cache
-        public async Task<ActionResult<List<TierPerformanceModel>>> GetTierPerformance()
+        public async Task<ActionResult<List<TierPerformanceResponse>>> GetTierPerformance()
         {
             try
             {
@@ -168,7 +168,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("price-history")]
         [ResponseCache(Duration = 600)] // 10 minutes cache
-        public async Task<ActionResult<List<TimeSeriesDataPoint>>> GetPriceHistory(
+        public async Task<ActionResult<List<TimeSeriesDataPointResponse>>> GetPriceHistory(
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null,
             [FromQuery] string interval = "1d")
@@ -214,7 +214,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("volume-history")]
         [ResponseCache(Duration = 600)] // 10 minutes cache
-        public async Task<ActionResult<List<TimeSeriesDataPoint>>> GetVolumeHistory(
+        public async Task<ActionResult<List<TimeSeriesDataPointResponse>>> GetVolumeHistory(
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null,
             [FromQuery] string interval = "1d")
@@ -251,7 +251,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("metrics/{category}")]
         [ResponseCache(Duration = 300)] // 5 minutes cache
-        public async Task<ActionResult<List<AnalyticsMetricModel>>> GetMetricsByCategory([FromRoute] string category)
+        public async Task<ActionResult<List<AnalyticsMetricResponse>>> GetMetricsByCategory([FromRoute] string category)
         {
             try
             {
@@ -359,7 +359,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("comparison")]
         [ResponseCache(Duration = 900)] // 15 minutes cache
-        public async Task<ActionResult<AnalyticsComparisonModel>> GetAnalyticsComparison(
+        public async Task<ActionResult<AnalyticsComparisonResponse>> GetAnalyticsComparison(
             [FromQuery] DateTime period1Start,
             [FromQuery] DateTime period1End,
             [FromQuery] DateTime period2Start,

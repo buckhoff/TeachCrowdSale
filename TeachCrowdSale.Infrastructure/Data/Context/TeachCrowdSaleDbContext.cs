@@ -52,6 +52,23 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
         public DbSet<DailyAnalytics> DailyAnalytics { get; set; }
         public DbSet<PerformanceMetric> PerformanceMetrics { get; set; }
 
+        // Staking entities
+        public DbSet<StakingPool> StakingPools { get; set; }
+        public DbSet<UserStake> UserStakes { get; set; }
+        public DbSet<StakingRewardClaim> StakingRewardClaims { get; set; }
+        public DbSet<SchoolBeneficiary> SchoolBeneficiaries { get; set; }
+        public DbSet<UserStakingBeneficiary> UserStakingBeneficiaries { get; set; }
+        public DbSet<SchoolRewardDistribution> SchoolRewardDistributions { get; set; }
+
+
+        //Roadmap entities
+
+        public DbSet<Milestone> Milestones { get; set; }
+        public DbSet<Core.Data.Entities.Task> DevelopmentTasks { get; set; }
+        public DbSet<Dependency> Dependencies { get; set; }
+        public DbSet<Update> Updates { get; set; }
+        public DbSet<Release> Releases { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureTransactionEntities(modelBuilder);
@@ -62,6 +79,119 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
             ConfigureBurnEntities(modelBuilder);
             ConfigureUtilityGovernanceEntities(modelBuilder);
             ConfigureAnalyticsEntities(modelBuilder);
+            ConfigureStakingEntities(modelBuilder);
+            ConfigureRoadmapEntities(modelBuilder);
+        }
+
+        private void ConfigureRoadmapEntities(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Milestone>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(2000).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.ProgressPercentage).HasPrecision(5, 2);
+                entity.Property(e => e.TechnicalDetails).HasMaxLength(500);
+                entity.Property(e => e.GitHubIssueUrl).HasMaxLength(200);
+                entity.Property(e => e.DocumentationUrl).HasMaxLength(200);
+
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.Category);
+                entity.HasIndex(e => e.SortOrder);
+                entity.HasIndex(e => e.EstimatedCompletionDate);
+
+                entity.HasMany(e => e.Tasks)
+                    .WithOne(t => t.Milestone)
+                    .HasForeignKey(t => t.MilestoneId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.Updates)
+                    .WithOne(u => u.Milestone)
+                    .HasForeignKey(u => u.MilestoneId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Task configuration
+            modelBuilder.Entity<Core.Data.Entities.Task>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.ProgressPercentage).HasPrecision(5, 2);
+                entity.Property(e => e.AssignedDeveloper).HasMaxLength(100);
+                entity.Property(e => e.GitHubIssueUrl).HasMaxLength(200);
+                entity.Property(e => e.PullRequestUrl).HasMaxLength(200);
+
+                entity.HasIndex(e => e.MilestoneId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.Type);
+                entity.HasIndex(e => e.AssignedDeveloper);
+                entity.HasIndex(e => e.SortOrder);
+            });
+
+            // Dependency configuration
+            modelBuilder.Entity<Dependency>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Description).HasMaxLength(500);
+
+                entity.HasOne(e => e.Milestone)
+                    .WithMany(m => m.Dependencies)
+                    .HasForeignKey(e => e.MilestoneId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.DependsOnMilestone)
+                    .WithMany()
+                    .HasForeignKey(e => e.DependsOnMilestoneId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.MilestoneId);
+                entity.HasIndex(e => e.DependsOnMilestoneId);
+                entity.HasIndex(e => e.Type);
+            });
+
+            // Update configuration
+            modelBuilder.Entity<Update>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Content).HasMaxLength(2000).IsRequired();
+                entity.Property(e => e.ProgressChange).HasPrecision(5, 2);
+                entity.Property(e => e.AuthorName).HasMaxLength(100);
+
+                entity.HasIndex(e => e.MilestoneId);
+                entity.HasIndex(e => e.Type);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.IsPublic);
+            });
+
+            // Release configuration
+            modelBuilder.Entity<Release>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Version).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.ReleaseNotes).HasMaxLength(2000);
+                entity.Property(e => e.GitHubReleaseUrl).HasMaxLength(200);
+                entity.Property(e => e.DocumentationUrl).HasMaxLength(200);
+
+                entity.HasIndex(e => e.Version).IsUnique();
+                entity.HasIndex(e => e.Type);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.PlannedReleaseDate);
+                entity.HasIndex(e => e.ActualReleaseDate);
+                entity.HasIndex(e => e.IsPublic);
+
+                // Many-to-many relationship with Milestones
+                entity.HasMany(e => e.Milestones)
+                    .WithMany()
+                    .UsingEntity<Dictionary<string, object>>(
+                        "ReleaseMilestones",
+                        j => j.HasOne<Milestone>().WithMany().HasForeignKey("MilestoneId"),
+                        j => j.HasOne<Release>().WithMany().HasForeignKey("ReleaseId"));
+            });
         }
 
         private void ConfigureTransactionEntities(ModelBuilder modelBuilder)
@@ -473,6 +603,132 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.HasIndex(e => new { e.MetricName, e.Timestamp });
                 entity.HasIndex(e => new { e.Category, e.Timestamp });
                 entity.HasIndex(e => e.IsPublic);
+            });
+        }
+        private void ConfigureStakingEntities(ModelBuilder modelBuilder)
+        {
+            // StakingPool configuration
+            modelBuilder.Entity<StakingPool>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.MinStakeAmount).HasPrecision(18, 8);
+                entity.Property(e => e.MaxStakeAmount).HasPrecision(18, 8);
+                entity.Property(e => e.BaseAPY).HasPrecision(5, 2);
+                entity.Property(e => e.BonusAPY).HasPrecision(5, 2);
+                entity.Property(e => e.TotalStaked).HasPrecision(18, 8);
+                entity.Property(e => e.MaxPoolSize).HasPrecision(18, 8);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.LockPeriodDays);
+            });
+
+            // UserStake configuration
+            modelBuilder.Entity<UserStake>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.StakedAmount).HasPrecision(18, 8);
+                entity.Property(e => e.AccruedRewards).HasPrecision(18, 8);
+                entity.Property(e => e.ClaimedRewards).HasPrecision(18, 8);
+                entity.Property(e => e.StakeTransactionHash).HasMaxLength(66);
+                entity.Property(e => e.UnstakeTransactionHash).HasMaxLength(66);
+
+                entity.HasIndex(e => e.WalletAddress);
+                entity.HasIndex(e => e.StakingPoolId);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.StakeDate);
+
+                entity.HasOne(e => e.StakingPool)
+                    .WithMany(p => p.UserStakes)
+                    .HasForeignKey(e => e.StakingPoolId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // StakingRewardClaim configuration
+            modelBuilder.Entity<StakingRewardClaim>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ClaimedAmount).HasPrecision(18, 8);
+                entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
+
+                entity.HasIndex(e => e.UserStakeId);
+                entity.HasIndex(e => e.ClaimDate);
+                entity.HasIndex(e => e.TransactionHash);
+
+                entity.HasOne(e => e.UserStake)
+                    .WithMany(s => s.RewardClaims)
+                    .HasForeignKey(e => e.UserStakeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // SchoolBeneficiary configuration
+            modelBuilder.Entity<SchoolBeneficiary>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.Country).HasMaxLength(100);
+                entity.Property(e => e.State).HasMaxLength(100);
+                entity.Property(e => e.City).HasMaxLength(100);
+                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.ContactEmail).HasMaxLength(255);
+                entity.Property(e => e.Website).HasMaxLength(500);
+                entity.Property(e => e.LogoUrl).HasMaxLength(500);
+                entity.Property(e => e.TotalReceived).HasPrecision(18, 8);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.WalletAddress).IsUnique();
+                entity.HasIndex(e => e.Country);
+                entity.HasIndex(e => e.State);
+                entity.HasIndex(e => e.IsVerified);
+                entity.HasIndex(e => e.IsActive);
+            });
+
+            // UserStakingBeneficiary configuration
+            modelBuilder.Entity<UserStakingBeneficiary>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.TotalDonated).HasPrecision(18, 8);
+                entity.Property(e => e.SelectedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.WalletAddress);
+                entity.HasIndex(e => e.SchoolBeneficiaryId);
+                entity.HasIndex(e => e.IsActive);
+
+                // Ensure only one active selection per wallet
+                entity.HasIndex(e => new { e.WalletAddress, e.IsActive })
+                    .IsUnique()
+                    .HasFilter("[IsActive] = 1");
+
+                entity.HasOne(e => e.SchoolBeneficiary)
+                    .WithMany(s => s.UserStakes)
+                    .HasForeignKey(e => e.SchoolBeneficiaryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // SchoolRewardDistribution configuration
+            modelBuilder.Entity<SchoolRewardDistribution>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StakerAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.Amount).HasPrecision(18, 8);
+                entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
+                entity.Property(e => e.DistributionDate).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.SchoolBeneficiaryId);
+                entity.HasIndex(e => e.StakerAddress);
+                entity.HasIndex(e => e.DistributionDate);
+                entity.HasIndex(e => e.TransactionHash);
+
+                entity.HasOne(e => e.SchoolBeneficiary)
+                    .WithMany()
+                    .HasForeignKey(e => e.SchoolBeneficiaryId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
