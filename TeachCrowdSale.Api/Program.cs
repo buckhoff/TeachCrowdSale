@@ -48,6 +48,8 @@ builder.Services.AddCompressionServices();
 builder.Services.AddTokenomicsModule(builder.Configuration);
 builder.Services.AddStakingServices();
 builder.Services.AddStakingRateLimiting();
+builder.Services.AddLiquidityModule(builder.Configuration);
+
 
 var app = builder.Build();
 

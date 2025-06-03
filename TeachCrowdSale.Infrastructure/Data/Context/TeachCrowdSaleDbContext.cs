@@ -69,6 +69,13 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
         public DbSet<Update> Updates { get; set; }
         public DbSet<Release> Releases { get; set; }
 
+        // Liquidity entities
+        public DbSet<LiquidityPool> LiquidityPools { get; set; }
+        public DbSet<UserLiquidityPosition> UserLiquidityPositions { get; set; }
+        public DbSet<LiquidityTransaction> LiquidityTransactions { get; set; }
+        public DbSet<LiquidityPoolSnapshot> LiquidityPoolSnapshots { get; set; }
+        public DbSet<DexConfiguration> DexConfigurations { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureTransactionEntities(modelBuilder);
@@ -81,6 +88,154 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
             ConfigureAnalyticsEntities(modelBuilder);
             ConfigureStakingEntities(modelBuilder);
             ConfigureRoadmapEntities(modelBuilder);
+            ConfigureLiquidityEntities(modelBuilder);
+        }
+
+        private void ConfigureLiquidityEntities(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<LiquidityPool>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.DexName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.TokenPair).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.PoolAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.Token0Address).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.Token1Address).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.Token0Symbol).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.Token1Symbol).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.TotalValueLocked).HasPrecision(18, 2);
+                entity.Property(e => e.Volume24h).HasPrecision(18, 2);
+                entity.Property(e => e.Volume7d).HasPrecision(18, 2);
+                entity.Property(e => e.FeePercentage).HasPrecision(5, 3);
+                entity.Property(e => e.APY).HasPrecision(8, 4);
+                entity.Property(e => e.APR).HasPrecision(8, 4);
+                entity.Property(e => e.Token0Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.CurrentPrice).HasPrecision(18, 8);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.DexUrl).HasMaxLength(200);
+                entity.Property(e => e.AnalyticsUrl).HasMaxLength(200);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.LastSyncAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.PoolAddress).IsUnique();
+                entity.HasIndex(e => e.DexName);
+                entity.HasIndex(e => e.TokenPair);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.IsFeatured);
+                entity.HasIndex(e => e.TotalValueLocked);
+                entity.HasIndex(e => e.LastSyncAt);
+
+                entity.HasMany(e => e.UserPositions)
+                    .WithOne(p => p.LiquidityPool)
+                    .HasForeignKey(p => p.LiquidityPoolId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(e => e.Snapshots)
+                    .WithOne(s => s.LiquidityPool)
+                    .HasForeignKey(s => s.LiquidityPoolId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // UserLiquidityPosition configuration
+            modelBuilder.Entity<UserLiquidityPosition>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.LpTokenAmount).HasPrecision(18, 8);
+                entity.Property(e => e.Token0Amount).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Amount).HasPrecision(18, 8);
+                entity.Property(e => e.InitialValueUsd).HasPrecision(18, 2);
+                entity.Property(e => e.CurrentValueUsd).HasPrecision(18, 2);
+                entity.Property(e => e.FeesEarnedUsd).HasPrecision(18, 6);
+                entity.Property(e => e.ImpermanentLoss).HasPrecision(18, 6);
+                entity.Property(e => e.NetPnL).HasPrecision(18, 6);
+                entity.Property(e => e.AddTransactionHash).HasMaxLength(66);
+                entity.Property(e => e.RemoveTransactionHash).HasMaxLength(66);
+                entity.Property(e => e.AddedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.LastUpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.WalletAddress);
+                entity.HasIndex(e => e.LiquidityPoolId);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.AddedAt);
+                entity.HasIndex(e => new { e.WalletAddress, e.IsActive });
+
+                entity.HasMany(e => e.Transactions)
+                    .WithOne(t => t.UserLiquidityPosition)
+                    .HasForeignKey(t => t.UserLiquidityPositionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // LiquidityTransaction configuration
+            modelBuilder.Entity<LiquidityTransaction>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.TransactionType).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.Token0Amount).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Amount).HasPrecision(18, 8);
+                entity.Property(e => e.LpTokenAmount).HasPrecision(18, 8);
+                entity.Property(e => e.ValueUsd).HasPrecision(18, 2);
+                entity.Property(e => e.GasFeesUsd).HasPrecision(18, 6);
+                entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
+                entity.Property(e => e.Notes).HasMaxLength(500);
+                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.UserLiquidityPositionId);
+                entity.HasIndex(e => e.WalletAddress);
+                entity.HasIndex(e => e.TransactionType);
+                entity.HasIndex(e => e.TransactionHash);
+                entity.HasIndex(e => e.Timestamp);
+                entity.HasIndex(e => e.Status);
+            });
+
+            // LiquidityPoolSnapshot configuration
+            modelBuilder.Entity<LiquidityPoolSnapshot>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TotalValueLocked).HasPrecision(18, 2);
+                entity.Property(e => e.Volume24h).HasPrecision(18, 2);
+                entity.Property(e => e.Token0Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.Price).HasPrecision(18, 8);
+                entity.Property(e => e.APY).HasPrecision(8, 4);
+                entity.Property(e => e.APR).HasPrecision(8, 4);
+                entity.Property(e => e.Source).HasMaxLength(50);
+                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.LiquidityPoolId);
+                entity.HasIndex(e => e.Timestamp);
+                entity.HasIndex(e => new { e.LiquidityPoolId, e.Timestamp });
+                entity.HasIndex(e => new { e.LiquidityPoolId, e.IsLatest });
+                entity.HasIndex(e => e.Source);
+            });
+
+            // DexConfiguration configuration
+            modelBuilder.Entity<DexConfiguration>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.BaseUrl).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.ApiUrl).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.LogoUrl).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.DefaultFeePercentage).HasPrecision(5, 3);
+                entity.Property(e => e.Network).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.RouterAddress).HasMaxLength(42);
+                entity.Property(e => e.FactoryAddress).HasMaxLength(42);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.Network);
+                entity.HasIndex(e => e.SortOrder);
+                entity.HasIndex(e => e.IsRecommended);
+            });
         }
 
         private void ConfigureRoadmapEntities(ModelBuilder modelBuilder)

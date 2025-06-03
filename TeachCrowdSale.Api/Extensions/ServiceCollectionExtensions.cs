@@ -103,6 +103,17 @@ namespace TeachCrowdSale.Api.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Add all liquidity module services - ADD THIS TO EXISTING EXTENSIONS
+        /// </summary>
+        public static IServiceCollection AddLiquidityModule(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services.AddLiquidityServices(configuration)
+                          .AddLiquidityRateLimiting()
+                          .AddLiquidityCaching()
+                          .AddLiquidityBackgroundServices();
+        }
+
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAuthentication(options =>
