@@ -20,6 +20,7 @@ using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Infrastructure.Repositories.Analytics;
 using TeachCrowdSale.Infrastructure.Repositories.Liquidity;
+using TeachCrowdSale.Api.Service;
 
 namespace TeachCrowdSale.Api.Extensions
 {

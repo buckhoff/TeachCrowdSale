@@ -1,0 +1,749 @@
+﻿@model TeachCrowdSale.Core.Models.Response.AnalyticsDashboardResponse
+@{
+    Layout = null;
+}
+@{
+    ViewData["Title"] = "TEACH Token Analytics - Comprehensive Platform Analytics";
+    ViewData["Description"] = "Real-time analytics dashboard for TEACH token metrics, presale performance, treasury data, and platform statistics.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TEACH Token Analytics - TeachToken Platform" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/teachtoken-analytics-og.jpg" />
+    <meta property="og:url" content="https://teachtoken.io/analytics" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TEACH Token Analytics - TeachToken Platform" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/analytics.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">
+                        <span class="brand-icon">🎓</span>
+                        <span class="brand-text">TeachToken</span>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/tokenomics" class="nav-link">Tokenomics</a></li>
+                    <li><a href="/analytics" class="nav-link active">Analytics</a></li>
+                    <li><a href="/buy" class="nav-link">Buy TEACH</a></li>
+                    <li><a href="#community" class="nav-link">Community</a></li>
+                </ul>
+
+                <a href="/buy" class="nav-cta">
+                    Buy TEACH
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content">
+
+        <!-- Analytics Hero Section -->
+        <section class="analytics-hero-section">
+            <div class="container">
+                <div class="analytics-hero-container">
+                    <div class="analytics-hero-content">
+                        <h1>Real-Time Analytics Dashboard</h1>
+                        <p class="analytics-hero-subtitle">
+                            Comprehensive insights into TEACH token performance, presale metrics, treasury analytics,
+                            and platform statistics. All data updated in real-time with institutional-grade accuracy.
+                        </p>
+                        <div class="hero-controls">
+                            <div class="time-range-selector">
+                                <button class="time-btn active" data-range="24h">24H</button>
+                                <button class="time-btn" data-range="7d">7D</button>
+                                <button class="time-btn" data-range="30d">30D</button>
+                                <button class="time-btn" data-range="90d">90D</button>
+                                <button class="time-btn" data-range="1y">1Y</button>
+                            </div>
+                            <div class="hero-actions">
+                                <button class="btn-secondary" id="refreshData">
+                                    <span>Refresh Data</span>
+                                    <i>🔄</i>
+                                </button>
+                                <button class="btn-secondary" id="exportData">
+                                    <span>Export</span>
+                                    <i>📊</i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="live-status-card">
+                        <div class="status-header">
+                            <h3>System Status</h3>
+                            <div class="status-indicator live" id="systemStatus">
+                                <span class="status-dot"></span>
+                                <span>Live</span>
+                            </div>
+                        </div>
+                        <div class="status-metrics">
+                            <div class="status-metric">
+                                <span class="status-label">Last Update</span>
+                                <span class="status-value" id="lastUpdate">Loading...</span>
+                            </div>
+                            <div class="status-metric">
+                                <span class="status-label">Data Points</span>
+                                <span class="status-value" id="dataPoints">-</span>
+                            </div>
+                            <div class="status-metric">
+                                <span class="status-label">API Response</span>
+                                <span class="status-value" id="apiResponse">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Metrics Overview -->
+        <section class="metrics-overview-section analytics-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Key Performance Indicators</h2>
+                    <p class="section-subtitle">
+                        Real-time overview of critical TEACH token and platform metrics
+                    </p>
+                </div>
+                <div class="kpi-grid" id="kpiGrid">
+                    <!-- KPI cards will be populated by JavaScript -->
+                    <div class="kpi-card loading" data-metric="tokenPrice">
+                        <div class="kpi-header">
+                            <h3 class="kpi-title">Token Price</h3>
+                            <div class="kpi-icon primary">💰</div>
+                        </div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" data-value="0.065">$0.065</span>
+                            <span class="kpi-change positive" data-change="4.8">+4.8%</span>
+                        </div>
+                        <div class="kpi-description">24h change</div>
+                        <div class="kpi-chart-mini" id="priceChart">
+                            <!-- Mini chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="kpi-card loading" data-metric="marketCap">
+                        <div class="kpi-header">
+                            <h3 class="kpi-title">Market Cap</h3>
+                            <div class="kpi-icon secondary">📈</div>
+                        </div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" data-value="325000000">$325M</span>
+                            <span class="kpi-change positive" data-change="6.2">+6.2%</span>
+                        </div>
+                        <div class="kpi-description">24h change</div>
+                        <div class="kpi-chart-mini" id="marketCapChart">
+                            <!-- Mini chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="kpi-card loading" data-metric="volume24h">
+                        <div class="kpi-header">
+                            <h3 class="kpi-title">24h Volume</h3>
+                            <div class="kpi-icon success">🔄</div>
+                        </div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" data-value="2500000">$2.5M</span>
+                            <span class="kpi-change positive" data-change="12.4">+12.4%</span>
+                        </div>
+                        <div class="kpi-description">Trading volume</div>
+                        <div class="kpi-chart-mini" id="volumeChart">
+                            <!-- Mini chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="kpi-card loading" data-metric="totalRaised">
+                        <div class="kpi-header">
+                            <h3 class="kpi-title">Total Raised</h3>
+                            <div class="kpi-icon warning">🎯</div>
+                        </div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" data-value="12500000">$12.5M</span>
+                            <span class="kpi-change positive" data-change="2.1">+2.1%</span>
+                        </div>
+                        <div class="kpi-description">Presale progress</div>
+                        <div class="kpi-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" data-progress="14.3" style="width: 14.3%"></div>
+                            </div>
+                            <span class="progress-text">14.3% of goal</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card loading" data-metric="holders">
+                        <div class="kpi-header">
+                            <h3 class="kpi-title">Token Holders</h3>
+                            <div class="kpi-icon accent">👥</div>
+                        </div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" data-value="3247">3,247</span>
+                            <span class="kpi-change positive" data-change="5.8">+5.8%</span>
+                        </div>
+                        <div class="kpi-description">24h growth</div>
+                        <div class="kpi-chart-mini" id="holdersChart">
+                            <!-- Mini chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="kpi-card loading" data-metric="treasuryRunway">
+                        <div class="kpi-header">
+                            <h3 class="kpi-title">Treasury Runway</h3>
+                            <div class="kpi-icon primary">🏦</div>
+                        </div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" data-value="10.5">10.5</span>
+                            <span class="kpi-unit">Years</span>
+                        </div>
+                        <div class="kpi-description">Operational security</div>
+                        <div class="kpi-status stable">
+                            <span class="status-indicator"></span>
+                            <span>Excellent</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Token Analytics Section -->
+        <section class="token-analytics-section analytics-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Token Analytics</h2>
+                    <p class="section-subtitle">
+                        Comprehensive token performance metrics and market analysis
+                    </p>
+                </div>
+                <div class="analytics-grid">
+                    <div class="chart-container large">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Price & Volume History</h3>
+                            <div class="chart-controls">
+                                <select class="chart-select" id="priceChartInterval">
+                                    <option value="1h">1H</option>
+                                    <option value="4h">4H</option>
+                                    <option value="1d" selected>1D</option>
+                                    <option value="1w">1W</option>
+                                </select>
+                                <button class="chart-btn" id="priceChartFullscreen">⛶</button>
+                            </div>
+                        </div>
+                        <div id="priceVolumeChart" class="chart-content"></div>
+                    </div>
+
+                    <div class="analytics-stats-container">
+                        <div class="stats-card">
+                            <h3>Market Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">All-Time High</span>
+                                    <span class="stat-value" data-stat="allTimeHigh">$0.065</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">All-Time Low</span>
+                                    <span class="stat-value" data-stat="allTimeLow">$0.040</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Circulating Supply</span>
+                                    <span class="stat-value" data-stat="circulatingSupply">1.0B</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Supply</span>
+                                    <span class="stat-value" data-stat="totalSupply">5.0B</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Burned Tokens</span>
+                                    <span class="stat-value" data-stat="burnedTokens">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Staked Tokens</span>
+                                    <span class="stat-value" data-stat="stakedTokens">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stats-card">
+                            <h3>Trading Analysis</h3>
+                            <div class="trading-stats">
+                                <div class="trading-metric">
+                                    <span class="metric-label">24h High/Low</span>
+                                    <span class="metric-value">
+                                        <span class="high" data-stat="high24h">$0.067</span>
+                                        <span class="separator">/</span>
+                                        <span class="low" data-stat="low24h">$0.063</span>
+                                    </span>
+                                </div>
+                                <div class="trading-metric">
+                                    <span class="metric-label">Price Change 7d</span>
+                                    <span class="metric-value positive" data-stat="priceChange7d">+12.8%</span>
+                                </div>
+                                <div class="trading-metric">
+                                    <span class="metric-label">Price Change 30d</span>
+                                    <span class="metric-value positive" data-stat="priceChange30d">+28.4%</span>
+                                </div>
+                                <div class="trading-metric">
+                                    <span class="metric-label">Holders Growth 24h</span>
+                                    <span class="metric-value positive" data-stat="holdersChange24h">+127</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Presale Analytics Section -->
+        <section class="presale-analytics-section analytics-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Presale Performance</h2>
+                    <p class="section-subtitle">
+                        Detailed analysis of presale progress, tier performance, and investor metrics
+                    </p>
+                </div>
+                <div class="analytics-grid">
+                    <div class="presale-overview-card">
+                        <h3>Presale Progress</h3>
+                        <div class="presale-progress-visual">
+                            <div class="progress-circle" data-progress="14.3">
+                                <div class="progress-circle-inner">
+                                    <span class="progress-percentage">14.3%</span>
+                                    <span class="progress-label">Complete</span>
+                                </div>
+                            </div>
+                            <div class="progress-details">
+                                <div class="progress-item">
+                                    <span class="progress-item-label">Raised</span>
+                                    <span class="progress-item-value" data-presale="totalRaised">$12.5M</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="progress-item-label">Goal</span>
+                                    <span class="progress-item-value" data-presale="fundingGoal">$87.5M</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="progress-item-label">Remaining</span>
+                                    <span class="progress-item-value" data-presale="remaining">$75M</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="progress-item-label">Participants</span>
+                                    <span class="progress-item-value" data-presale="participants">2,847</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Tier Performance</h3>
+                            <div class="chart-legend">
+                                <span class="legend-item">
+                                    <span class="legend-color tier-1"></span>
+                                    <span>Tier 1 (Sold)</span>
+                                </span>
+                                <span class="legend-item">
+                                    <span class="legend-color tier-2"></span>
+                                    <span>Tier 2 (Active)</span>
+                                </span>
+                                <span class="legend-item">
+                                    <span class="legend-color tier-3"></span>
+                                    <span>Tier 3 (Upcoming)</span>
+                                </span>
+                                <span class="legend-item">
+                                    <span class="legend-color tier-4"></span>
+                                    <span>Tier 4 (Upcoming)</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div id="tierPerformanceChart" class="chart-content"></div>
+                    </div>
+
+                    <div class="current-tier-card">
+                        <h3>Current Tier: Community Round</h3>
+                        <div class="tier-info">
+                            <div class="tier-price">
+                                <span class="price-value">$0.06</span>
+                                <span class="price-label">per TEACH</span>
+                            </div>
+                            <div class="tier-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" data-progress="45" style="width: 45%"></div>
+                                </div>
+                                <div class="progress-stats">
+                                    <span>169M sold</span>
+                                    <span>206M remaining</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tier-metrics">
+                            <div class="tier-metric">
+                                <span class="tier-metric-label">Sales Velocity</span>
+                                <span class="tier-metric-value" data-tier="salesVelocity">1.25M/day</span>
+                            </div>
+                            <div class="tier-metric">
+                                <span class="tier-metric-label">Est. Sellout</span>
+                                <span class="tier-metric-value" data-tier="estimatedSellout">165 days</span>
+                            </div>
+                            <div class="tier-metric">
+                                <span class="tier-metric-label">Avg. Investment</span>
+                                <span class="tier-metric-value" data-tier="avgInvestment">$4,392</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Treasury Analytics Section -->
+        <section class="treasury-analytics-section analytics-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Treasury & Financial Health</h2>
+                    <p class="section-subtitle">
+                        Multi-layered treasury analysis and operational runway projections
+                    </p>
+                </div>
+                <div class="analytics-grid">
+                    <div class="treasury-overview-card">
+                        <h3>Treasury Status</h3>
+                        <div class="treasury-health">
+                            <div class="health-score">
+                                <div class="score-circle excellent">
+                                    <span class="score-value">96</span>
+                                    <span class="score-label">Health Score</span>
+                                </div>
+                            </div>
+                            <div class="health-metrics">
+                                <div class="health-metric">
+                                    <span class="health-label">Total Value</span>
+                                    <span class="health-value" data-treasury="totalValue">$87.5M</span>
+                                </div>
+                                <div class="health-metric">
+                                    <span class="health-label">Monthly Burn</span>
+                                    <span class="health-value" data-treasury="monthlyBurn">$695K</span>
+                                </div>
+                                <div class="health-metric">
+                                    <span class="health-label">Runway</span>
+                                    <span class="health-value" data-treasury="runway">10.5 years</span>
+                                </div>
+                                <div class="health-metric">
+                                    <span class="health-label">Safety Fund</span>
+                                    <span class="health-value" data-treasury="safetyFund">$8.75M</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Fund Allocation</h3>
+                            <div class="chart-info">
+                                <span class="info-tooltip" title="Based on presale success scenario">ℹ️</span>
+                            </div>
+                        </div>
+                        <div id="treasuryAllocationChart" class="chart-content"></div>
+                    </div>
+
+                    <div class="scenario-analysis-card">
+                        <h3>Stress Test Scenarios</h3>
+                        <div class="scenarios-grid">
+                            <div class="scenario-item excellent">
+                                <div class="scenario-header">
+                                    <span class="scenario-name">Bull Market</span>
+                                    <span class="scenario-probability">Current</span>
+                                </div>
+                                <div class="scenario-metrics">
+                                    <span class="scenario-metric">
+                                        <span class="metric-label">Runway</span>
+                                        <span class="metric-value">15+ years</span>
+                                    </span>
+                                    <span class="scenario-metric">
+                                        <span class="metric-label">Risk</span>
+                                        <span class="metric-value">Very Low</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="scenario-item good">
+                                <div class="scenario-header">
+                                    <span class="scenario-name">Bear Market (80% decline)</span>
+                                    <span class="scenario-probability">30%</span>
+                                </div>
+                                <div class="scenario-metrics">
+                                    <span class="scenario-metric">
+                                        <span class="metric-label">Runway</span>
+                                        <span class="metric-value">8+ years</span>
+                                    </span>
+                                    <span class="scenario-metric">
+                                        <span class="metric-label">Risk</span>
+                                        <span class="metric-value">Low</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="scenario-item warning">
+                                <div class="scenario-header">
+                                    <span class="scenario-name">Severe Crisis (90% decline)</span>
+                                    <span class="scenario-probability">5%</span>
+                                </div>
+                                <div class="scenario-metrics">
+                                    <span class="scenario-metric">
+                                        <span class="metric-label">Runway</span>
+                                        <span class="metric-value">5+ years</span>
+                                    </span>
+                                    <span class="scenario-metric">
+                                        <span class="metric-label">Risk</span>
+                                        <span class="metric-value">Manageable</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Platform Analytics Section -->
+        <section class="platform-analytics-section analytics-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Platform Analytics</h2>
+                    <p class="section-subtitle">
+                        Educational platform metrics and impact measurement (launching soon)
+                    </p>
+                </div>
+                <div class="analytics-grid">
+                    <div class="platform-status-card">
+                        <h3>Platform Development</h3>
+                        <div class="development-status">
+                            <div class="status-indicator in-development">
+                                <span class="status-dot"></span>
+                                <span>In Development</span>
+                            </div>
+                            <div class="development-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" data-progress="75" style="width: 75%"></div>
+                                </div>
+                                <span class="progress-text">75% Complete</span>
+                            </div>
+                        </div>
+                        <div class="platform-metrics-preview">
+                            <div class="preview-metric">
+                                <span class="preview-label">Target Launch</span>
+                                <span class="preview-value">Q2 2024</span>
+                            </div>
+                            <div class="preview-metric">
+                                <span class="preview-label">Pre-registered Teachers</span>
+                                <span class="preview-value">487</span>
+                            </div>
+                            <div class="preview-metric">
+                                <span class="preview-label">Partner Schools</span>
+                                <span class="preview-value">23</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="impact-preview-card">
+                        <h3>Expected Impact Metrics</h3>
+                        <div class="impact-categories">
+                            <div class="impact-category">
+                                <div class="impact-icon education">🎓</div>
+                                <div class="impact-info">
+                                    <span class="impact-label">Education Funding</span>
+                                    <span class="impact-description">Direct funding to teachers and schools</span>
+                                </div>
+                            </div>
+                            <div class="impact-category">
+                                <div class="impact-icon staking">💰</div>
+                                <div class="impact-info">
+                                    <span class="impact-label">Staking Rewards</span>
+                                    <span class="impact-description">Community rewards with school benefits</span>
+                                </div>
+                            </div>
+                            <div class="impact-category">
+                                <div class="impact-icon governance">🏛️</div>
+                                <div class="impact-info">
+                                    <span class="impact-label">Governance</span>
+                                    <span class="impact-description">Community-driven platform decisions</span>
+                                </div>
+                            </div>
+                            <div class="impact-category">
+                                <div class="impact-icon transparency">📊</div>
+                                <div class="impact-info">
+                                    <span class="impact-label">Transparency</span>
+                                    <span class="impact-description">Real-time impact tracking</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-preview-card">
+                        <h3>Development Roadmap</h3>
+                        <div class="roadmap-items">
+                            <div class="roadmap-item completed">
+                                <div class="roadmap-marker"></div>
+                                <div class="roadmap-content">
+                                    <span class="roadmap-title">Smart Contracts & Tokenomics</span>
+                                    <span class="roadmap-status">✅ Complete</span>
+                                </div>
+                            </div>
+                            <div class="roadmap-item active">
+                                <div class="roadmap-marker"></div>
+                                <div class="roadmap-content">
+                                    <span class="roadmap-title">Platform MVP Development</span>
+                                    <span class="roadmap-status">🔄 In Progress</span>
+                                </div>
+                            </div>
+                            <div class="roadmap-item upcoming">
+                                <div class="roadmap-marker"></div>
+                                <div class="roadmap-content">
+                                    <span class="roadmap-title">Teacher Verification System</span>
+                                    <span class="roadmap-status">🔜 Q2 2024</span>
+                                </div>
+                            </div>
+                            <div class="roadmap-item upcoming">
+                                <div class="roadmap-marker"></div>
+                                <div class="roadmap-content">
+                                    <span class="roadmap-title">Global Launch</span>
+                                    <span class="roadmap-status">📅 Q4 2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics CTA Section -->
+        <section class="analytics-cta-section">
+            <div class="container">
+                <div class="cta-container">
+                    <div class="cta-content">
+                        <h2>Data-Driven Investment Decisions</h2>
+                        <p>
+                            Make informed investment decisions with comprehensive real-time analytics.
+                            Our institutional-grade data provides transparency and insights into every aspect of the TEACH ecosystem.
+                        </p>
+                        <div class="cta-buttons">
+                            <a href="/buy" class="btn btn-primary btn-large">
+                                <span>Invest in TEACH</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <a href="/tokenomics" class="btn btn-secondary btn-large">
+                                <span>View Tokenomics</span>
+                                <i class="fas fa-chart-line"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="cta-stats">
+                        <div class="cta-stat">
+                            <span class="cta-stat-value" data-live="dataPoints">50K+</span>
+                            <span class="cta-stat-label">Data Points</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="cta-stat-value">99.9%</span>
+                            <span class="cta-stat-label">Uptime</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="cta-stat-value">Real-Time</span>
+                            <span class="cta-stat-label">Updates</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <p>Revolutionary education funding through blockchain technology</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Analytics</h4>
+                    <ul>
+                        <li><a href="/analytics#token">Token Metrics</a></li>
+                        <li><a href="/analytics#presale">Presale Analytics</a></li>
+                        <li><a href="/analytics#treasury">Treasury Data</a></li>
+                        <li><a href="/analytics#platform">Platform Stats</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/#platform">Development</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Roadmap</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Legal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Syncfusion JS -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Pass server-side data to JavaScript
+        window.AnalyticsDashboardData = @Html.Raw(ViewBag.JsonData ?? "{}");
+    </script>
+    <script src="~/js/analytics.js" asp-append-version="true"></script>
+</body>
+</html>

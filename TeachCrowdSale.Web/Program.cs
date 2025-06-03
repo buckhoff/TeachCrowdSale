@@ -22,11 +22,20 @@ builder.Services.AddHttpClient("TeachAPI", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+// Analytics-specific HTTP client configuration
+builder.Services.AddHttpClient("AnalyticsAPI", client =>
+{
+    var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7054";
+    client.BaseAddress = new Uri($"{apiBaseUrl}/api/analytics/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.Timeout = TimeSpan.FromSeconds(45); // Longer timeout for analytics data
+});
+
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IBuyTradeService, BuyTradeService>();
 builder.Services.AddScoped<ITokenomicsService, TokenomicsService>();
 builder.Services.AddScoped<IRoadmapService, RoadmapService>();
-
+builder.Services.AddScoped<IAnalyticsDashboardService, AnalyticsDashboardService>();
 
 
 // Add services to the container.
@@ -53,6 +62,11 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "analytics",
+    pattern: "analytics/{action=Index}/{id?}",
+    defaults: new { controller = "Analytics" });
 
 app.MapStaticAssets();
 app.MapRazorPages()

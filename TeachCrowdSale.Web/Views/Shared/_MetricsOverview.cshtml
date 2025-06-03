@@ -1,0 +1,212 @@
+﻿@model TeachCrowdSale.Core.Models.Response.TokenAnalyticsResponse
+
+<div class="metrics-overview-container">
+    <div class="metrics-header">
+        <h3>Live Metrics Overview</h3>
+        <div class="metrics-controls">
+            <button class="metrics-refresh-btn" id="refreshMetrics">
+                <span class="refresh-icon">🔄</span>
+                <span>Refresh</span>
+            </button>
+            <div class="auto-refresh-toggle">
+                <input type="checkbox" id="autoRefresh" checked />
+                <label for="autoRefresh">Auto-refresh</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="metrics-grid" id="metricsGrid">
+        <!-- Primary Token Metrics -->
+        <div class="metric-card primary" data-metric="tokenPrice">
+            <div class="metric-header">
+                <span class="metric-title">Token Price</span>
+                <div class="metric-icon">💰</div>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">
+                    <span class="value-amount" data-value="@Model.CurrentPrice">@Model.CurrentPrice.ToString("C4")</span>
+                    <span class="value-change @(Model.PriceChange24h >= 0 ? "positive" : "negative")"
+                          data-change="@Model.PriceChange24h">
+                        @(Model.PriceChange24h >= 0 ? "+" : "")@Model.PriceChange24h.ToString("F2")%
+                    </span>
+                </div>
+                <div class="metric-subtitle">24h change</div>
+                <div class="metric-chart-mini" id="priceSparkline"></div>
+            </div>
+        </div>
+
+        <!-- Market Cap -->
+        <div class="metric-card secondary" data-metric="marketCap">
+            <div class="metric-header">
+                <span class="metric-title">Market Cap</span>
+                <div class="metric-icon">📈</div>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">
+                    <span class="value-amount" data-value="@Model.MarketCap">@Model.MarketCap.ToString("C0")</span>
+                </div>
+                <div class="metric-subtitle">Fully diluted valuation</div>
+                <div class="metric-details">
+                    <span class="detail-item">
+                        <span class="detail-label">Circulating:</span>
+                        <span class="detail-value" data-value="@Model.CirculatingSupply">@Model.CirculatingSupply.ToString("N0")</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Volume -->
+        <div class="metric-card success" data-metric="volume24h">
+            <div class="metric-header">
+                <span class="metric-title">24h Volume</span>
+                <div class="metric-icon">🔄</div>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">
+                    <span class="value-amount" data-value="@Model.Volume24h">@Model.Volume24h.ToString("C0")</span>
+                </div>
+                <div class="metric-subtitle">Trading activity</div>
+                <div class="metric-chart-mini" id="volumeSparkline"></div>
+            </div>
+        </div>
+
+        <!-- Token Holders -->
+        <div class="metric-card accent" data-metric="holdersCount">
+            <div class="metric-header">
+                <span class="metric-title">Token Holders</span>
+                <div class="metric-icon">👥</div>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">
+                    <span class="value-amount" data-value="@Model.HoldersCount">@Model.HoldersCount.ToString("N0")</span>
+                    <span class="value-change positive" data-change="@Model.HoldersChange24h">
+                        +@Model.HoldersChange24h.ToString("N0")
+                    </span>
+                </div>
+                <div class="metric-subtitle">24h growth</div>
+                <div class="metric-chart-mini" id="holdersSparkline"></div>
+            </div>
+        </div>
+
+        <!-- Supply Metrics -->
+        <div class="metric-card warning" data-metric="supplyMetrics">
+            <div class="metric-header">
+                <span class="metric-title">Supply Status</span>
+                <div class="metric-icon">🔒</div>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">
+                    <span class="value-amount" data-value="@Model.TotalSupply">@Model.TotalSupply.ToString("N0")</span>
+                </div>
+                <div class="metric-subtitle">Total supply</div>
+                <div class="metric-details">
+                    <div class="supply-breakdown">
+                        <div class="supply-item">
+                            <span class="supply-label">Circulating:</span>
+                            <span class="supply-value">@((Model.CirculatingSupply / Model.TotalSupply * 100).ToString("F1"))%</span>
+                        </div>
+                        <div class="supply-item">
+                            <span class="supply-label">Locked:</span>
+                            <span class="supply-value">@(((Model.TotalSupply - Model.CirculatingSupply) / Model.TotalSupply * 100).ToString("F1"))%</span>
+                        </div>
+                        @if (Model.BurnedTokens > 0)
+                        {
+                            <div class="supply-item">
+                                <span class="supply-label">Burned:</span>
+                                <span class="supply-value">@Model.BurnedTokens.ToString("N0")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All-Time Performance -->
+        <div class="metric-card info" data-metric="allTimePerformance">
+            <div class="metric-header">
+                <span class="metric-title">All-Time Performance</span>
+                <div class="metric-icon">🏆</div>
+            </div>
+            <div class="metric-content">
+                <div class="metric-details all-time-stats">
+                    <div class="ath-item">
+                        <span class="ath-label">All-Time High:</span>
+                        <div class="ath-value-group">
+                            <span class="ath-value">@Model.AllTimeHigh.ToString("C4")</span>
+                            <span class="ath-date">@Model.AllTimeHighDate.ToString("MMM dd")</span>
+                        </div>
+                    </div>
+                    <div class="atl-item">
+                        <span class="atl-label">All-Time Low:</span>
+                        <div class="atl-value-group">
+                            <span class="atl-value">@Model.AllTimeLow.ToString("C4")</span>
+                            <span class="atl-date">@Model.AllTimeLowDate.ToString("MMM dd")</span>
+                        </div>
+                    </div>
+                    <div class="performance-item">
+                        <span class="performance-label">From ATL:</span>
+                        <span class="performance-value positive">
+                            +@(((Model.CurrentPrice - Model.AllTimeLow) / Model.AllTimeLow * 100).ToString("F1"))%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Bar -->
+    <div class="quick-stats-bar">
+        <div class="quick-stat">
+            <span class="quick-stat-label">24h High/Low</span>
+            <span class="quick-stat-value">
+                <span class="high-value">@Model.High24h.ToString("C4")</span>
+                <span class="separator">/</span>
+                <span class="low-value">@Model.Low24h.ToString("C4")</span>
+            </span>
+        </div>
+        <div class="quick-stat">
+            <span class="quick-stat-label">7d Change</span>
+            <span class="quick-stat-value @(Model.PriceChange7d >= 0 ? "positive" : "negative")">
+                @(Model.PriceChange7d >= 0 ? "+" : "")@Model.PriceChange7d.ToString("F2")%
+            </span>
+        </div>
+        <div class="quick-stat">
+            <span class="quick-stat-label">30d Change</span>
+            <span class="quick-stat-value @(Model.PriceChange30d >= 0 ? "positive" : "negative")">
+                @(Model.PriceChange30d >= 0 ? "+" : "")@Model.PriceChange30d.ToString("F2")%
+            </span>
+        </div>
+        <div class="quick-stat">
+            <span class="quick-stat-label">TVL</span>
+            <span class="quick-stat-value">@Model.TotalValueLocked.ToString("C0")</span>
+        </div>
+        @if (Model.StakedTokens > 0)
+        {
+            <div class="quick-stat">
+                <span class="quick-stat-label">Staked</span>
+                <span class="quick-stat-value">@Model.StakedTokens.ToString("N0")</span>
+            </div>
+        }
+    </div>
+
+    <!-- Last Updated Indicator -->
+    <div class="metrics-footer">
+        <div class="last-updated">
+            <span class="update-icon">⏱️</span>
+            <span class="update-text">Last updated: <span id="lastUpdateTime">@DateTime.UtcNow.ToString("HH:mm:ss UTC")</span></span>
+        </div>
+        <div class="data-source">
+            <span class="source-text">Data aggregated from multiple sources</span>
+            <span class="reliability-indicator excellent" title="99.9% data reliability">●</span>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // Initialize metrics overview on load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof initializeMetricsOverview === 'function') {
+            initializeMetricsOverview();
+        }
+    });
+</script>

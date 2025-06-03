@@ -1,0 +1,295 @@
+﻿@model TeachCrowdSale.Core.Models.Response.TokenAnalyticsResponse
+
+<div class="token-analytics-container">
+    <div class="analytics-header">
+        <h3>Token Performance Analysis</h3>
+        <div class="analytics-controls">
+            <div class="time-selector">
+                <button class="time-btn active" data-period="24h">24H</button>
+                <button class="time-btn" data-period="7d">7D</button>
+                <button class="time-btn" data-period="30d">30D</button>
+                <button class="time-btn" data-period="90d">90D</button>
+                <button class="time-btn" data-period="1y">1Y</button>
+            </div>
+            <div class="chart-type-selector">
+                <button class="chart-type-btn active" data-type="line">Line</button>
+                <button class="chart-type-btn" data-type="candle">Candle</button>
+                <button class="chart-type-btn" data-type="volume">Volume</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="token-analytics-grid">
+        <!-- Main Price Chart -->
+        <div class="price-chart-container">
+            <div class="chart-header">
+                <div class="chart-title-group">
+                    <h4>TEACH/USD Price Chart</h4>
+                    <div class="current-price-display">
+                        <span class="price-value">@Model.CurrentPrice.ToString("C4")</span>
+                        <span class="price-change @(Model.PriceChange24h >= 0 ? "positive" : "negative")">
+                            @(Model.PriceChange24h >= 0 ? "+" : "")@Model.PriceChange24h.ToString("F2")%
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-controls">
+                    <button class="chart-control-btn" id="priceChartFullscreen" title="Fullscreen">⛶</button>
+                    <button class="chart-control-btn" id="priceChartDownload" title="Download">📥</button>
+                    <button class="chart-control-btn" id="priceChartShare" title="Share">🔗</button>
+                </div>
+            </div>
+            <div class="chart-content">
+                <div id="tokenPriceChart" class="main-chart"></div>
+                <div class="chart-loading" id="priceChartLoading">
+                    <div class="loading-spinner"></div>
+                    <span>Loading price data...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Volume Chart -->
+        <div class="volume-chart-container">
+            <div class="chart-header">
+                <h4>Trading Volume</h4>
+                <div class="volume-stats">
+                    <span class="volume-24h">24h: @Model.Volume24h.ToString("C0")</span>
+                </div>
+            </div>
+            <div class="chart-content">
+                <div id="tokenVolumeChart" class="volume-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Statistics Grid -->
+    <div class="token-stats-section">
+        <h4>Market Statistics</h4>
+        <div class="token-stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-header">
+                    <span class="stat-title">Market Cap</span>
+                    <div class="stat-icon">📊</div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">@Model.MarketCap.ToString("C0")</div>
+                    <div class="stat-subtitle">Fully diluted value</div>
+                    <div class="stat-detail">
+                        <span class="detail-label">Rank:</span>
+                        <span class="detail-value">#2,847</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card secondary">
+                <div class="stat-header">
+                    <span class="stat-title">Circulating Supply</span>
+                    <div class="stat-icon">🔄</div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">@Model.CirculatingSupply.ToString("N0")</div>
+                    <div class="stat-subtitle">@((Model.CirculatingSupply / Model.TotalSupply * 100).ToString("F1"))% of total</div>
+                    <div class="stat-detail">
+                        <span class="detail-label">Total Supply:</span>
+                        <span class="detail-value">@Model.TotalSupply.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <span class="stat-title">Token Holders</span>
+                    <div class="stat-icon">👥</div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">@Model.HoldersCount.ToString("N0")</div>
+                    <div class="stat-subtitle">
+                        <span class="@(Model.HoldersChange24h >= 0 ? "positive" : "negative")">
+                            @(Model.HoldersChange24h >= 0 ? "+" : "")@Model.HoldersChange24h.ToString("N0") 24h
+                        </span>
+                    </div>
+                    <div class="stat-detail">
+                        <span class="detail-label">Growth Rate:</span>
+                        <span class="detail-value positive">+12.4% monthly</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <span class="stat-title">All-Time High</span>
+                    <div class="stat-icon">📈</div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">@Model.AllTimeHigh.ToString("C4")</div>
+                    <div class="stat-subtitle">@Model.AllTimeHighDate.ToString("MMM dd, yyyy")</div>
+                    <div class="stat-detail">
+                        <span class="detail-label">From ATH:</span>
+                        <span class="detail-value @(Model.CurrentPrice >= Model.AllTimeHigh ? "positive" : "negative")">
+                            @(((Model.CurrentPrice - Model.AllTimeHigh) / Model.AllTimeHigh * 100).ToString("F1"))%
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card accent">
+                <div class="stat-header">
+                    <span class="stat-title">All-Time Low</span>
+                    <div class="stat-icon">📉</div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">@Model.AllTimeLow.ToString("C4")</div>
+                    <div class="stat-subtitle">@Model.AllTimeLowDate.ToString("MMM dd, yyyy")</div>
+                    <div class="stat-detail">
+                        <span class="detail-label">From ATL:</span>
+                        <span class="detail-value positive">
+                            +@(((Model.CurrentPrice - Model.AllTimeLow) / Model.AllTimeLow * 100).ToString("F1"))%
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.TotalValueLocked > 0)
+            {
+                <div class="stat-card info">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Value Locked</span>
+                        <div class="stat-icon">🔒</div>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@Model.TotalValueLocked.ToString("C0")</div>
+                        <div class="stat-subtitle">Platform TVL</div>
+                        <div class="stat-detail">
+                            <span class="detail-label">APY Range:</span>
+                            <span class="detail-value">8-24%</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Price Performance Analysis -->
+    <div class="price-performance-section">
+        <h4>Price Performance Analysis</h4>
+        <div class="performance-grid">
+            <div class="performance-card">
+                <div class="performance-header">
+                    <span class="performance-title">24 Hour Performance</span>
+                    <span class="performance-badge @(Model.PriceChange24h >= 0 ? "positive" : "negative")">
+                        @(Model.PriceChange24h >= 0 ? "+" : "")@Model.PriceChange24h.ToString("F2")%
+                    </span>
+                </div>
+                <div class="performance-details">
+                    <div class="performance-item">
+                        <span class="performance-label">High:</span>
+                        <span class="performance-value">@Model.High24h.ToString("C4")</span>
+                    </div>
+                    <div class="performance-item">
+                        <span class="performance-label">Low:</span>
+                        <span class="performance-value">@Model.Low24h.ToString("C4")</span>
+                    </div>
+                    <div class="performance-item">
+                        <span class="performance-label">Volume:</span>
+                        <span class="performance-value">@Model.Volume24h.ToString("C0")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="performance-card">
+                <div class="performance-header">
+                    <span class="performance-title">7 Day Performance</span>
+                    <span class="performance-badge @(Model.PriceChange7d >= 0 ? "positive" : "negative")">
+                        @(Model.PriceChange7d >= 0 ? "+" : "")@Model.PriceChange7d.ToString("F2")%
+                    </span>
+                </div>
+                <div class="performance-details">
+                    <div class="performance-item">
+                        <span class="performance-label">Volatility:</span>
+                        <span class="performance-value">12.4%</span>
+                    </div>
+                    <div class="performance-item">
+                        <span class="performance-label">Avg Volume:</span>
+                        <span class="performance-value">@((Model.Volume24h * 7).ToString("C0"))</span>
+                    </div>
+                    <div class="performance-item">
+                        <span class="performance-label">Trading Days:</span>
+                        <span class="performance-value">7/7</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="performance-card">
+                <div class="performance-header">
+                    <span class="performance-title">30 Day Performance</span>
+                    <span class="performance-badge @(Model.PriceChange30d >= 0 ? "positive" : "negative")">
+                        @(Model.PriceChange30d >= 0 ? "+" : "")@Model.PriceChange30d.ToString("F2")%
+                    </span>
+                </div>
+                <div class="performance-details">
+                    <div class="performance-item">
+                        <span class="performance-label">Best Day:</span>
+                        <span class="performance-value positive">+8.7%</span>
+                    </div>
+                    <div class="performance-item">
+                        <span class="performance-label">Worst Day:</span>
+                        <span class="performance-value negative">-3.2%</span>
+                    </div>
+                    <div class="performance-item">
+                        <span class="performance-label">Positive Days:</span>
+                        <span class="performance-value">67%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution Analysis -->
+    @if (Model.BurnedTokens > 0 || Model.StakedTokens > 0)
+    {
+        <div class="distribution-section">
+            <h4>Token Distribution</h4>
+            <div class="distribution-grid">
+                <div class="distribution-chart-container">
+                    <div id="tokenDistributionChart" class="distribution-chart"></div>
+                </div>
+                <div class="distribution-stats">
+                    <div class="distribution-item">
+                        <span class="distribution-label">Circulating:</span>
+                        <span class="distribution-value">@Model.CirculatingSupply.ToString("N0")</span>
+                        <span class="distribution-percentage">@((Model.CirculatingSupply / Model.TotalSupply * 100).ToString("F1"))%</span>
+                    </div>
+                    @if (Model.StakedTokens > 0)
+                    {
+                        <div class="distribution-item">
+                            <span class="distribution-label">Staked:</span>
+                            <span class="distribution-value">@Model.StakedTokens.ToString("N0")</span>
+                            <span class="distribution-percentage">@((Model.StakedTokens / Model.TotalSupply * 100).ToString("F1"))%</span>
+                        </div>
+                    }
+                    @if (Model.BurnedTokens > 0)
+                    {
+                        <div class="distribution-item">
+                            <span class="distribution-label">Burned:</span>
+                            <span class="distribution-value">@Model.BurnedTokens.ToString("N0")</span>
+                            <span class="distribution-percentage">@((Model.BurnedTokens / Model.TotalSupply * 100).ToString("F1"))%</span>
+                        </div>
+                    }
+                    <div class="distribution-item">
+                        <span class="distribution-label">Locked:</span>
+                        <span class="distribution-value">@((Model.TotalSupply - Model.CirculatingSupply - Model.StakedTokens - Model.BurnedTokens).ToString("N0"))</span>
+                        <span class="distribution-percentage">@(((Model.TotalSupply - Model.CirculatingSupply - Model.StakedTokens - Model.BurnedTokens) / Model.TotalSupply * 100).ToString("F1"))%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script type="text/javascript">
+    // Initialize token analytics on load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof initializeTokenAnalytics === 'function') {
+            initializeTokenAnalytics(@Html.Raw(Json.Serialize(Model)));
+        }
+    });
+</script>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,6 +74,7 @@ namespace TeachCrowdSale.Core.Data.Entities
         public int UniqueUsers24h { get; set; }
 
         // Create index for efficient time-series queries
+        [NotMapped]
         public DateTime Date => Timestamp.Date;
 
         // Navigation properties

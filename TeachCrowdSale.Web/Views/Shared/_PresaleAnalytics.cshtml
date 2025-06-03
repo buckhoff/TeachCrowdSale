@@ -1,0 +1,362 @@
+﻿<!-- Presale Analytics Section -->
+<section class="presale-analytics-section analytics-section" id="presale">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Presale Analytics</h2>
+            <p class="section-subtitle">
+                Comprehensive presale performance metrics, funding progress, and tier analysis
+            </p>
+        </div>
+
+        <div class="presale-container">
+            <!-- Presale Overview Metrics -->
+            <div class="presale-overview">
+                <div class="presale-metrics">
+                    <div class="presale-metric primary">
+                        <span class="metric-icon">💰</span>
+                        <div class="metric-info">
+                            <span class="metric-value" data-presale="totalRaised">$12.5M</span>
+                            <span class="metric-label">Total Raised</span>
+                        </div>
+                        <div class="metric-change positive">
+                            <span>+$2.1M</span>
+                            <span>This Week</span>
+                        </div>
+                    </div>
+                    <div class="presale-metric secondary">
+                        <span class="metric-icon">🎯</span>
+                        <div class="metric-info">
+                            <span class="metric-value" data-presale="fundingProgress">14.3%</span>
+                            <span class="metric-label">Funding Progress</span>
+                        </div>
+                        <div class="metric-change positive">
+                            <span>Goal: $87.5M</span>
+                        </div>
+                    </div>
+                    <div class="presale-metric success">
+                        <span class="metric-icon">👥</span>
+                        <div class="metric-info">
+                            <span class="metric-value" data-presale="participants">2,847</span>
+                            <span class="metric-label">Total Participants</span>
+                        </div>
+                        <div class="metric-change positive">
+                            <span>+156</span>
+                            <span>This Week</span>
+                        </div>
+                    </div>
+                    <div class="presale-metric warning">
+                        <span class="metric-icon">⚡</span>
+                        <div class="metric-info">
+                            <span class="metric-value" data-presale="velocity">$178K</span>
+                            <span class="metric-label">Daily Average</span>
+                        </div>
+                        <div class="metric-change positive">
+                            <span>+12%</span>
+                            <span>vs Last Week</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Tier Analysis -->
+            <div class="current-tier-analysis">
+                <h3>Current Tier Performance</h3>
+                <div class="tier-analysis-grid">
+                    <div class="tier-info-card active-tier">
+                        <div class="tier-header">
+                            <h4>Community Round (Tier 2)</h4>
+                            <span class="tier-price">$0.06 per TEACH</span>
+                        </div>
+                        <div class="tier-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" data-percentage="45" style="width: 45%"></div>
+                            </div>
+                            <div class="progress-stats">
+                                <span>169M / 375M tokens sold</span>
+                                <span>45% Complete</span>
+                            </div>
+                        </div>
+                        <div class="tier-metrics">
+                            <div class="tier-metric">
+                                <span class="metric-label">Sold Today</span>
+                                <span class="metric-value">125K tokens</span>
+                            </div>
+                            <div class="tier-metric">
+                                <span class="metric-label">Sales Velocity</span>
+                                <span class="metric-value">1.25M/day</span>
+                            </div>
+                            <div class="tier-metric">
+                                <span class="metric-label">Est. Sellout</span>
+                                <span class="metric-value">165 days</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tier-performance-chart">
+                        <h4>Tier Sales Performance</h4>
+                        <div id="tierPerformanceChart" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Presale Charts Grid -->
+            <div class="presale-charts-grid">
+                <div class="chart-container">
+                    <h3 class="chart-title">Funding Progress Over Time</h3>
+                    <div id="fundingProgressChart" style="height: 350px;"></div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Daily Investment Volume</h3>
+                    <div id="dailyVolumeChart" style="height: 350px;"></div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Participant Growth</h3>
+                    <div id="participantGrowthChart" style="height: 350px;"></div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Investment Distribution</h3>
+                    <div id="investmentDistributionChart" style="height: 350px;"></div>
+                </div>
+            </div>
+
+            <!-- All Tiers Overview -->
+            <div class="all-tiers-overview">
+                <h3>All Tiers Overview</h3>
+                <div class="tiers-table">
+                    <div class="table-header">
+                        <div class="header-cell">Tier</div>
+                        <div class="header-cell">Price</div>
+                        <div class="header-cell">Allocation</div>
+                        <div class="header-cell">Sold</div>
+                        <div class="header-cell">Progress</div>
+                        <div class="header-cell">Revenue</div>
+                        <div class="header-cell">Status</div>
+                    </div>
+
+                    <div class="table-row completed">
+                        <div class="tier-cell">
+                            <span class="tier-name">Seed Round</span>
+                            <span class="tier-number">Tier 1</span>
+                        </div>
+                        <div class="price-cell">$0.04</div>
+                        <div class="allocation-cell">250M</div>
+                        <div class="sold-cell">250M</div>
+                        <div class="progress-cell">
+                            <div class="mini-progress">
+                                <div class="mini-progress-fill" style="width: 100%"></div>
+                            </div>
+                            <span>100%</span>
+                        </div>
+                        <div class="revenue-cell">$10.0M</div>
+                        <div class="status-cell">
+                            <span class="status-badge sold-out">Sold Out</span>
+                        </div>
+                    </div>
+
+                    <div class="table-row active">
+                        <div class="tier-cell">
+                            <span class="tier-name">Community Round</span>
+                            <span class="tier-number">Tier 2</span>
+                        </div>
+                        <div class="price-cell">$0.06</div>
+                        <div class="allocation-cell">375M</div>
+                        <div class="sold-cell">169M</div>
+                        <div class="progress-cell">
+                            <div class="mini-progress">
+                                <div class="mini-progress-fill" style="width: 45%"></div>
+                            </div>
+                            <span>45%</span>
+                        </div>
+                        <div class="revenue-cell">$10.1M</div>
+                        <div class="status-cell">
+                            <span class="status-badge active">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="table-row upcoming">
+                        <div class="tier-cell">
+                            <span class="tier-name">Growth Round</span>
+                            <span class="tier-number">Tier 3</span>
+                        </div>
+                        <div class="price-cell">$0.08</div>
+                        <div class="allocation-cell">375M</div>
+                        <div class="sold-cell">0</div>
+                        <div class="progress-cell">
+                            <div class="mini-progress">
+                                <div class="mini-progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span>0%</span>
+                        </div>
+                        <div class="revenue-cell">$0</div>
+                        <div class="status-cell">
+                            <span class="status-badge upcoming">Upcoming</span>
+                        </div>
+                    </div>
+
+                    <div class="table-row upcoming">
+                        <div class="tier-cell">
+                            <span class="tier-name">Final Round</span>
+                            <span class="tier-number">Tier 4</span>
+                        </div>
+                        <div class="price-cell">$0.10</div>
+                        <div class="allocation-cell">250M</div>
+                        <div class="sold-cell">0</div>
+                        <div class="progress-cell">
+                            <div class="mini-progress">
+                                <div class="mini-progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span>0%</span>
+                        </div>
+                        <div class="revenue-cell">$0</div>
+                        <div class="status-cell">
+                            <span class="status-badge upcoming">Upcoming</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Analytics -->
+            <div class="investment-analytics">
+                <h3>Investment Analytics</h3>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="card-header">
+                            <h4>Investment Size Distribution</h4>
+                        </div>
+                        <div class="distribution-stats">
+                            <div class="distribution-item">
+                                <span class="range">$100 - $1K</span>
+                                <span class="percentage">42%</span>
+                                <div class="percentage-bar">
+                                    <div class="bar-fill" style="width: 42%"></div>
+                                </div>
+                            </div>
+                            <div class="distribution-item">
+                                <span class="range">$1K - $10K</span>
+                                <span class="percentage">35%</span>
+                                <div class="percentage-bar">
+                                    <div class="bar-fill" style="width: 35%"></div>
+                                </div>
+                            </div>
+                            <div class="distribution-item">
+                                <span class="range">$10K - $50K</span>
+                                <span class="percentage">18%</span>
+                                <div class="percentage-bar">
+                                    <div class="bar-fill" style="width: 18%"></div>
+                                </div>
+                            </div>
+                            <div class="distribution-item">
+                                <span class="range">$50K+</span>
+                                <span class="percentage">5%</span>
+                                <div class="percentage-bar">
+                                    <div class="bar-fill" style="width: 5%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="card-header">
+                            <h4>Geographic Distribution</h4>
+                        </div>
+                        <div class="geographic-stats">
+                            <div class="geo-item">
+                                <span class="country">🇺🇸 United States</span>
+                                <span class="percentage">28%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🇪🇺 European Union</span>
+                                <span class="percentage">22%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🇨🇦 Canada</span>
+                                <span class="percentage">15%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🇦🇺 Australia</span>
+                                <span class="percentage">12%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🌍 Other</span>
+                                <span class="percentage">23%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="card-header">
+                            <h4>Conversion Metrics</h4>
+                        </div>
+                        <div class="conversion-metrics">
+                            <div class="conversion-metric">
+                                <span class="metric-label">Page Views (30d)</span>
+                                <span class="metric-value">45,672</span>
+                            </div>
+                            <div class="conversion-metric">
+                                <span class="metric-label">Unique Visitors</span>
+                                <span class="metric-value">8,924</span>
+                            </div>
+                            <div class="conversion-metric">
+                                <span class="metric-label">Conversion Rate</span>
+                                <span class="metric-value">3.2%</span>
+                            </div>
+                            <div class="conversion-metric">
+                                <span class="metric-label">Avg. Time on Page</span>
+                                <span class="metric-value">4m 32s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Presale Projections -->
+            <div class="presale-projections">
+                <h3>Presale Projections</h3>
+                <div class="projections-container">
+                    <div class="projection-chart">
+                        <h4>Funding Trajectory</h4>
+                        <div id="fundingProjectionChart" style="height: 300px;"></div>
+                    </div>
+                    <div class="projection-scenarios">
+                        <h4>Scenario Analysis</h4>
+                        <div class="scenarios">
+                            <div class="scenario conservative">
+                                <div class="scenario-header">
+                                    <h5>Conservative</h5>
+                                    <span class="probability">30%</span>
+                                </div>
+                                <div class="scenario-details">
+                                    <span class="detail">Total Raise: $25M</span>
+                                    <span class="detail">Timeline: 18 months</span>
+                                    <span class="detail">Final Price: $0.08</span>
+                                </div>
+                            </div>
+                            <div class="scenario moderate">
+                                <div class="scenario-header">
+                                    <h5>Moderate</h5>
+                                    <span class="probability">50%</span>
+                                </div>
+                                <div class="scenario-details">
+                                    <span class="detail">Total Raise: $55M</span>
+                                    <span class="detail">Timeline: 12 months</span>
+                                    <span class="detail">Final Price: $0.09</span>
+                                </div>
+                            </div>
+                            <div class="scenario optimistic">
+                                <div class="scenario-header">
+                                    <h5>Optimistic</h5>
+                                    <span class="probability">20%</span>
+                                </div>
+                                <div class="scenario-details">
+                                    <span class="detail">Total Raise: $87.5M</span>
+                                    <span class="detail">Timeline: 8 months</span>
+                                    <span class="detail">Final Price: $0.10</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

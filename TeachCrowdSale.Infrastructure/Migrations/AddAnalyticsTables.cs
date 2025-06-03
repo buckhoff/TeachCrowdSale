@@ -36,8 +36,7 @@ namespace TeachCrowdSale.Infrastructure.Migrations
                     StabilityFundBalance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     BurnedTokens = table.Column<decimal>(type: "decimal(18,8)", precision: 18, scale: 8, nullable: false),
                     TransactionsCount24h = table.Column<int>(type: "int", nullable: false),
-                    UniqueUsers24h = table.Column<int>(type: "int", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false, computedColumnSql: "CAST([Timestamp] AS DATE)")
+                    UniqueUsers24h = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

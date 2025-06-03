@@ -1,0 +1,709 @@
+﻿/* TeachCrowdSale.Web/wwwroot/css/analytics-desktop.css */
+/* Analytics Dashboard Tablet & Desktop Enhancements - Phase 7.2 */
+
+/* ================================================
+   TABLET OPTIMIZATIONS (768px - 1024px)
+================================================ */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .analytics-main-container {
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Tablet metrics grid */
+    .analytics-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-metric-card {
+        padding: 2rem;
+        border-radius: 16px;
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .analytics-metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: var(--transition-smooth);
+        }
+
+        .analytics-metric-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .analytics-metric-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+    /* Tablet chart containers */
+    .analytics-chart-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-chart-container {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        height: 400px;
+    }
+
+        .analytics-chart-container.full-width {
+            grid-column: 1 / -1;
+            height: 450px;
+        }
+
+    /* Chart controls for tablet */
+    .analytics-chart-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .analytics-chart-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .analytics-chart-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .analytics-chart-btn {
+        padding: 8px 16px;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+        .analytics-chart-btn:hover,
+        .analytics-chart-btn.active {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.1);
+        }
+}
+
+/* ================================================
+   DESKTOP OPTIMIZATIONS (1024px+)
+================================================ */
+
+@media (min-width: 1024px) {
+    .analytics-main-container {
+        padding: 3rem 2rem;
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 3rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Desktop sidebar */
+    .analytics-sidebar {
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analytics-sidebar-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+    }
+
+    /* Advanced filtering panel */
+    .analytics-filter-group {
+        margin-bottom: 2rem;
+    }
+
+    .analytics-filter-label {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+    }
+
+    .analytics-filter-select {
+        width: 100%;
+        padding: 10px 12px;
+        background: var(--accent-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+        .analytics-filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+    .analytics-date-range-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .analytics-date-input {
+        padding: 10px 12px;
+        background: var(--accent-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+        .analytics-date-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+    /* Quick presets */
+    .analytics-preset-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .analytics-preset-btn {
+        padding: 8px 12px;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+        .analytics-preset-btn:hover,
+        .analytics-preset-btn.active {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+    /* Export controls */
+    .analytics-export-section {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .analytics-export-btn {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+        .analytics-export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+        }
+
+    .analytics-export-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .analytics-export-option {
+        padding: 8px 12px;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        text-align: left;
+    }
+
+        .analytics-export-option:hover {
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+    /* Desktop main content */
+    .analytics-main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Desktop metrics overview */
+    .analytics-metrics-overview {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-metric-card {
+        padding: 2rem;
+        border-radius: 16px;
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+        .analytics-metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: var(--transition-smooth);
+        }
+
+        .analytics-metric-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .analytics-metric-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+    /* Multi-column chart layouts */
+    .analytics-charts-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-charts-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .analytics-charts-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Side-by-side chart comparisons */
+    .analytics-comparison-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-comparison-chart {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        height: 400px;
+        position: relative;
+    }
+
+    .analytics-comparison-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .analytics-comparison-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .analytics-comparison-period {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    /* Large feature chart */
+    .analytics-feature-chart {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+        height: 500px;
+    }
+
+        .analytics-feature-chart .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+    /* Desktop chart controls */
+    .analytics-feature-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-feature-control {
+        padding: 10px 20px;
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+        .analytics-feature-control:hover,
+        .analytics-feature-control.active {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.1);
+        }
+}
+
+/* ================================================
+   KEYBOARD SHORTCUTS
+================================================ */
+
+@media (min-width: 1024px) {
+    /* Keyboard navigation indicators */
+    .analytics-keyboard-shortcut {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-family: monospace;
+        opacity: 0;
+        transition: var(--transition-smooth);
+    }
+
+    .analytics-metric-card:hover .analytics-keyboard-shortcut,
+    .analytics-chart-container:hover .analytics-keyboard-shortcut {
+        opacity: 1;
+    }
+
+    /* Focus indicators for keyboard navigation */
+    .analytics-focusable:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 4px;
+    }
+
+    /* Keyboard hints panel */
+    .analytics-keyboard-hints {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        max-width: 250px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: var(--transition-smooth);
+        z-index: 1000;
+    }
+
+        .analytics-keyboard-hints.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    .analytics-keyboard-hint {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+        .analytics-keyboard-hint:last-child {
+            margin-bottom: 0;
+        }
+
+    .analytics-keyboard-key {
+        background: var(--accent-bg);
+        color: var(--text-primary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.7rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analytics-keyboard-desc {
+        color: var(--text-secondary);
+    }
+}
+
+/* ================================================
+   MOUSE WHEEL CHART INTERACTIONS
+================================================ */
+
+@media (min-width: 1024px) {
+    .analytics-chart-zoom-enabled {
+        cursor: grab;
+        position: relative;
+    }
+
+        .analytics-chart-zoom-enabled:active {
+            cursor: grabbing;
+        }
+
+        .analytics-chart-zoom-enabled::after {
+            content: '🔍';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .analytics-chart-zoom-enabled:hover::after {
+            opacity: 0.7;
+        }
+
+    /* Zoom controls overlay */
+    .analytics-zoom-controls {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        gap: 0.25rem;
+        opacity: 0;
+        transition: var(--transition-smooth);
+    }
+
+    .analytics-chart-container:hover .analytics-zoom-controls {
+        opacity: 1;
+    }
+
+    .analytics-zoom-btn {
+        width: 28px;
+        height: 28px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        transition: var(--transition-smooth);
+    }
+
+        .analytics-zoom-btn:hover {
+            background: var(--primary-color);
+        }
+
+    /* Chart minimap for large datasets */
+    .analytics-chart-minimap {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        width: 120px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 6px;
+        opacity: 0;
+        transition: var(--transition-smooth);
+    }
+
+    .analytics-chart-container:hover .analytics-chart-minimap {
+        opacity: 1;
+    }
+}
+
+/* ================================================
+   ULTRA-WIDE DESKTOP (1400px+)
+================================================ */
+
+@media (min-width: 1400px) {
+    .analytics-main-container {
+        max-width: 1600px;
+        grid-template-columns: 320px 1fr 300px;
+    }
+
+    /* Right sidebar for additional controls */
+    .analytics-right-sidebar {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+    }
+
+    .analytics-metrics-overview {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    /* Three-column chart layout */
+    .analytics-charts-wide {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Enhanced feature chart */
+    .analytics-feature-chart {
+        height: 600px;
+        padding: 3rem;
+    }
+
+    /* Real-time data feeds */
+    .analytics-live-feed {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .analytics-live-feed-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .analytics-live-indicator {
+        width: 8px;
+        height: 8px;
+        background: var(--success-color);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    .analytics-live-metric {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+        .analytics-live-metric:last-child {
+            border-bottom: none;
+        }
+
+    .analytics-live-value {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+}
+
+/* ================================================
+   PRINT STYLES
+================================================ */
+
+@media print {
+    .analytics-sidebar,
+    .analytics-right-sidebar,
+    .analytics-keyboard-hints,
+    .analytics-zoom-controls,
+    .analytics-chart-minimap {
+        display: none !important;
+    }
+
+    .analytics-main-container {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        max-width: none !important;
+    }
+
+    .analytics-chart-container {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: 1px solid #333 !important;
+        background: white !important;
+        color: black !important;
+    }
+
+    .analytics-metric-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: 1px solid #333 !important;
+        background: white !important;
+        color: black !important;
+    }
+}

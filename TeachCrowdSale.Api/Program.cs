@@ -14,7 +14,6 @@ using TeachCrowdSale.Api.Validator;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Infrastructure.Configuration;
-using TeachCrowdSale.Infrastructure.Services;
 using TeachCrowdSale.Infrastructure.Web3;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -25,6 +24,7 @@ using Microsoft.EntityFrameworkCore;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using TeachCrowdSale.Infrastructure.Repositories;
 using TeachCrowdSale.Api.Middleware;
+using TeachCrowdSale.Api.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -693,6 +693,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.TreasuryBalance).HasPrecision(18, 2);
                 entity.Property(e => e.StabilityFundBalance).HasPrecision(18, 2);
                 entity.Property(e => e.BurnedTokens).HasPrecision(18, 0);
+                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
 
                 entity.HasIndex(e => e.Timestamp);
                 entity.HasIndex(e => e.Date);
