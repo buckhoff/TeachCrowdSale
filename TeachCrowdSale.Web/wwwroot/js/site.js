@@ -811,3 +811,331 @@ window.TeacherSupportApp = {
     DataManager,
     AppState
 };
+
+document.addEventListener('DOMContentLoaded', function () {
+    initializeNavigation();
+});
+
+function initializeNavigation() {
+    setupMobileMenu();
+    setupNavigationScroll();
+    setupActiveStates();
+    setupQuickNavigation();
+}
+
+// Mobile menu functionality
+function setupMobileMenu() {
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-nav-menu');
+    const navbar = document.querySelector('.navbar');
+
+    if (!mobileToggle || !mobileMenu) return;
+
+    mobileToggle.addEventListener('click', function () {
+        const isOpen = mobileMenu.classList.contains('show');
+
+        if (isOpen) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    });
+
+    // Close menu on outside click
+    document.addEventListener('click', function (e) {
+        if (!navbar.contains(e.target) && mobileMenu.classList.contains('show')) {
+            closeMobileMenu();
+        }
+    });
+
+    // Close menu on escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && mobileMenu.classList.contains('show')) {
+            closeMobileMenu();
+        }
+    });
+
+    // Close menu on navigation link click
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+    mobileNavLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            if (!this.getAttribute('href').startsWith('#')) {
+                closeMobileMenu();
+            }
+        });
+    });
+
+    function openMobileMenu() {
+        mobileToggle.classList.add('active');
+        mobileMenu.classList.add('show');
+        document.body.style.overflow = 'hidden';
+
+        // Animate menu items
+        const menuItems = mobileMenu.querySelectorAll('.mobile-nav-link');
+        menuItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(-20px)';
+
+            setTimeout(() => {
+                item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateX(0)';
+            }, index * 50);
+        });
+    }
+
+    function closeMobileMenu() {
+        mobileToggle.classList.remove('active');
+        mobileMenu.classList.remove('show');
+        document.body.style.overflow = '';
+
+        // Reset menu item styles
+        const menuItems = mobileMenu.querySelectorAll('.mobile-nav-link');
+        menuItems.forEach(item => {
+            item.style.transition = '';
+            item.style.opacity = '';
+            item.style.transform = '';
+        });
+    }
+}
+
+// Navigation scroll effects
+function setupNavigationScroll() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    function updateNavbar() {
+        const scrollY = window.scrollY;
+
+        if (scrollY > 100) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+
+        // Hide/show navbar on scroll (optional)
+        if (scrollY > lastScrollY && scrollY > 200) {
+            navbar.style.transform = 'translateY(-100%)';
+        } else {
+            navbar.style.transform = 'translateY(0)';
+        }
+
+        lastScrollY = scrollY;
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            requestAnimationFrame(updateNavbar);
+            ticking = true;
+        }
+    });
+}
+
+// Active navigation states
+function setupActiveStates() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+
+        // Remove existing active states
+        link.classList.remove('active');
+
+        // Set active state based on current path
+        if (href === currentPath ||
+            (currentPath === '/' && href === '/') ||
+            (currentPath.startsWith('/analytics') && href === '/analytics') ||
+            (currentPath.startsWith('/tokenomics') && href === '/tokenomics') ||
+            (currentPath.startsWith('/buy') && href === '/buy')) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// Quick navigation for analytics sections
+function setupQuickNavigation() {
+    const quickNavLinks = document.querySelectorAll('.quick-nav-link');
+
+    quickNavLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+
+            // Handle section scrolling
+            if (href.startsWith('#')) {
+                e.preventDefault();
+
+                const targetId = href.substring(1);
+                const targetElement = document.getElementById(targetId);
+
+                if (targetElement) {
+                    // Update active states
+                    quickNavLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Smooth scroll to target
+                    const headerHeight = document.querySelector('.navbar')?.offsetHeight || 80;
+                    const targetPosition = targetElement.offsetTop - headerHeight - 20;
+
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    // Update URL without page reload
+                    history.replaceState(null, null, href);
+                }
+            }
+        });
+    });
+
+    // Update quick nav active state on scroll
+    const sections = document.querySelectorAll('[id]');
+    if (sections.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    const correspondingLink = document.querySelector(`.quick-nav-link[href="#${id}"]`);
+
+                    if (correspondingLink) {
+                        quickNavLinks.forEach(l => l.classList.remove('active'));
+                        correspondingLink.classList.add('active');
+                    }
+                }
+            });
+        }, {
+            threshold: 0.3,
+            rootMargin: '-100px 0px -100px 0px'
+        });
+
+        sections.forEach(section => {
+            if (section.id) {
+                observer.observe(section);
+            }
+        });
+    }
+}
+
+// Navigation utility functions
+const NavigationUtils = {
+    // Update navigation badge
+    updateAnalyticsBadge: function (isLive = true) {
+        const badge = document.querySelector('.nav-link[href="/analytics"] .nav-badge');
+        if (badge) {
+            badge.textContent = isLive ? 'Live' : 'Offline';
+            badge.style.background = isLive ? 'var(--gradient-primary)' : 'var(--danger-color)';
+        }
+    },
+
+    // Show navigation notification
+    showNotification: function (message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `nav-notification nav-notification-${type}`;
+        notification.innerHTML = `
+            <span class="notification-icon">${type === 'success' ? '✓' : type === 'warning' ? '⚠' : 'ℹ'}</span>
+            <span class="notification-text">${message}</span>
+            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        `;
+
+        // Style the notification
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'primary'}-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 5000);
+    },
+
+    // Highlight navigation item temporarily
+    highlightNavItem: function (selector, duration = 2000) {
+        const item = document.querySelector(selector);
+        if (item) {
+            item.style.background = 'rgba(79, 70, 229, 0.2)';
+            item.style.transform = 'scale(1.05)';
+            item.style.transition = 'all 0.3s ease';
+
+            setTimeout(() => {
+                item.style.background = '';
+                item.style.transform = '';
+                setTimeout(() => {
+                    item.style.transition = '';
+                }, 300);
+            }, duration);
+        }
+    }
+};
+
+// Export for global access
+window.NavigationUtils = NavigationUtils;
+
+// Add notification animations to head
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .nav-notification {
+        font-size: 0.9rem;
+    }
+    
+    .notification-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0;
+        margin-left: 8px;
+        transition: color 0.2s ease;
+    }
+    
+    .notification-close:hover {
+        color: var(--text-primary);
+    }
+`;
+document.head.appendChild(style);

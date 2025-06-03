@@ -1,0 +1,111 @@
+﻿<!-- Views/Shared/_NavigationPartial.cshtml -->
+<!-- Reusable navigation component for all pages -->
+@{
+    var currentPage = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
+}
+
+<nav class="navbar" id="navbar">
+    <div class="container">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">
+                    <span class="brand-icon">🎓</span>
+                    <span class="brand-text">TeachToken</span>
+                </a>
+            </div>
+
+            <ul class="nav-menu">
+                <li>
+                    <a href="/" class="nav-link @(currentPage == "home" ? "active" : "")">
+                        Home
+                    </a>
+                </li>
+                <li>
+                    <a href="/tokenomics" class="nav-link @(currentPage == "tokenomics" ? "active" : "")">
+                        Tokenomics
+                    </a>
+                </li>
+                <li>
+                    <a href="/analytics" class="nav-link @(currentPage == "analytics" ? "active" : "")">
+                        <span>Analytics</span>
+                        <span class="nav-badge">Live</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/buy" class="nav-link @(currentPage == "buytrade" || currentPage == "buy" ? "active" : "")">
+                        Buy TEACH
+                    </a>
+                </li>
+                <li><a href="#platform" class="nav-link">Platform</a></li>
+                <li><a href="#community" class="nav-link">Community</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="/buy" class="nav-cta">
+                    <span>Buy TEACH</span>
+                    <i class="nav-cta-icon">→</i>
+                </a>
+
+                <!-- Mobile menu toggle -->
+                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile navigation menu -->
+        <div class="mobile-nav-menu">
+            <div class="mobile-nav-content">
+                <ul class="mobile-nav-links">
+                    <li>
+                        <a href="/" class="mobile-nav-link @(currentPage == "home" ? "active" : "")">
+                            <span class="mobile-nav-icon">🏠</span>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tokenomics" class="mobile-nav-link @(currentPage == "tokenomics" ? "active" : "")">
+                            <span class="mobile-nav-icon">📊</span>
+                            <span>Tokenomics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/analytics" class="mobile-nav-link @(currentPage == "analytics" ? "active" : "")">
+                            <span class="mobile-nav-icon">📈</span>
+                            <span>Analytics</span>
+                            <span class="mobile-nav-badge">Live</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/buy" class="mobile-nav-link @(currentPage == "buytrade" || currentPage == "buy" ? "active" : "")">
+                            <span class="mobile-nav-icon">💰</span>
+                            <span>Buy TEACH</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#platform" class="mobile-nav-link">
+                            <span class="mobile-nav-icon">🚀</span>
+                            <span>Platform</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#community" class="mobile-nav-link">
+                            <span class="mobile-nav-icon">👥</span>
+                            <span>Community</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="mobile-nav-cta">
+                    <a href="/buy" class="btn-primary">
+                        <span>Buy TEACH Now</span>
+                        <i>→</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

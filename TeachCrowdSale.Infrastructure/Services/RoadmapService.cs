@@ -15,7 +15,6 @@ namespace TeachCrowdSale.Infrastructure.Services
     public class RoadmapService : IRoadmapService
     {
         private readonly IRoadmapRepository _roadmapRepository;
-        private readonly IGitHubService _gitHubService;
         private readonly IMemoryCache _cache;
         private readonly ILogger<RoadmapService> _logger;
 
@@ -33,12 +32,10 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         public RoadmapService(
             IRoadmapRepository roadmapRepository,
-            IGitHubService gitHubService,
             IMemoryCache cache,
             ILogger<RoadmapService> logger)
         {
             _roadmapRepository = roadmapRepository;
-            _gitHubService = gitHubService;
             _cache = cache;
             _logger = logger;
         }
@@ -231,9 +228,10 @@ namespace TeachCrowdSale.Infrastructure.Services
                     return cachedStats;
                 }
 
-                var gitHubStats = await _gitHubService.GetGitHubStatsAsync();
-                _cache.Set(CACHE_KEY_GITHUB_STATS, gitHubStats, _mediumCacheDuration);
-                return gitHubStats;
+                //var gitHubStats = await _gitHubService.GetGitHubStatsAsync();
+                //_cache.Set(CACHE_KEY_GITHUB_STATS, gitHubStats, _mediumCacheDuration);
+                //return gitHubStats;
+                return new GitHubStatsModel();
             }
             catch (Exception ex)
             {

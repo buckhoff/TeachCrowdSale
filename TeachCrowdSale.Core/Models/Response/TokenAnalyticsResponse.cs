@@ -45,6 +45,10 @@ namespace TeachCrowdSale.Core.Models.Response
         public decimal AllTimeLow { get; set; }
         public DateTime AllTimeLowDate { get; set; }
 
+        public decimal High24h { get; set; }
+        public decimal Low24h { get; set; }
+        public decimal TotalValueLocked { get; set; }
+
         // Distribution metrics
         public decimal LiquidityTokens { get; set; }
         public decimal TreasuryTokens { get; set; }

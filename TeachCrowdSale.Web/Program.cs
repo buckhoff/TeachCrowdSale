@@ -1,5 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+using Nethereum.JsonRpc.Client;
 using TeachCrowdSale.Core.Interfaces;
+using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Core.Interfaces.Services;
+using TeachCrowdSale.Infrastructure.Data.Context;
+using TeachCrowdSale.Infrastructure.Repositories;
 using TeachCrowdSale.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +17,9 @@ builder.Services.AddMemoryCache();
 builder.Services.AddResponseCompression();
 
 builder.Services.AddHttpClient();
+
+builder.Services.AddDbContext<TeachCrowdSaleDbContext>(options =>
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]));
 
 // Add HTTP client for API calls
 builder.Services.AddHttpClient("TeachAPI", client =>
@@ -36,6 +44,9 @@ builder.Services.AddScoped<IBuyTradeService, BuyTradeService>();
 builder.Services.AddScoped<ITokenomicsService, TokenomicsService>();
 builder.Services.AddScoped<IRoadmapService, RoadmapService>();
 builder.Services.AddScoped<IAnalyticsDashboardService, AnalyticsDashboardService>();
+
+builder.Services.AddScoped<IRoadmapRepository, RoadmapRepository>();
+
 
 
 // Add services to the container.

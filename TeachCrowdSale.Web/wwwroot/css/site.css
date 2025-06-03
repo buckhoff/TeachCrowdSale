@@ -2009,4 +2009,339 @@ body {
     .preset-btn {
         font-size: 0.8rem;
     }
+    /* ================================================
+   ENHANCED NAVIGATION STYLES
+================================================ */
+
+    /* Navigation badges for special items */
+    .nav-badge {
+        background: var(--gradient-primary);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 8px;
+        margin-left: 0.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    /* Navigation actions container */
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    /* Enhanced CTA button */
+    .nav-cta {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition-bounce);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 44px;
+    }
+
+    .nav-cta-icon {
+        font-size: 1rem;
+        transition: var(--transition-smooth);
+    }
+
+    .nav-cta:hover .nav-cta-icon {
+        transform: translateX(3px);
+    }
+
+    /* Mobile menu toggle */
+    .mobile-menu-toggle {
+        display: none;
+        flex-direction: column;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        transition: var(--transition-smooth);
+    }
+
+        .mobile-menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-menu-toggle span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: var(--text-primary);
+            margin: 2px 0;
+            transition: var(--transition-smooth);
+            border-radius: 1px;
+        }
+
+        /* Mobile menu animation */
+        .mobile-menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+    /* Mobile navigation menu */
+    .mobile-nav-menu {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: rgba(10, 14, 26, 0.98);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 999;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+    }
+
+        .mobile-nav-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+    .mobile-nav-content {
+        padding: 2rem 1rem;
+    }
+
+    .mobile-nav-links {
+        list-style: none;
+        margin: 0 0 2rem 0;
+        padding: 0;
+    }
+
+        .mobile-nav-links li {
+            margin-bottom: 0.5rem;
+        }
+
+    .mobile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 12px;
+        transition: var(--transition-smooth);
+        font-weight: 500;
+        position: relative;
+    }
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link.active {
+            color: var(--text-primary);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+            .mobile-nav-link.active::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 4px;
+                height: 24px;
+                background: var(--gradient-primary);
+                border-radius: 2px;
+            }
+
+    .mobile-nav-icon {
+        font-size: 1.2rem;
+        width: 24px;
+        text-align: center;
+    }
+
+    .mobile-nav-badge {
+        background: var(--gradient-primary);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 8px;
+        margin-left: auto;
+    }
+
+    .mobile-nav-cta {
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Navigation scroll effects */
+    .navbar.scrolled {
+        background: rgba(10, 14, 26, 0.98);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Analytics-specific navigation styling */
+    .nav-link[href="/analytics"] {
+        position: relative;
+    }
+
+        .nav-link[href="/analytics"]:not(.active)::after {
+            background: var(--gradient-secondary);
+        }
+
+    /* Breadcrumb navigation for analytics */
+    .analytics-breadcrumb {
+        background: var(--card-bg);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .breadcrumb-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: var(--transition-smooth);
+    }
+
+        .breadcrumb-item:hover {
+            color: var(--primary-color);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+    .breadcrumb-separator {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+
+    /* Quick navigation for analytics sections */
+    .analytics-quick-nav {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .quick-nav-title {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .quick-nav-links {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .quick-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        transition: var(--transition-smooth);
+        border: 1px solid transparent;
+    }
+
+        .quick-nav-link:hover,
+        .quick-nav-link.active {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+    .quick-nav-icon {
+        font-size: 0.8rem;
+    }
+
+    /* ================================================
+   RESPONSIVE NAVIGATION
+================================================ */
+
+    @media (max-width: 1024px) {
+        .nav-menu {
+            gap: 1.5rem;
+        }
+
+        .nav-cta {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .nav-menu {
+            display: none;
+        }
+
+        .mobile-menu-toggle {
+            display: flex;
+        }
+
+        .analytics-quick-nav {
+            display: none;
+        }
+
+        .quick-nav-links {
+            justify-content: center;
+        }
+
+        .quick-nav-link {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nav-brand .brand-text {
+            display: none;
+        }
+
+        .nav-cta {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        .nav-badge {
+            display: none;
+        }
+
+        .mobile-nav-content {
+            padding: 1rem;
+        }
+    }
 }
