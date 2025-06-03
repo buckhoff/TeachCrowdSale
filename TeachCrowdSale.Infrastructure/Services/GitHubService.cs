@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Models;
+using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Infrastructure.Configuration;
 
 namespace TeachCrowdSale.Infrastructure.Services
@@ -179,9 +180,10 @@ namespace TeachCrowdSale.Infrastructure.Services
                 var content = await response.Content.ReadAsStringAsync();
                 var issues = JsonSerializer.Deserialize<List<GitHubApiIssue>>(content, _jsonOptions);
 
-                return issues?.Where(i => !i.PullRequest.HasValue) // Filter out PRs
+                return issues
+                    .Where(i => i.PullRequest == null) // Filter out PRs - they have this property
                     .Select(MapToIssueModel)
-                    .ToList() ?? new List<GitHubIssueModel>();
+                    .ToList();
             }
             catch (Exception ex)
             {
@@ -204,9 +206,9 @@ namespace TeachCrowdSale.Infrastructure.Services
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
-                var pullRequests = JsonSerializer.Deserialize<List<GitHubPullRequestModel>>(content, _jsonOptions);
+                var pullRequests = JsonSerializer.Deserialize<List<GitHubApiPullRequest>>(content, _jsonOptions);
 
-                return pullRequests?.Select(MapToPullRequestModel).ToList() ?? new List<GitHubPullRequestModel>();
+                return pullRequests?.Select(pr => MapToPullRequestModel(pr, repository)).ToList() ?? new List<GitHubPullRequestModel>();
             }
             catch (Exception ex)
             {
@@ -525,7 +527,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 try
                 {
                     var pullRequests = await GetRepositoryPullRequestsAsync(repoName);
-                    totalMerged += pullRequests.Count(pr => pr.MergedAt.HasValue);
+                    totalMerged += pullRequests.Count(pr => pr.IsMerged);
                 }
                 catch
                 {
@@ -557,21 +559,34 @@ namespace TeachCrowdSale.Infrastructure.Services
             };
         }
 
-        private GitHubPullRequestModel MapToPullRequestModel(GitHubPullRequestModel pr)
+        private GitHubPullRequestModel MapToPullRequestModel(GitHubApiPullRequest apiPr, string repository)
         {
-            return new GitHubApiPullRequest
+            return new GitHubPullRequestModel
             {
-                Number = pr.Number,
-                Title = pr.Title,
-                State = pr.State,
-                Author = pr.User.Login,
-                CreatedAt = pr.CreatedAt,
-                MergedAt = pr.MergedAt,
-                Labels = pr.Labels?.Select(l => l.Name).ToList() ?? new List<string>(),
-                Url = pr.HtmlUrl,
-                IsDraft = pr.Draft,
-                Additions = pr.Additions,
-                Deletions = pr.Deletions
+                Number = apiPr.Number,
+                Title = apiPr.Title,
+                State = apiPr.State,
+                Author = apiPr.User.Login,
+                AuthorAvatarUrl = apiPr.User.AvatarUrl,
+                CreatedAt = apiPr.CreatedAt,
+                MergedAt = apiPr.MergedAt,
+                UpdatedAt = apiPr.UpdatedAt,
+                Labels = apiPr.Labels?.Select(l => l.Name).ToList() ?? new List<string>(),
+                Url = apiPr.HtmlUrl,
+                IsDraft = apiPr.Draft,
+                Additions = apiPr.Additions,
+                Deletions = apiPr.Deletions,
+                Description = apiPr.Body,
+                Repository = repository,
+                FormattedCreatedDate = apiPr.CreatedAt.ToString("MMM dd, yyyy"),
+                FormattedMergedDate = apiPr.MergedAt?.ToString("MMM dd, yyyy") ?? "",
+                Comments = apiPr.Comments,
+                ReviewComments = apiPr.ReviewComments,
+                Commits = apiPr.Commits,
+                ChangedFiles = apiPr.ChangedFiles,
+                AssignedTo = apiPr.Assignee?.Login,
+                Assignees = apiPr.Assignees?.Select(a => a.Login).ToList() ?? new List<string>(),
+                MilestoneTitle = apiPr.Milestone?.Title
             };
         }
 
@@ -587,7 +602,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 {
                     Name = "TeachCrowdSale",
                     Description = "Main TeachToken platform repository",
-                    Url = "https://github.com/teachtoken/TeachCrowdSale",
+                    Url = "https://github.com/buckhoff/TeachCrowdSale",
                     Language = "C#",
                     Stars = 24,
                     Forks = 8,
@@ -597,10 +612,10 @@ namespace TeachCrowdSale.Infrastructure.Services
                 },
                 new RepositoryStatsModel
                 {
-                    Name = "TeacherSupport-Platform",
-                    Description = "Education funding platform frontend",
-                    Url = "https://github.com/teachtoken/TeacherSupport-Platform",
-                    Language = "TypeScript",
+                    Name = "TokenContract",
+                    Description = "TEACH token smart contract",
+                    Url = "https://github.com/buckhoff/TokenContract",
+                    Language = "Solidity",
                     Stars = 18,
                     Forks = 5,
                     OpenIssues = 7,
@@ -617,21 +632,21 @@ namespace TeachCrowdSale.Infrastructure.Services
                 new CommitActivityModel
                 {
                     CommitHash = "a1b2c3d4",
-                    Message = "Implement teacher verification system",
+                    Message = "Implement token sale contract functionality",
                     Author = "Development Team",
-                    Repository = "TeacherSupport-Platform",
+                    Repository = "TeachCrowdSale",
                     Date = DateTime.UtcNow.AddHours(-2),
-                    Url = "https://github.com/teachtoken/TeacherSupport-Platform/commit/a1b2c3d4",
+                    Url = "https://github.com/buckhoff/TeachCrowdSale/commit/a1b2c3d4",
                     FormattedDate = DateTime.UtcNow.AddHours(-2).ToString("MMM dd, yyyy")
                 },
                 new CommitActivityModel
                 {
                     CommitHash = "e5f6g7h8",
-                    Message = "Add payment processing integration",
+                    Message = "Add vesting and tier management",
                     Author = "Backend Team",
-                    Repository = "TeachCrowdSale",
+                    Repository = "TokenContract",
                     Date = DateTime.UtcNow.AddHours(-6),
-                    Url = "https://github.com/teachtoken/TeachCrowdSale/commit/e5f6g7h8",
+                    Url = "https://github.com/buckhoff/TokenContract/commit/e5f6g7h8",
                     FormattedDate = DateTime.UtcNow.AddHours(-6).ToString("MMM dd, yyyy")
                 }
             };
@@ -658,5 +673,4 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #endregion
     }
-
 }

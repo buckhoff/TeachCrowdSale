@@ -10,6 +10,6 @@
         public DateTime? ClosedAt { get; set; }
         public List<GitHubApiLabel>? Labels { get; set; }
         public string HtmlUrl { get; set; } = string.Empty;
-        public object? PullRequest { get; set; } // Present if this is a PR
+        public object? PullRequest { get; set; }
     }
 }
