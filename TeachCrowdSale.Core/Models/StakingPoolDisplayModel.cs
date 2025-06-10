@@ -48,5 +48,7 @@ namespace TeachCrowdSale.Core.Models
         public string LockPeriodDisplay { get; set; } = string.Empty;
         public string PoolCategory { get; set; } = string.Empty;
         public string StatusClass { get; set; } = string.Empty;
+        [Range(0, 100)]
+        public decimal EarlyWithdrawalPenalty { get; set; }
     }
 }

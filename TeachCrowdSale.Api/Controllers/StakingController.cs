@@ -537,7 +537,7 @@ public class StakingApiController : ControllerBase
             City = school.City,
             LogoUrl = school.LogoUrl,
             StudentCount = school.StudentCount,
-            TotalReceived = school.TotalReceived,
+            TotalFundingReceived = school.TotalReceived,
             SupporterCount = 0, // Would be calculated from user stakes
             IsVerified = school.IsVerified,
             Location = $"{school.City}, {school.State}, {school.Country}".Trim(new[] { ',', ' ' }),

@@ -19,12 +19,13 @@ namespace TeachCrowdSale.Core.Models
         public string State { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
         public string LogoUrl { get; set; } = string.Empty;
-
+        public string ContactEmail { get; set; } = string.Empty;
+        public string Website { get; set; } = string.Empty;
         [Range(0, int.MaxValue)]
         public int StudentCount { get; set; }
 
         [Range(0, double.MaxValue)]
-        public decimal TotalReceived { get; set; }
+        public decimal TotalFundingReceived { get; set; }
 
         [Range(0, int.MaxValue)]
         public int SupporterCount { get; set; }
@@ -33,5 +34,7 @@ namespace TeachCrowdSale.Core.Models
         public bool IsSelected { get; set; }
         public string Location { get; set; } = string.Empty;
         public string ImpactSummary { get; set; } = string.Empty;
+
+        public int ActiveStakers { get; set; }
     }
 }

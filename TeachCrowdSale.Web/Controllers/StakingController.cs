@@ -42,7 +42,7 @@ namespace TeachCrowdSale.Web.Controllers
 
                 // Pass data to view via ViewBag
                 ViewBag.StakingStats = stakingStats;
-                ViewBag.StakingPools = pools ?? new List<StakingPool>();
+                ViewBag.StakingPools = pools ?? new List<StakingPoolDisplayModel>();
                 ViewBag.AvailableSchools = schools ?? new List<SchoolBeneficiaryModel>();
 
                 return View();

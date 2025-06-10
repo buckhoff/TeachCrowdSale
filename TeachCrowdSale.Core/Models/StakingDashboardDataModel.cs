@@ -13,7 +13,7 @@ namespace TeachCrowdSale.Core.Models
     public class StakingDashboardDataModel
     {
         public StakingStatsModel Stats { get; set; } = new();
-        public List<StakingPool> Pools { get; set; } = new();
+        public List<StakingPoolDisplayModel> Pools { get; set; } = new();
         public List<SchoolBeneficiaryModel> Schools { get; set; } = new();
         public UserStakingInfoModel? UserInfo { get; set; }
         public DateTime LastUpdated { get; set; }

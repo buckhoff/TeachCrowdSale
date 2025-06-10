@@ -777,6 +777,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.MaxPoolSize).HasPrecision(18, 8);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
                 entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.EarlyWithdrawalPenalty).HasPrecision(5, 2);
 
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.LockPeriodDays);

@@ -69,11 +69,11 @@
                         <div class="detail-row">
                             <div class="detail-item">
                                 <span class="detail-label">APY</span>
-                                <span class="detail-value">@position.APY.ToString("F1")%</span>
+                                <span class="detail-value">@position.CurrentAPY.ToString("F1")%</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Lock Period</span>
-                                <span class="detail-value">@position.LockPeriodDays days</span>
+                                <span class="detail-value">@position.DaysRemaining days</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Started</span>
@@ -218,7 +218,7 @@
                 {
                     <div class="history-item">
                         <div class="history-info">
-                            <span class="history-amount">$@reward.Amount.ToString("N2")</span>
+                            <span class="history-amount">$@reward.ClaimedAmount.ToString("N2")</span>
                             <span class="history-date">@reward.ClaimDate.ToString("MMM dd, yyyy")</span>
                         </div>
                         <div class="history-details">

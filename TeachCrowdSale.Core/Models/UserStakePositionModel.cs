@@ -36,5 +36,7 @@ namespace TeachCrowdSale.Core.Models
 
         public string Status { get; set; } = string.Empty;
         public string StatusClass { get; set; } = string.Empty;
+
+        public SchoolBeneficiaryModel SchoolBeneficiary { get; set; } = new SchoolBeneficiaryModel();
     }
 }

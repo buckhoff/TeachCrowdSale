@@ -40,6 +40,8 @@ namespace TeachCrowdSale.Core.Data.Entities
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        [Range(0, 100)]
+        public decimal EarlyWithdrawalPenalty { get; set; }
 
         // Navigation properties
         public List<UserStake> UserStakes { get; set; } = new();

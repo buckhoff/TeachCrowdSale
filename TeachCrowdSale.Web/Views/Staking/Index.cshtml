@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["Title"] = ViewData["Title"] ?? "Staking Dashboard - TeachToken";
     var stakingStats = ViewBag.StakingStats as TeachCrowdSale.Core.Models.StakingStatsModel;
-    var stakingPools = ViewBag.StakingPools as List<TeachCrowdSale.Core.Data.Entities.StakingPool> ?? new List<TeachCrowdSale.Core.Data.Entities.StakingPool>();
+    var stakingPools = ViewBag.StakingPools as List<TeachCrowdSale.Core.Models.StakingPoolDisplayModel> ?? new List<TeachCrowdSale.Core.Models.StakingPoolDisplayModel>();
     var availableSchools = ViewBag.AvailableSchools as List<TeachCrowdSale.Core.Models.SchoolBeneficiaryModel> ?? new List<TeachCrowdSale.Core.Models.SchoolBeneficiaryModel>();
 }
 
@@ -282,14 +282,14 @@
                                 <div class="pool-capacity">
                                     <div class="capacity-header">
                                         <span class="capacity-label">Pool Capacity</span>
-                                        <span class="capacity-percentage">@((pool.TotalStaked / pool.MaxCapacity * 100).ToString("F1"))%</span>
+                                        <span class="capacity-percentage">@((pool.TotalStaked / pool.MaxPoolSize * 100).ToString("F1"))%</span>
                                     </div>
                                     <div class="capacity-bar">
-                                        <div class="capacity-fill" style="width: @((pool.TotalStaked / pool.MaxCapacity * 100).ToString("F1"))%"></div>
+                                        <div class="capacity-fill" style="width: @((pool.TotalStaked / pool.MaxPoolSize * 100).ToString("F1"))%"></div>
                                     </div>
                                     <div class="capacity-amounts">
                                         <span>@pool.TotalStaked.ToString("N0") TEACH</span>
-                                        <span>@pool.MaxCapacity.ToString("N0") TEACH</span>
+                                        <span>@pool.MaxPoolSize.ToString("N0") TEACH</span>
                                     </div>
                                 </div>
 
@@ -490,7 +490,7 @@
                             </div>
                             <div class="school-status verified">
                                 <span class="status-icon">✅</span>
-                                <span class="status-text">@school.VerificationStatus</span>
+                                <span class="status-text">@school.IsVerified.ToString()</span>
                             </div>
                         </div>
                     }
@@ -554,6 +554,7 @@
     <!-- Scripts -->
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/staking.js" asp-append-version="true"></script>
+    <script src="~/js/school-integration.js" asp-append-version="true"></script>
 
     <!-- Initialize Dashboard -->
     <script>

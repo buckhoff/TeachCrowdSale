@@ -20,8 +20,8 @@ namespace TeachCrowdSale.Core.Interfaces.Services
         Task<StakingDashboardDataModel?> GetDashboardDataAsync(string? walletAddress = null);
 
         // Pool Management
-        Task<List<StakingPool>?> GetActiveStakingPoolsAsync();
-        Task<StakingPool?> GetStakingPoolAsync(int poolId);
+        Task<List<StakingPoolDisplayModel>?> GetActiveStakingPoolsAsync();
+        Task<StakingPoolDisplayModel?> GetStakingPoolAsync(int poolId);
 
         // User Data
         Task<UserStakingInfoModel?> GetUserStakingInfoAsync(string walletAddress);

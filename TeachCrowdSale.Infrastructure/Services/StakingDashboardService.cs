@@ -117,9 +117,9 @@ public class StakingDashboardService : IStakingDashboardService
 
     #region Pool Management
 
-    public async Task<List<StakingPool>?> GetActiveStakingPoolsAsync()
+    public async Task<List<StakingPoolDisplayModel>?> GetActiveStakingPoolsAsync()
     {
-        if (_cache.TryGetValue(ACTIVE_POOLS_CACHE_KEY, out List<StakingPool>? cachedPools))
+        if (_cache.TryGetValue(ACTIVE_POOLS_CACHE_KEY, out List<StakingPoolDisplayModel>? cachedPools))
         {
             return cachedPools;
         }
@@ -130,7 +130,7 @@ public class StakingDashboardService : IStakingDashboardService
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var pools = JsonSerializer.Deserialize<List<StakingPool>>(json, GetJsonOptions());
+                var pools = JsonSerializer.Deserialize<List<StakingPoolDisplayModel>>(json, GetJsonOptions());
 
                 if (pools != null)
                 {
@@ -150,11 +150,11 @@ public class StakingDashboardService : IStakingDashboardService
         }
     }
 
-    public async Task<StakingPool?> GetStakingPoolAsync(int poolId)
+    public async Task<StakingPoolDisplayModel?> GetStakingPoolAsync(int poolId)
     {
         var cacheKey = $"{POOL_DETAILS_PREFIX}{poolId}";
 
-        if (_cache.TryGetValue(cacheKey, out StakingPool? cachedPool))
+        if (_cache.TryGetValue(cacheKey, out StakingPoolDisplayModel? cachedPool))
         {
             return cachedPool;
         }
@@ -165,7 +165,7 @@ public class StakingDashboardService : IStakingDashboardService
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var pool = JsonSerializer.Deserialize<StakingPool>(json, GetJsonOptions());
+                var pool = JsonSerializer.Deserialize<StakingPoolDisplayModel>(json, GetJsonOptions());
 
                 if (pool != null)
                 {
@@ -696,11 +696,11 @@ public class StakingDashboardService : IStakingDashboardService
         };
     }
 
-    private List<StakingPool> GetFallbackStakingPools()
+    private List<StakingPoolDisplayModel> GetFallbackStakingPools()
     {
-        return new List<StakingPool>
+        return new List<StakingPoolDisplayModel>
             {
-                new StakingPool
+                new StakingPoolDisplayModel
                 {
                     Id = 1,
                     Name = "Flexible Pool",
@@ -711,11 +711,11 @@ public class StakingDashboardService : IStakingDashboardService
                     MinStakeAmount = 100m,
                     MaxStakeAmount = 50000m,
                     TotalStaked = 0m,
-                    MaxCapacity = 1000000m,
+                    MaxPoolSize = 1000000m,
                     IsActive = true,
                     EarlyWithdrawalPenalty = 5.0m
                 },
-                new StakingPool
+                new StakingPoolDisplayModel
                 {
                     Id = 2,
                     Name = "Standard Pool",
@@ -726,7 +726,7 @@ public class StakingDashboardService : IStakingDashboardService
                     MinStakeAmount = 1000m,
                     MaxStakeAmount = 100000m,
                     TotalStaked = 0m,
-                    MaxCapacity = 2000000m,
+                    MaxPoolSize = 2000000m,
                     IsActive = true,
                     EarlyWithdrawalPenalty = 8.0m
                 }
@@ -744,9 +744,9 @@ public class StakingDashboardService : IStakingDashboardService
                     Description = "Supporting local education initiatives",
                     Location = "Demo City, Demo State",
                     TotalFundingReceived = 0m,
-                    ActiveStakers = 0,
-                    VerificationStatus = "Verified",
-                    SchoolWebsite = "https://demo-school.edu",
+                    SupporterCount = 0,
+                    IsVerified = true,
+                    Website = "https://demo-school.edu",
                     ContactEmail = "info@demo-school.edu"
                 }
             };

@@ -118,7 +118,7 @@
                         </div>
                         <div class="school-verification verified">
                             <span class="verification-icon">✅</span>
-                            <span class="verification-text">@school.VerificationStatus</span>
+                            <span class="verification-text">@school.IsVerified.ToString()</span>
                         </div>
                     </div>
 
@@ -139,10 +139,10 @@
                         </div>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(school.SchoolWebsite))
+                    @if (!string.IsNullOrEmpty(school.Website))
                     {
                         <div class="school-links">
-                            <a href="@school.SchoolWebsite" target="_blank" class="school-link">
+                            <a href="@school.Website" target="_blank" class="school-link">
                                 <span class="link-icon">🌐</span>
                                 <span class="link-text">Visit Website</span>
                             </a>
