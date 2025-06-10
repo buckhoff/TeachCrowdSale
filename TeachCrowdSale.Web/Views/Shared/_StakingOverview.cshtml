@@ -1,0 +1,120 @@
+﻿@model TeachCrowdSale.Core.Models.StakingStatsModel
+
+<div class="staking-overview">
+    <div class="overview-header">
+        <h3 class="overview-title">Staking Overview</h3>
+        <button class="btn btn-secondary btn-sm refresh-btn" onclick="StakingDashboard.refreshOverview()">
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">Refresh</span>
+        </button>
+    </div>
+
+    <div class="overview-stats">
+        <div class="stat-row">
+            <div class="stat-item">
+                <span class="stat-label">Total Value Locked</span>
+                <span class="stat-value highlight" data-metric="totalValueLocked" data-value="@(Model?.TotalValueLocked ?? 0)">
+                    $@((Model?.TotalValueLocked ?? 0).ToString("N0"))
+                </span>
+                <span class="stat-change positive">
+                    <span class="change-icon">↗</span>
+                    <span class="change-text">+5.2% this week</span>
+                </span>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">Average APY</span>
+                <span class="stat-value" data-metric="averageAPY" data-value="@(Model?.AverageAPY ?? 0)">
+                    @((Model?.AverageAPY ?? 0).ToString("F1"))%
+                </span>
+                <span class="stat-description">Weighted by TVL</span>
+            </div>
+        </div>
+
+        <div class="stat-row">
+            <div class="stat-item">
+                <span class="stat-label">Active Stakers</span>
+                <span class="stat-value" data-metric="activeStakers" data-value="@(Model?.ActiveStakers ?? 0)">
+                    @((Model?.ActiveStakers ?? 0).ToString("N0"))
+                </span>
+                <span class="stat-change positive">
+                    <span class="change-icon">↗</span>
+                    <span class="change-text">+12 today</span>
+                </span>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">Total Rewards Distributed</span>
+                <span class="stat-value" data-metric="totalRewards" data-value="@(Model?.TotalRewardsDistributed ?? 0)">
+                    $@((Model?.TotalRewardsDistributed ?? 0).ToString("N0"))
+                </span>
+                <span class="stat-description">All-time</span>
+            </div>
+        </div>
+
+        <div class="stat-row">
+            <div class="stat-item">
+                <span class="stat-label">Schools Supported</span>
+                <span class="stat-value education-impact" data-metric="schoolsSupported" data-value="@(Model?.SchoolsSupported ?? 0)">
+                    @((Model?.SchoolsSupported ?? 0).ToString("N0"))
+                </span>
+                <span class="stat-description">Educational institutions</span>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">School Funding</span>
+                <span class="stat-value education-impact" data-metric="schoolFunding" data-value="@(Model?.TotalSchoolFunding ?? 0)">
+                    $@((Model?.TotalSchoolFunding ?? 0).ToString("N0"))
+                </span>
+                <span class="stat-description">50% of all rewards</span>
+            </div>
+        </div>
+
+        <div class="stat-row">
+            <div class="stat-item full-width">
+                <span class="stat-label">Staking Participation Rate</span>
+                <div class="participation-meter">
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: @((Model?.StakingParticipation ?? 0).ToString("F1"))%"></div>
+                    </div>
+                    <span class="meter-value">@((Model?.StakingParticipation ?? 0).ToString("F1"))%</span>
+                </div>
+                <span class="stat-description">Of circulating supply staked</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="overview-highlights">
+        <div class="highlight-card">
+            <div class="highlight-icon">🎯</div>
+            <div class="highlight-content">
+                <h4>Education First</h4>
+                <p>50% of all staking rewards automatically support your chosen school</p>
+            </div>
+        </div>
+
+        <div class="highlight-card">
+            <div class="highlight-icon">🔒</div>
+            <div class="highlight-content">
+                <h4>Flexible Options</h4>
+                <p>Multiple lock periods from 30 days to 1 year with increasing rewards</p>
+            </div>
+        </div>
+
+        <div class="highlight-card">
+            <div class="highlight-icon">⚡</div>
+            <div class="highlight-content">
+                <h4>Auto-Compound</h4>
+                <p>Rewards can be automatically restaked to maximize your returns</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="overview-footer">
+        <div class="next-reward-distribution">
+            <span class="distribution-label">Next Reward Distribution:</span>
+            <span class="distribution-time" id="next-distribution-time">Loading...</span>
+            <span class="distribution-countdown" id="distribution-countdown"></span>
+        </div>
+    </div>
+</div>

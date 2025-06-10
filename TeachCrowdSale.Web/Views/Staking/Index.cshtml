@@ -1,0 +1,569 @@
+﻿@{
+    ViewData["Title"] = ViewData["Title"] ?? "Staking Dashboard - TeachToken";
+    var stakingStats = ViewBag.StakingStats as TeachCrowdSale.Core.Models.StakingStatsModel;
+    var stakingPools = ViewBag.StakingPools as List<TeachCrowdSale.Core.Data.Entities.StakingPool> ?? new List<TeachCrowdSale.Core.Data.Entities.StakingPool>();
+    var availableSchools = ViewBag.AvailableSchools as List<TeachCrowdSale.Core.Models.SchoolBeneficiaryModel> ?? new List<TeachCrowdSale.Core.Models.SchoolBeneficiaryModel>();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+    <meta name="keywords" content="@ViewData["Keywords"]" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://teachtoken.io/staking" />
+    <meta property="og:title" content="@ViewData["Title"]" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="~/images/teachtoken-staking-og.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://teachtoken.io/staking" />
+    <meta property="twitter:title" content="@ViewData["Title"]" />
+    <meta property="twitter:description" content="@ViewData["Description"]" />
+    <meta property="twitter:image" content="~/images/teachtoken-staking-twitter.jpg" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://teachtoken.io/staking" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/staking.css" asp-append-version="true" />
+
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "WebPage",
+            "name": "@ViewData["Title"]",
+            "description": "@ViewData["Description"]",
+            "url": "https://teachtoken.io/staking",
+            "inLanguage": "en-US",
+            "isPartOf": {
+                "@@type": "WebSite",
+                "name": "TeachToken",
+                "url": "https://teachtoken.io"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">TeachToken</a>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/tokenomics" class="nav-link">Tokenomics</a>
+                <a href="/buy" class="nav-link">Buy</a>
+                <a href="/staking" class="nav-link active">Staking</a>
+                <a href="/analytics" class="nav-link">Analytics</a>
+                <a href="/platform" class="nav-link">Platform</a>
+                <a href="/community" class="nav-link">Community</a>
+            </div>
+            <button class="btn btn-primary nav-cta" onclick="StakingDashboard.connectWallet()">
+                <span class="btn-text">Connect Wallet</span>
+                <span class="btn-icon">🔗</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section staking-hero">
+            <div class="container">
+                <div class="staking-hero-container">
+                    <div class="staking-hero-content">
+                        <h1 class="hero-title">
+                            Stake TEACH &
+                            <span class="highlight">Support Education</span>
+                        </h1>
+                        <p class="hero-subtitle">
+                            Earn rewards while making a real difference. Choose your school beneficiary and support education with our unique 50/50 reward sharing model.
+                        </p>
+
+                        <!-- Connect Wallet Status -->
+                        <div id="wallet-status" class="wallet-status">
+                            <div class="wallet-status-disconnected">
+                                <span class="status-icon">⚠️</span>
+                                <span class="status-text">Connect your wallet to start staking</span>
+                                <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.connectWallet()">
+                                    Connect Wallet
+                                </button>
+                            </div>
+                            <div class="wallet-status-connected" style="display: none;">
+                                <span class="status-icon">✅</span>
+                                <span class="status-text">Wallet Connected</span>
+                                <span class="wallet-address"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Overview -->
+                    <div class="staking-stats-overview">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <h3>Total Value Locked</h3>
+                                    <span class="stat-icon">🏦</span>
+                                </div>
+                                <div class="stat-value" data-metric="totalValueLocked" data-value="@(stakingStats?.TotalValueLocked ?? 0)" data-formatter="currency">
+                                    $@((stakingStats?.TotalValueLocked ?? 0).ToString("N0"))
+                                </div>
+                                <div class="stat-description">Across all staking pools</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <h3>Average APY</h3>
+                                    <span class="stat-icon">📈</span>
+                                </div>
+                                <div class="stat-value" data-metric="averageAPY" data-value="@(stakingStats?.AverageAPY ?? 0)" data-formatter="percentage">
+                                    @((stakingStats?.AverageAPY ?? 0).ToString("F1"))%
+                                </div>
+                                <div class="stat-description">Weighted by pool size</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <h3>Active Stakers</h3>
+                                    <span class="stat-icon">👥</span>
+                                </div>
+                                <div class="stat-value" data-metric="activeStakers" data-value="@(stakingStats?.ActiveStakers ?? 0)" data-formatter="number">
+                                    @((stakingStats?.ActiveStakers ?? 0).ToString("N0"))
+                                </div>
+                                <div class="stat-description">Currently staking</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <h3>Schools Supported</h3>
+                                    <span class="stat-icon">🏫</span>
+                                </div>
+                                <div class="stat-value" data-metric="schoolsSupported" data-value="@(stakingStats?.SchoolsSupported ?? 0)" data-formatter="number">
+                                    @((stakingStats?.SchoolsSupported ?? 0).ToString("N0"))
+                                </div>
+                                <div class="stat-description">Through staking rewards</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="dashboard-section">
+            <div class="container">
+                <!-- User Dashboard (Hidden until wallet connected) -->
+                <div id="user-dashboard" class="user-dashboard" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Your Staking Dashboard</h2>
+                        <p class="section-subtitle">Manage your positions and track your education impact</p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- User Stats -->
+                        <div class="dashboard-card user-stats-card">
+                            <h3 class="card-title">Your Overview</h3>
+                            <div class="user-stats">
+                                <div class="user-stat">
+                                    <span class="stat-label">Total Staked</span>
+                                    <span class="stat-value" id="user-total-staked">$0</span>
+                                </div>
+                                <div class="user-stat">
+                                    <span class="stat-label">Claimable Rewards</span>
+                                    <span class="stat-value highlight" id="user-claimable-rewards">$0</span>
+                                </div>
+                                <div class="user-stat">
+                                    <span class="stat-label">Total Earned</span>
+                                    <span class="stat-value" id="user-total-earned">$0</span>
+                                </div>
+                                <div class="user-stat">
+                                    <span class="stat-label">School Impact</span>
+                                    <span class="stat-value" id="user-school-impact">$0</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="claim-rewards-btn" onclick="StakingDashboard.claimRewards()" disabled>
+                                <span class="btn-text">Claim Rewards</span>
+                                <span class="btn-icon">💰</span>
+                            </button>
+                        </div>
+
+                        <!-- Active Positions -->
+                        <div class="dashboard-card positions-card">
+                            <h3 class="card-title">Active Positions</h3>
+                            <div id="user-positions" class="user-positions">
+                                <div class="positions-placeholder">
+                                    <span class="placeholder-icon">📊</span>
+                                    <span class="placeholder-text">No active positions yet</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- School Selection -->
+                        <div class="dashboard-card school-selection-card">
+                            <h3 class="card-title">School Beneficiary</h3>
+                            <div id="school-selection" class="school-selection">
+                                <div class="current-school" id="current-school" style="display: none;">
+                                    <div class="school-info">
+                                        <h4 class="school-name"></h4>
+                                        <p class="school-location"></p>
+                                        <div class="school-impact">
+                                            <span class="impact-label">Your Impact:</span>
+                                            <span class="impact-value">$0</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.openSchoolSelector()">
+                                        Change School
+                                    </button>
+                                </div>
+                                <div class="no-school-selected" id="no-school-selected">
+                                    <span class="placeholder-icon">🏫</span>
+                                    <span class="placeholder-text">Select a school to support</span>
+                                    <button class="btn btn-primary btn-sm" onclick="StakingDashboard.openSchoolSelector()">
+                                        Choose School
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staking Pools -->
+                <div class="pools-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Staking Pools</h2>
+                        <p class="section-subtitle">Choose from multiple staking options with varying lock periods and rewards</p>
+                    </div>
+
+                    <div class="pools-grid">
+                        @foreach (var pool in stakingPools)
+                        {
+                            <div class="pool-card" data-pool-id="@pool.Id">
+                                <div class="pool-header">
+                                    <h3 class="pool-name">@pool.Name</h3>
+                                    <div class="pool-status active">
+                                        <span class="status-dot"></span>
+                                        <span class="status-text">Active</span>
+                                    </div>
+                                </div>
+
+                                <div class="pool-apy">
+                                    <span class="apy-label">Total APY</span>
+                                    <span class="apy-value">@((pool.BaseAPY + pool.BonusAPY).ToString("F1"))%</span>
+                                </div>
+
+                                <div class="pool-details">
+                                    <div class="pool-detail">
+                                        <span class="detail-label">Lock Period</span>
+                                        <span class="detail-value">@pool.LockPeriodDays days</span>
+                                    </div>
+                                    <div class="pool-detail">
+                                        <span class="detail-label">Min Stake</span>
+                                        <span class="detail-value">@pool.MinStakeAmount.ToString("N0") TEACH</span>
+                                    </div>
+                                    <div class="pool-detail">
+                                        <span class="detail-label">Max Stake</span>
+                                        <span class="detail-value">@pool.MaxStakeAmount.ToString("N0") TEACH</span>
+                                    </div>
+                                </div>
+
+                                <div class="pool-capacity">
+                                    <div class="capacity-header">
+                                        <span class="capacity-label">Pool Capacity</span>
+                                        <span class="capacity-percentage">@((pool.TotalStaked / pool.MaxCapacity * 100).ToString("F1"))%</span>
+                                    </div>
+                                    <div class="capacity-bar">
+                                        <div class="capacity-fill" style="width: @((pool.TotalStaked / pool.MaxCapacity * 100).ToString("F1"))%"></div>
+                                    </div>
+                                    <div class="capacity-amounts">
+                                        <span>@pool.TotalStaked.ToString("N0") TEACH</span>
+                                        <span>@pool.MaxCapacity.ToString("N0") TEACH</span>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary pool-stake-btn" onclick="StakingDashboard.openStakeDialog(@pool.Id)">
+                                    <span class="btn-text">Stake Now</span>
+                                    <span class="btn-icon">⚡</span>
+                                </button>
+
+                                <div class="pool-description">
+                                    <p>@pool.Description</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Reward Calculator -->
+                <div class="calculator-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Staking Calculator</h2>
+                        <p class="section-subtitle">Calculate your potential rewards and school impact</p>
+                    </div>
+
+                    <div class="calculator-container">
+                        <div class="calculator-inputs">
+                            <div class="input-group">
+                                <label for="calc-amount">Stake Amount (TEACH)</label>
+                                <input type="number" id="calc-amount" class="form-input" placeholder="0" min="0" step="1">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="calc-pool">Staking Pool</label>
+                                <select id="calc-pool" class="form-select">
+                                    <option value="">Select a pool</option>
+                                    @foreach (var pool in stakingPools)
+                                    {
+                                        <option value="@pool.Id"
+                                                data-apy="@(pool.BaseAPY + pool.BonusAPY)"
+                                                data-lock-days="@pool.LockPeriodDays"
+                                                data-min="@pool.MinStakeAmount"
+                                                data-max="@pool.MaxStakeAmount">
+                                            @pool.Name (@(pool.BaseAPY + pool.BonusAPY)% APY - @pool.LockPeriodDays days)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="calculator-results" id="calculator-results" style="display: none;">
+                            <div class="results-grid">
+                                <div class="result-card">
+                                    <h4>Daily Rewards</h4>
+                                    <div class="result-split">
+                                        <div class="split-item">
+                                            <span class="split-label">Your Share (50%)</span>
+                                            <span class="split-value" id="daily-user-reward">$0</span>
+                                        </div>
+                                        <div class="split-item">
+                                            <span class="split-label">School Share (50%)</span>
+                                            <span class="split-value" id="daily-school-reward">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <h4>Monthly Projection</h4>
+                                    <div class="result-split">
+                                        <div class="split-item">
+                                            <span class="split-label">Your Earnings</span>
+                                            <span class="split-value" id="monthly-user-reward">$0</span>
+                                        </div>
+                                        <div class="split-item">
+                                            <span class="split-label">School Impact</span>
+                                            <span class="split-value" id="monthly-school-reward">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <h4>Yearly Projection</h4>
+                                    <div class="result-split">
+                                        <div class="split-item">
+                                            <span class="split-label">Total Earnings</span>
+                                            <span class="split-value" id="yearly-user-reward">$0</span>
+                                        </div>
+                                        <div class="split-item">
+                                            <span class="split-label">School Funding</span>
+                                            <span class="split-value" id="yearly-school-reward">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="calculator-summary">
+                                <div class="summary-item">
+                                    <span class="summary-label">Total APY:</span>
+                                    <span class="summary-value" id="calc-total-apy">0%</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Lock Period:</span>
+                                    <span class="summary-value" id="calc-lock-period">0 days</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Unlock Date:</span>
+                                    <span class="summary-value" id="calc-unlock-date">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Impact Section -->
+        <section id="impact" class="impact-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Real Educational Impact</h2>
+                    <p class="section-subtitle">See how your staking rewards are making a difference in classrooms</p>
+                </div>
+
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <div class="impact-header">
+                            <h3>Total School Funding</h3>
+                            <span class="impact-icon">🎓</span>
+                        </div>
+                        <div class="impact-value">$@((stakingStats?.TotalSchoolFunding ?? 0).ToString("N0"))</div>
+                        <div class="impact-description">Distributed to schools through staking rewards</div>
+                    </div>
+
+                    <div class="impact-card">
+                        <div class="impact-header">
+                            <h3>Schools Supported</h3>
+                            <span class="impact-icon">🏫</span>
+                        </div>
+                        <div class="impact-value">@((stakingStats?.SchoolsSupported ?? 0).ToString("N0"))</div>
+                        <div class="impact-description">Educational institutions receiving funding</div>
+                    </div>
+
+                    <div class="impact-card">
+                        <div class="impact-header">
+                            <h3>50/50 Model</h3>
+                            <span class="impact-icon">⚖️</span>
+                        </div>
+                        <div class="impact-value">Fair Share</div>
+                        <div class="impact-description">Half your rewards go to you, half supports education</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals and Components -->
+    <!-- Stake Dialog Modal -->
+    <div id="stake-modal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="StakingDashboard.closeStakeDialog()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Stake TEACH Tokens</h3>
+                <button class="modal-close" onclick="StakingDashboard.closeStakeDialog()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="stake-form">
+                    <!-- Stake form content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- School Selector Modal -->
+    <div id="school-modal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="StakingDashboard.closeSchoolSelector()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Choose School Beneficiary</h3>
+                <button class="modal-close" onclick="StakingDashboard.closeSchoolSelector()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="school-list">
+                    @foreach (var school in availableSchools)
+                    {
+                        <div class="school-option" data-school-id="@school.Id" onclick="StakingDashboard.selectSchool(@school.Id)">
+                            <div class="school-info">
+                                <h4 class="school-name">@school.Name</h4>
+                                <p class="school-location">@school.Location</p>
+                                <p class="school-description">@school.Description</p>
+                            </div>
+                            <div class="school-stats">
+                                <div class="school-stat">
+                                    <span class="stat-label">Total Funding</span>
+                                    <span class="stat-value">$@school.TotalFundingReceived.ToString("N0")</span>
+                                </div>
+                                <div class="school-stat">
+                                    <span class="stat-label">Active Stakers</span>
+                                    <span class="stat-value">@school.ActiveStakers</span>
+                                </div>
+                            </div>
+                            <div class="school-status verified">
+                                <span class="status-icon">✅</span>
+                                <span class="status-text">@school.VerificationStatus</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/tokenomics">Tokenomics</a></li>
+                        <li><a href="/buy">Buy TEACH</a></li>
+                        <li><a href="/staking">Staking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/analytics">Analytics</a></li>
+                        <li><a href="/platform">Roadmap</a></li>
+                        <li><a href="/community">Community</a></li>
+                        <li><a href="/docs">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Social</h4>
+                    <ul>
+                        <li><a href="https://twitter.com/teachtoken">Twitter</a></li>
+                        <li><a href="https://discord.gg/teachtoken">Discord</a></li>
+                        <li><a href="https://t.me/teachtoken">Telegram</a></li>
+                        <li><a href="https://github.com/teachtoken">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="/terms">Terms</a>
+                    <a href="/privacy">Privacy</a>
+                    <a href="/security">Security</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/staking.js" asp-append-version="true"></script>
+
+    <!-- Initialize Dashboard -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            StakingDashboard.init({
+                stakingPools: @Html.Raw(Json.Serialize(stakingPools)),
+                availableSchools: @Html.Raw(Json.Serialize(availableSchools)),
+                stakingStats: @Html.Raw(Json.Serialize(stakingStats))
+            });
+        });
+    </script>
+</body>
+</html>

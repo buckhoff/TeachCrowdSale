@@ -20,5 +20,8 @@ namespace TeachCrowdSale.Core.Models.Request
         [Required(ErrorMessage = "Stake ID is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Stake ID must be a valid positive number")]
         public int StakeId { get; set; }
+
+        public bool ClaimAll { get; set; }
+        public string TransactionHash { get; set; } = string.Empty;
     }
 }

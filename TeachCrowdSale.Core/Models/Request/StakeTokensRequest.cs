@@ -27,5 +27,7 @@ namespace TeachCrowdSale.Core.Models.Request
 
         [Range(1, int.MaxValue, ErrorMessage = "School beneficiary ID must be a valid positive number")]
         public int? SchoolBeneficiaryId { get; set; }
+
+        public string TransactionHash { get; set; } = string.Empty;
     }
 }

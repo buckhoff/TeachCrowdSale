@@ -1,0 +1,759 @@
+﻿/* Staking Dashboard Specific Styles */
+/* Extends existing CSS variables from site.css */
+
+:root {
+    /* Staking-specific color extensions */
+    --staking-primary: var(--primary-color);
+    --staking-success: #00d4aa;
+    --staking-warning: #ffb020;
+    --staking-error: #ff4757;
+    --staking-pool-bg: rgba(255, 255, 255, 0.05);
+    --staking-pool-border: rgba(255, 255, 255, 0.1);
+    --staking-reward-glow: rgba(0, 212, 170, 0.3);
+    --staking-calculator-bg: rgba(45, 55, 72, 0.6);
+    /* Animation timings - consistent with site.css */
+    --staking-transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --staking-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --staking-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Progress bar heights */
+    --progress-height-sm: 4px;
+    --progress-height-md: 8px;
+    --progress-height-lg: 12px;
+}
+
+/* Staking Dashboard Layout */
+.staking-dashboard {
+    padding: var(--spacing-lg) 0;
+    min-height: 100vh;
+    background: var(--dark-bg);
+}
+
+.staking-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+.staking-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+@media (min-width: 768px) {
+    .staking-grid {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+@media (min-width: 1024px) {
+    .staking-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+/* Staking Pool Cards */
+.staking-pool-card {
+    background: var(--staking-pool-bg);
+    border: 1px solid var(--staking-pool-border);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--staking-transition-normal);
+    cursor: pointer;
+}
+
+    .staking-pool-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: var(--staking-primary);
+    }
+
+    .staking-pool-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--staking-primary) 0%, var(--staking-success) 100%);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform var(--staking-transition-normal);
+    }
+
+    .staking-pool-card:hover::before {
+        transform: scaleX(1);
+    }
+
+.pool-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.pool-name {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.pool-status {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+    .pool-status.active {
+        background: rgba(0, 212, 170, 0.2);
+        color: var(--staking-success);
+    }
+
+    .pool-status.filled {
+        background: rgba(255, 176, 32, 0.2);
+        color: var(--staking-warning);
+    }
+
+/* APY Display with Animation */
+.pool-apy {
+    text-align: center;
+    margin: var(--spacing-md) 0;
+}
+
+.apy-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.apy-value {
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-bold);
+    background: linear-gradient(135deg, var(--staking-primary), var(--staking-success));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    line-height: 1;
+    position: relative;
+}
+
+    .apy-value::after {
+        content: '%';
+        position: absolute;
+        font-size: 1.5rem;
+        top: 0.2em;
+        margin-left: 0.1em;
+    }
+
+/* Animated Counter */
+@keyframes countUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.apy-value.animate {
+    animation: countUp 0.6s ease-out;
+}
+
+/* Pool Metrics */
+.pool-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
+}
+
+.metric-item {
+    text-align: center;
+}
+
+.metric-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.metric-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+/* TVL and Capacity Progress Bars */
+.pool-progress {
+    margin: var(--spacing-lg) 0;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.progress-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.progress-percentage {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--staking-success);
+}
+
+.progress-bar {
+    width: 100%;
+    height: var(--progress-height-md);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--staking-primary), var(--staking-success));
+    border-radius: var(--border-radius-sm);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--staking-transition-slow);
+}
+
+    .progress-fill.animate {
+        animation: fillProgress 1.5s ease-out forwards;
+    }
+
+@keyframes fillProgress {
+    to {
+        transform: scaleX(var(--progress-width, 0));
+    }
+}
+
+/* Stake Button */
+.stake-button {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: linear-gradient(135deg, var(--staking-primary), var(--staking-success));
+    border: none;
+    border-radius: var(--border-radius-md);
+    color: white;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--staking-transition-normal);
+}
+
+    .stake-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 212, 170, 0.3);
+    }
+
+    .stake-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left var(--staking-transition-slow);
+    }
+
+    .stake-button:hover::before {
+        left: 100%;
+    }
+
+    .stake-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+/* User Positions Section */
+.user-positions {
+    background: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.positions-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.positions-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.total-staked {
+    text-align: right;
+}
+
+.total-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.total-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--staking-success);
+}
+
+/* Position Cards */
+.position-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: all var(--staking-transition-normal);
+}
+
+    .position-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+.position-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.position-pool {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+.position-status {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+}
+
+    .position-status.active {
+        background: rgba(0, 212, 170, 0.2);
+        color: var(--staking-success);
+    }
+
+    .position-status.unlocking {
+        background: rgba(255, 176, 32, 0.2);
+        color: var(--staking-warning);
+    }
+
+/* Position Metrics Grid */
+.position-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.position-metric {
+    text-align: center;
+}
+
+.position-metric-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.position-metric-value {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+/* Countdown Timer */
+.countdown-timer {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+}
+
+.countdown-unit {
+    text-align: center;
+    padding: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    min-width: 60px;
+}
+
+.countdown-number {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--staking-primary);
+    display: block;
+    line-height: 1;
+}
+
+.countdown-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-top: var(--spacing-xs);
+}
+
+/* Reward Claim Button */
+.claim-rewards-btn {
+    background: linear-gradient(135deg, var(--staking-success), #00b894);
+    border: none;
+    border-radius: var(--border-radius-md);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--staking-transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+    .claim-rewards-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px var(--staking-reward-glow);
+    }
+
+    .claim-rewards-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.3s, height 0.3s;
+    }
+
+    .claim-rewards-btn:active::after {
+        width: 200px;
+        height: 200px;
+    }
+
+/* Reward Calculator */
+.reward-calculator {
+    background: var(--staking-calculator-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    backdrop-filter: blur(15px);
+}
+
+.calculator-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.calculator-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.calculator-subtitle {
+    color: var(--text-secondary);
+    font-size: var(--font-size-md);
+}
+
+.calculator-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.form-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+}
+
+.form-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+    transition: all var(--staking-transition-normal);
+}
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--staking-primary);
+        box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    }
+
+.form-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+/* Projection Results */
+.projection-results {
+    background: rgba(0, 212, 170, 0.05);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.projection-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--staking-success);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+.projection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.projection-item {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius-sm);
+}
+
+.projection-period {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.projection-amount {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--staking-success);
+}
+
+/* 50/50 Split Visualization */
+.reward-split {
+    display: flex;
+    margin-top: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    height: 60px;
+}
+
+.split-user,
+.split-school {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-semibold);
+    color: white;
+    position: relative;
+    transition: all var(--staking-transition-normal);
+}
+
+.split-user {
+    background: linear-gradient(135deg, var(--staking-primary), #667eea);
+}
+
+.split-school {
+    background: linear-gradient(135deg, var(--staking-success), #00b894);
+}
+
+    .split-user:hover,
+    .split-school:hover {
+        transform: scale(1.02);
+        z-index: 1;
+    }
+
+/* Loading States */
+.loading-skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--border-radius-sm);
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-left-color: var(--staking-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success/Error Feedback */
+.feedback-message {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    margin: var(--spacing-md) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    animation: slideIn 0.3s ease-out;
+}
+
+    .feedback-message.success {
+        background: rgba(0, 212, 170, 0.1);
+        border: 1px solid rgba(0, 212, 170, 0.3);
+        color: var(--staking-success);
+    }
+
+    .feedback-message.error {
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        color: var(--staking-error);
+    }
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .staking-container {
+        padding: 0 var(--spacing-sm);
+    }
+
+    .staking-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .pool-metrics {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .position-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .countdown-timer {
+        gap: var(--spacing-sm);
+    }
+
+    .countdown-unit {
+        min-width: 50px;
+        padding: var(--spacing-xs);
+    }
+
+    .projection-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reward-split {
+        flex-direction: column;
+        height: auto;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .staking-pool-card {
+        border-width: 2px;
+    }
+
+    .form-input:focus {
+        border-width: 2px;
+    }
+
+    .stake-button,
+    .claim-rewards-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .staking-pool-card:hover {
+        transform: none;
+    }
+
+    .stake-button:hover,
+    .claim-rewards-btn:hover {
+        transform: none;
+    }
+}
