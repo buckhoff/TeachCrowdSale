@@ -1,0 +1,330 @@
+﻿@model TeachCrowdSale.Web.Models.RoadmapPageModel
+
+<!-- Views/Roadmap/_DevelopmentOverview.cshtml -->
+<!-- Development overview section with progress summary, dev stats, and GitHub integration -->
+
+<section class="roadmap-overview-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Development Overview</h2>
+            <p>Real-time insights into our development progress and team activity</p>
+        </div>
+
+        <div class="overview-grid">
+            <!-- Progress Summary Card -->
+            <div class="progress-summary-card">
+                <div class="card-header">
+                    <h3>Project Progress</h3>
+                    <span class="completion-date">Est. completion: @Model.Overview.CompletionTimeframe</span>
+                </div>
+
+                <div class="progress-visual">
+                    <div class="progress-circle" data-progress="@Model.Overview.OverallProgress">
+                        <div class="progress-inner">
+                            <div class="progress-value">@Model.Overview.OverallProgress.ToString("F1")%</div>
+                            <div class="progress-label">Complete</div>
+                        </div>
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle class="progress-ring-bg" cx="60" cy="60" r="54"
+                                    stroke="rgba(255,255,255,0.1)" stroke-width="4" fill="transparent" />
+                            <circle class="progress-ring-fill" cx="60" cy="60" r="54"
+                                    stroke="var(--primary-color)" stroke-width="4" fill="transparent"
+                                    stroke-dasharray="339.292"
+                                    stroke-dashoffset="@((100 - Model.Overview.OverallProgress) * 3.39292)"
+                                    transform="rotate(-90 60 60)" />
+                        </svg>
+                    </div>
+
+                    <div class="progress-breakdown">
+                        <div class="breakdown-item">
+                            <span class="breakdown-dot completed"></span>
+                            <div class="breakdown-details">
+                                <span class="breakdown-count">@Model.Overview.CompletedMilestones</span>
+                                <span class="breakdown-label">Completed</span>
+                            </div>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-dot in-progress"></span>
+                            <div class="breakdown-details">
+                                <span class="breakdown-count">@Model.Overview.InProgressMilestones</span>
+                                <span class="breakdown-label">Active</span>
+                            </div>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-dot upcoming"></span>
+                            <div class="breakdown-details">
+                                <span class="breakdown-count">@Model.Overview.UpcomingMilestones</span>
+                                <span class="breakdown-label">Planned</span>
+                            </div>
+                        </div>
+                        @if (Model.Overview.OnHoldMilestones > 0)
+                        {
+                            <div class="breakdown-item">
+                                <span class="breakdown-dot on-hold"></span>
+                                <div class="breakdown-details">
+                                    <span class="breakdown-count">@Model.Overview.OnHoldMilestones</span>
+                                    <span class="breakdown-label">On Hold</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="progress-insights">
+                    <div class="insight-item @(Model.Overview.IsOnTrack ? "positive" : "warning")">
+                        <span class="insight-icon">@(Model.Overview.IsOnTrack ? "✅" : "⚠️")</span>
+                        <span class="insight-text">
+                            @(Model.Overview.IsOnTrack ? "On Track" : "Needs Attention")
+                        </span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">📅</span>
+                        <span class="insight-text">Updated @Model.Overview.LastUpdateTimeAgo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Development Statistics Card -->
+            <div class="dev-stats-card">
+                <div class="card-header">
+                    <h3>Development Metrics</h3>
+                    <div class="stats-period">
+                        <span class="period-text">Last 30 days</span>
+                        <div class="activity-indicator @Model.DevelopmentStats.ActivityLevelClass">
+                            <span class="activity-dot"></span>
+                            <span class="activity-label">@Model.DevelopmentStats.ActivityLevel Activity</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dev-stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon commits">💻</div>
+                        <div class="stat-details">
+                            <div class="stat-value">@Model.DevelopmentStats.TotalCommits.ToString("N0")</div>
+                            <div class="stat-name">Total Commits</div>
+                            <div class="stat-trend">
+                                <span class="trend-indicator positive">+@Model.DevelopmentStats.RecentCommits</span>
+                                <span class="trend-period">this week</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon coverage">🔍</div>
+                        <div class="stat-details">
+                            <div class="stat-value">@Model.DevelopmentStats.CodeCoverage.ToString("F1")%</div>
+                            <div class="stat-name">Code Coverage</div>
+                            <div class="stat-quality">
+                                <span class="quality-grade @GetCoverageClass(Model.DevelopmentStats.CodeCoverage)">
+                                    @Model.DevelopmentStats.CodeQualityGrade
+                                </span>
+                                <span class="quality-label">Quality</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon issues">🐛</div>
+                        <div class="stat-details">
+                            <div class="stat-value">@Model.DevelopmentStats.OpenIssues</div>
+                            <div class="stat-name">Open Issues</div>
+                            <div class="stat-breakdown">
+                                <span class="breakdown-text">@Model.DevelopmentStats.ClosedIssues closed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon team">👥</div>
+                        <div class="stat-details">
+                            <div class="stat-value">@Model.DevelopmentStats.ActiveContributors</div>
+                            <div class="stat-name">Active Devs</div>
+                            <div class="stat-breakdown">
+                                <span class="breakdown-text">of @Model.DevelopmentStats.Contributors total</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dev-stats-footer">
+                    <div class="footer-item">
+                        <span class="footer-icon">🚀</span>
+                        <span class="footer-text">Last deployment: @Model.DevelopmentStats.LastDeploymentText</span>
+                    </div>
+                    <div class="footer-item">
+                        <span class="footer-icon">📝</span>
+                        <span class="footer-text">Last commit: @Model.DevelopmentStats.LastCommitText</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GitHub Integration Card -->
+            <div class="github-stats-card">
+                <div class="card-header">
+                    <h3>GitHub Activity</h3>
+                    <div class="github-actions">
+                        <a href="@Model.GitHubStats.RepositoryUrl" target="_blank" class="github-link">
+                            <span class="github-icon">🔗</span>
+                            <span>View Repository</span>
+                            <span class="external-indicator">↗</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="github-stats-grid">
+                    <div class="github-stat">
+                        <div class="github-stat-icon">⭐</div>
+                        <div class="github-stat-details">
+                            <span class="github-value">@Model.GitHubStats.Stars.ToString("N0")</span>
+                            <span class="github-label">Stars</span>
+                        </div>
+                    </div>
+
+                    <div class="github-stat">
+                        <div class="github-stat-icon">🍴</div>
+                        <div class="github-stat-details">
+                            <span class="github-value">@Model.GitHubStats.Forks.ToString("N0")</span>
+                            <span class="github-label">Forks</span>
+                        </div>
+                    </div>
+
+                    <div class="github-stat">
+                        <div class="github-stat-icon">📝</div>
+                        <div class="github-stat-details">
+                            <span class="github-value">@Model.GitHubStats.RecentCommits</span>
+                            <span class="github-label">Recent Commits</span>
+                        </div>
+                    </div>
+
+                    <div class="github-stat">
+                        <div class="github-stat-icon">🔧</div>
+                        <div class="github-stat-details">
+                            <span class="github-value">@Model.GitHubStats.OpenIssues</span>
+                            <span class="github-label">Open Issues</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="github-activity-section">
+                    <div class="activity-header">
+                        <span class="activity-title">Repository Health</span>
+                        <div class="health-score @Model.GitHubStats.HealthScoreClass">
+                            <span class="health-dot"></span>
+                            <span class="health-text">@Model.GitHubStats.HealthScore</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-metrics">
+                        <div class="activity-metric">
+                            <span class="metric-icon">📊</span>
+                            <span class="metric-text">@Model.GitHubStats.CommitFrequency.ToString("F1") commits/week</span>
+                        </div>
+                        <div class="activity-metric">
+                            <span class="metric-icon">⚡</span>
+                            <span class="metric-text">Last commit @GetTimeAgo(Model.GitHubStats.LastCommitDate)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="github-quick-actions">
+                    <a href="@Model.GitHubStats.RepositoryUrl/issues" target="_blank" class="quick-action">
+                        <span class="action-icon">🐛</span>
+                        <span class="action-text">Issues</span>
+                    </a>
+                    <a href="@Model.GitHubStats.RepositoryUrl/pulls" target="_blank" class="quick-action">
+                        <span class="action-icon">🔄</span>
+                        <span class="action-text">Pull Requests</span>
+                    </a>
+                    <a href="@Model.GitHubStats.RepositoryUrl/commits/@Model.GitHubStats.MainBranch" target="_blank" class="quick-action">
+                        <span class="action-icon">📝</span>
+                        <span class="action-text">Commits</span>
+                    </a>
+                    <a href="@Model.GitHubStats.RepositoryUrl/releases" target="_blank" class="quick-action">
+                        <span class="action-icon">🏷️</span>
+                        <span class="action-text">Releases</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Development Insights -->
+        <div class="development-insights">
+            <div class="insights-header">
+                <h3>Development Insights</h3>
+                <button class="refresh-insights" id="refresh-dev-insights" title="Refresh Data">
+                    <span class="refresh-icon">🔄</span>
+                </button>
+            </div>
+
+            <div class="insights-grid">
+                <div class="insight-card velocity">
+                    <div class="insight-header">
+                        <span class="insight-icon">⚡</span>
+                        <span class="insight-title">Development Velocity</span>
+                    </div>
+                    <div class="insight-content">
+                        <div class="velocity-score">
+                            <span class="score-value">8.5</span>
+                            <span class="score-max">/10</span>
+                        </div>
+                        <div class="velocity-description">
+                            Strong development pace with consistent deliveries
+                        </div>
+                    </div>
+                </div>
+
+                <div class="insight-card quality">
+                    <div class="insight-header">
+                        <span class="insight-icon">🎯</span>
+                        <span class="insight-title">Code Quality</span>
+                    </div>
+                    <div class="insight-content">
+                        <div class="quality-grade @GetCoverageClass(Model.DevelopmentStats.CodeCoverage)">
+                            @Model.DevelopmentStats.CodeQualityGrade
+                        </div>
+                        <div class="quality-description">
+                            High-quality codebase with @Model.DevelopmentStats.CodeCoverage.ToString("F1")% test coverage
+                        </div>
+                    </div>
+                </div>
+
+                <div class="insight-card timeline">
+                    <div class="insight-header">
+                        <span class="insight-icon">📅</span>
+                        <span class="insight-title">Timeline Status</span>
+                    </div>
+                    <div class="insight-content">
+                        <div class="timeline-status @(Model.Overview.IsOnTrack ? "on-track" : "at-risk")">
+                            @(Model.Overview.IsOnTrack ? "On Track" : "At Risk")
+                        </div>
+                        <div class="timeline-description">
+                            Project completion estimated for @Model.Overview.CompletionTimeframe
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    string GetCoverageClass(decimal coverage)
+    {
+        if (coverage >= 90) return "excellent";
+        if (coverage >= 80) return "good";
+        if (coverage >= 70) return "fair";
+        return "poor";
+    }
+
+    string GetTimeAgo(DateTime date)
+    {
+        var timespan = DateTime.UtcNow - date;
+
+        if (timespan.TotalDays >= 1) return $"{(int)timespan.TotalDays} days ago";
+        if (timespan.TotalHours >= 1) return $"{(int)timespan.TotalHours} hours ago";
+        if (timespan.TotalMinutes >= 1) return $"{(int)timespan.TotalMinutes} minutes ago";
+
+        return "Just now";
+    }
+}

@@ -21,5 +21,10 @@
         // Formatted fields
         public string FormattedDate { get; set; } = string.Empty;
         public string TimeAgo { get; set; } = string.Empty;
+
+        public DateTime UpdateDate { get; set; } 
+        public string Description { get; set; } = string.Empty; 
+        public string Author { get; set; } = string.Empty; 
+        public string Category { get; set; } = string.Empty; 
     }
 }

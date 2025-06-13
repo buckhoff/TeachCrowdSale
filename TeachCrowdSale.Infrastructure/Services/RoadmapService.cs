@@ -49,51 +49,51 @@ namespace TeachCrowdSale.Infrastructure.Services
                     return cachedData;
                 }
 
-                var roadmapData = new RoadmapDataModel();
+                var milestones = await _roadmapRepository.GetMilestonesAsync();
+                var devStats = await GetDevelopmentStatsAsync();
+                var updates = await GetRecentUpdatesAsync();
+                var releases = await GetReleasesAsync();
+                var gitHubStats = await GetGitHubStatsAsync();
 
-                // Get milestones by status
-                var allMilestones = await GetMilestonesAsync();
-                roadmapData.CurrentMilestones = allMilestones
-                    .Where(m => m.Status == "InProgress" || m.Status == "Testing" || m.Status == "Review")
-                    .Take(6)
-                    .ToList();
+                var currentMilestones = milestones.Where(m => m.Status == MilestoneStatus.InProgress).Select(MapToDisplayModel).ToList();
+                var upcomingMilestones = milestones.Where(m => m.Status == MilestoneStatus.Planning).Select(MapToDisplayModel).ToList();
+                var completedMilestones = milestones.Where(m => m.Status == MilestoneStatus.Completed).Select(MapToDisplayModel).ToList();
 
-                roadmapData.UpcomingMilestones = allMilestones
-                    .Where(m => m.Status == "NotStarted" || m.Status == "Planning")
-                    .Take(8)
-                    .ToList();
+                var roadmapData = new RoadmapDataModel
+                {
+                    CurrentMilestones = currentMilestones,
+                    UpcomingMilestones = upcomingMilestones,
+                    CompletedMilestones = completedMilestones,
+                    DevelopmentStats = devStats,
+                    RecentUpdates = updates,
+                    Releases = releases,
+                    GitHubStats = gitHubStats,
+                    LoadedAt = DateTime.UtcNow,
 
-                roadmapData.CompletedMilestones = allMilestones
-                    .Where(m => m.Status == "Completed")
-                    .OrderByDescending(m => m.ActualCompletionDate)
-                    .Take(10)
-                    .ToList();
+                    // ADD THIS:
+                    Overview = new RoadmapOverviewModel
+                    {
+                        TotalMilestones = milestones.Count,
+                        CompletedMilestones = completedMilestones.Count,
+                        InProgressMilestones = currentMilestones.Count,
+                        UpcomingMilestones = upcomingMilestones.Count,
+                        OnHoldMilestones = milestones.Count(m => m.Status == MilestoneStatus.OnHold),
+                        OverallProgress = CalculateOverallProgress(milestones),
+                        EstimatedCompletionDate = upcomingMilestones.Where(m => m.EstimatedCompletionDate.HasValue)
+                            .Select(m => m.EstimatedCompletionDate.Value).DefaultIfEmpty().Max(),
+                        LastUpdateDate = updates.FirstOrDefault()?.CreatedAt ?? DateTime.UtcNow.AddDays(-1),
+                        IsOnTrack = CheckIfOnTrack(currentMilestones),
+                        ProjectHealthStatus = GetProjectHealthStatus(currentMilestones, devStats),
+                        ProjectHealthClass = GetProjectHealthClass(currentMilestones, devStats)
+                    }
+                };
 
-                var developmentStatsTask = GetDevelopmentStatsAsync();
-                var releasesTask = GetReleasesAsync();
-                var recentUpdatesTask = GetRecentUpdatesAsync(15);
-                var gitHubStatsTask = GetGitHubStatsAsync();
-
-                // Get other data in parallel
-                await Task.WhenAll(
-                   developmentStatsTask,
-                    releasesTask,
-                    recentUpdatesTask,
-                    gitHubStatsTask
-                );
-
-
-                roadmapData.DevelopmentStats = await developmentStatsTask;
-                roadmapData.Releases = await releasesTask;
-                roadmapData.RecentUpdates = await recentUpdatesTask;
-                roadmapData.GitHubStats = await gitHubStatsTask;
-
-                _cache.Set(CACHE_KEY_ROADMAP_DATA, roadmapData, _shortCacheDuration);
+                _cache.Set(CACHE_KEY_ROADMAP_DATA, roadmapData, _mediumCacheDuration);
                 return roadmapData;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading comprehensive roadmap data");
+                _logger.LogError(ex, "Error fetching roadmap data");
                 return GetFallbackRoadmapData();
             }
         }
@@ -135,17 +135,17 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<DevelopmentStatsModel> GetDevelopmentStatsAsync()
+        public async Task<GitHubDevelopmentStatsModel> GetDevelopmentStatsAsync()
         {
             try
             {
-                if (_cache.TryGetValue(CACHE_KEY_DEV_STATS, out DevelopmentStatsModel? cachedStats) && cachedStats != null)
+                if (_cache.TryGetValue(CACHE_KEY_DEV_STATS, out GitHubDevelopmentStatsModel? cachedStats) && cachedStats != null)
                 {
                     return cachedStats;
                 }
 
                 var statsData = await _roadmapRepository.GetDevelopmentStatsAsync();
-                var stats = new DevelopmentStatsModel
+                var stats = new GitHubDevelopmentStatsModel
                 {
                     TotalMilestones = statsData.TotalMilestones,
                     CompletedMilestones = statsData.CompletedMilestones,
@@ -457,7 +457,11 @@ namespace TeachCrowdSale.Infrastructure.Services
                 MilestoneId = update.MilestoneId,
                 MilestoneTitle = update.Milestone.Title,
                 FormattedDate = update.CreatedAt.ToString("MMM dd, yyyy"),
-                TimeAgo = CalculateTimeAgo(update.CreatedAt)
+                TimeAgo = CalculateTimeAgo(update.CreatedAt),
+                UpdateDate = update.CreatedAt, 
+                Description = update.Content, 
+                Author = update.AuthorName ?? "Unknown", 
+                Category = update.Milestone?.Category ?? "General" 
             };
         }
 
@@ -478,10 +482,14 @@ namespace TeachCrowdSale.Infrastructure.Services
                 ReleaseNotes = release.ReleaseNotes,
                 GitHubReleaseUrl = release.GitHubReleaseUrl,
                 DocumentationUrl = release.DocumentationUrl,
-                IncludedMilestones = release.Milestones.Select(m => m.Title).ToList(),
-                FormattedReleaseDate = FormatReleaseDate(release.PlannedReleaseDate, release.ActualReleaseDate),
-                IsOverdue = IsReleaseOverdue(release.PlannedReleaseDate, release.Status),
-                TimeToRelease = CalculateTimeToRelease(release.PlannedReleaseDate)
+                IncludedMilestones = release.Milestones?.Select(m => m.Title).ToList() ?? new List<string>(),
+                FormattedReleaseDate = (release.ActualReleaseDate ?? release.PlannedReleaseDate)?.ToString("MMM dd, yyyy") ?? "",
+                IsOverdue = release.PlannedReleaseDate.HasValue && release.ActualReleaseDate == null && release.PlannedReleaseDate < DateTime.UtcNow,
+                TimeToRelease = CalculateTimeToRelease(release.PlannedReleaseDate, release.ActualReleaseDate),
+                Title = release.Name, 
+                ReleaseDate = release.ActualReleaseDate ?? release.PlannedReleaseDate, 
+                IsPreRelease = release.Type == ReleaseType.Alpha || release.Type == ReleaseType.Beta || release.Version.Contains("beta") || release.Version.Contains("alpha"),
+                DownloadUrl = release.GitHubReleaseUrl
             };
         }
 
@@ -788,9 +796,9 @@ namespace TeachCrowdSale.Infrastructure.Services
             };
         }
 
-        private DevelopmentStatsModel GetFallbackDevelopmentStats()
+        private GitHubDevelopmentStatsModel GetFallbackDevelopmentStats()
         {
-            return new DevelopmentStatsModel
+            return new GitHubDevelopmentStatsModel
             {
                 TotalMilestones = 25,
                 CompletedMilestones = 8,

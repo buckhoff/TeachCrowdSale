@@ -1,0 +1,610 @@
+﻿@model TeachCrowdSale.Web.Models.RoadmapPageModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+    <meta name="keywords" content="@ViewData["Keywords"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Platform Roadmap & Development - TeachToken" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/teachtoken-roadmap-og.jpg" />
+    <meta property="og:url" content="https://teachtoken.io/roadmap" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Platform Roadmap & Development - TeachToken" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/roadmap.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">
+                        <span class="brand-icon">🎓</span>
+                        <span class="brand-text">TeachToken</span>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/tokenomics" class="nav-link">Tokenomics</a></li>
+                    <li><a href="/analytics" class="nav-link">Analytics</a></li>
+                    <li><a href="/buy" class="nav-link">Buy TEACH</a></li>
+                    <li><a href="/staking" class="nav-link">Staking</a></li>
+                    <li><a href="/roadmap" class="nav-link active">Roadmap</a></li>
+                </ul>
+
+                <a href="/buy" class="nav-cta">
+                    Get TEACH
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Hero Section -->
+        <section class="roadmap-hero-section">
+            <div class="container">
+                <div class="roadmap-hero-container">
+                    <div class="roadmap-hero-content">
+                        <h1>
+                            <span class="highlight">Development</span> Roadmap
+                        </h1>
+                        <p class="roadmap-hero-subtitle">
+                            Track our progress as we build the future of education funding.
+                            Transparent development with clear milestones and regular updates.
+                        </p>
+
+                        <!-- Project Health Status -->
+                        <div class="project-health-card">
+                            <div class="health-indicator @Model.Overview.ProjectHealthClass">
+                                <span class="health-icon">💚</span>
+                                <span class="health-status">@Model.Overview.ProjectHealthStatus</span>
+                            </div>
+                            <div class="health-details">
+                                <span class="health-progress">@Model.Overview.ProgressDisplayText overall progress</span>
+                                <span class="health-update">Last updated @Model.Overview.LastUpdateTimeAgo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-hero-stats">
+                        <div class="roadmap-stat-card">
+                            <div class="stat-number">@Model.Overview.TotalMilestones</div>
+                            <div class="stat-label">Total Milestones</div>
+                        </div>
+                        <div class="roadmap-stat-card">
+                            <div class="stat-number">@Model.Overview.CompletedMilestones</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="roadmap-stat-card">
+                            <div class="stat-number">@Model.Overview.InProgressMilestones</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                        <div class="roadmap-stat-card">
+                            <div class="stat-number">@Model.GitHubStats.Contributors</div>
+                            <div class="stat-label">Contributors</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Development Overview Section -->
+        <section class="roadmap-overview-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Development Overview</h2>
+                    <p>Real-time insights into our development progress and team activity</p>
+                </div>
+
+                <div class="overview-grid">
+                    <!-- Progress Summary -->
+                    <div class="progress-summary-card">
+                        <div class="card-header">
+                            <h3>Project Progress</h3>
+                            <span class="completion-date">Est. completion: @Model.Overview.CompletionTimeframe</span>
+                        </div>
+                        <div class="progress-visual">
+                            <div class="progress-circle" data-progress="@Model.Overview.OverallProgress">
+                                <div class="progress-value">@Model.Overview.OverallProgress.ToString("F1")%</div>
+                                <div class="progress-label">Complete</div>
+                            </div>
+                            <div class="progress-breakdown">
+                                <div class="breakdown-item">
+                                    <span class="breakdown-count">@Model.Overview.CompletedMilestones</span>
+                                    <span class="breakdown-label">Completed</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-count">@Model.Overview.InProgressMilestones</span>
+                                    <span class="breakdown-label">Active</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-count">@Model.Overview.UpcomingMilestones</span>
+                                    <span class="breakdown-label">Planned</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Development Stats -->
+                    <div class="dev-stats-card">
+                        <div class="card-header">
+                            <h3>Development Metrics</h3>
+                            <span class="stats-period">Last 30 days</span>
+                        </div>
+                        <div class="dev-stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon">💻</div>
+                                <div class="stat-details">
+                                    <div class="stat-value">@Model.DevelopmentStats.TotalCommits</div>
+                                    <div class="stat-name">Total Commits</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">🔍</div>
+                                <div class="stat-details">
+                                    <div class="stat-value">@Model.DevelopmentStats.CodeCoverage%</div>
+                                    <div class="stat-name">Code Coverage</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">🐛</div>
+                                <div class="stat-details">
+                                    <div class="stat-value">@Model.DevelopmentStats.OpenIssues</div>
+                                    <div class="stat-name">Open Issues</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">👥</div>
+                                <div class="stat-details">
+                                    <div class="stat-value">@Model.DevelopmentStats.ActiveContributors</div>
+                                    <div class="stat-name">Active Devs</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GitHub Integration -->
+                    <div class="github-stats-card">
+                        <div class="card-header">
+                            <h3>GitHub Activity</h3>
+                            <a href="@Model.GitHubStats.RepositoryUrl" target="_blank" class="github-link">
+                                View Repository →
+                            </a>
+                        </div>
+                        <div class="github-stats-grid">
+                            <div class="github-stat">
+                                <span class="github-value">@Model.GitHubStats.Stars</span>
+                                <span class="github-label">⭐ Stars</span>
+                            </div>
+                            <div class="github-stat">
+                                <span class="github-value">@Model.GitHubStats.Forks</span>
+                                <span class="github-label">🍴 Forks</span>
+                            </div>
+                            <div class="github-stat">
+                                <span class="github-value">@Model.GitHubStats.RecentCommits</span>
+                                <span class="github-label">📝 Recent Commits</span>
+                            </div>
+                            <div class="github-stat">
+                                <span class="github-value">@Model.GitHubStats.OpenIssues</span>
+                                <span class="github-label">🔧 Open Issues</span>
+                            </div>
+                        </div>
+                        <div class="github-activity">
+                            <span class="activity-indicator active"></span>
+                            <span class="activity-text">Last commit @Model.DevelopmentStats.LastCommitText</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Milestone Filter Section -->
+        <section class="milestone-filter-section">
+            <div class="container">
+                <div class="filter-header">
+                    <h2>Development Milestones</h2>
+                    <div class="filter-controls">
+                        <div class="search-container">
+                            <input type="text" id="milestone-search" placeholder="Search milestones..." class="search-input">
+                            <button class="search-button" id="search-btn">🔍</button>
+                        </div>
+                        <div class="filter-dropdowns">
+                            <select id="status-filter" class="filter-select">
+                                <option value="">All Statuses</option>
+                                @foreach (var status in Model.FilterOptions.Statuses)
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                            <select id="category-filter" class="filter-select">
+                                <option value="">All Categories</option>
+                                @foreach (var category in Model.FilterOptions.Categories)
+                                {
+                                    <option value="@category">@category</option>
+                                }
+                            </select>
+                            <select id="priority-filter" class="filter-select">
+                                <option value="">All Priorities</option>
+                                @foreach (var priority in Model.FilterOptions.Priorities)
+                                {
+                                    <option value="@priority">@priority</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="view-controls">
+                            <button class="view-toggle active" data-view="grid" title="Grid View">⊞</button>
+                            <button class="view-toggle" data-view="timeline" title="Timeline View">📊</button>
+                            <button class="export-btn" id="export-milestones" title="Export Data">📤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Milestones Section -->
+        <section class="active-milestones-section">
+            <div class="container">
+                <div class="section-header">
+                    <h3>Active Milestones</h3>
+                    <span class="section-count">@Model.ActiveMilestones.Count milestones in progress</span>
+                </div>
+
+                <div class="milestones-grid" id="active-milestones-grid">
+                    @foreach (var milestone in Model.ActiveMilestones)
+                    {
+                        <div class="milestone-card @milestone.StatusClass" data-milestone-id="@milestone.Id">
+                            <div class="milestone-header">
+                                <div class="milestone-category @milestone.StatusClass">@milestone.Category</div>
+                                <div class="milestone-status">
+                                    <span class="status-icon">@GetStatusIcon(milestone.Status)</span>
+                                    <span class="status-text">@milestone.Status</span>
+                                </div>
+                            </div>
+
+                            <div class="milestone-content">
+                                <h4 class="milestone-title">@milestone.Title</h4>
+                                <p class="milestone-description">@milestone.Description</p>
+
+                                <div class="milestone-progress">
+                                    <div class="progress-header">
+                                        <span class="progress-label">Progress</span>
+                                        <span class="progress-percentage">@milestone.ProgressPercentage%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill @milestone.StatusClass" style="width: @milestone.ProgressPercentage%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="milestone-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-icon">📅</span>
+                                        <span class="meta-text">@milestone.DurationEstimate</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-icon">✅</span>
+                                        <span class="meta-text">@milestone.CompletedTasksCount/@milestone.TotalTasksCount tasks</span>
+                                    </div>
+                                    @if (milestone.IsOverdue)
+                                    {
+                                        <div class="meta-item overdue">
+                                            <span class="meta-icon">⚠️</span>
+                                            <span class="meta-text">Overdue</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="milestone-actions">
+                                <button class="action-btn details-btn" data-milestone-id="@milestone.Id">
+                                    View Details
+                                </button>
+                                @if (!string.IsNullOrEmpty(milestone.GitHubIssueUrl))
+                                {
+                                    <a href="@milestone.GitHubIssueUrl" target="_blank" class="action-btn github-btn">
+                                        GitHub
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="milestones-loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading milestones...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="milestones-empty" style="display: none;">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No milestones found</h3>
+                    <p>Try adjusting your search or filter criteria.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upcoming Milestones Section -->
+        <section class="upcoming-milestones-section">
+            <div class="container">
+                <div class="section-header">
+                    <h3>Upcoming Milestones</h3>
+                    <span class="section-count">@Model.UpcomingMilestones.Count planned features</span>
+                </div>
+
+                <div class="upcoming-timeline">
+                    @foreach (var milestone in Model.UpcomingMilestones.Take(6))
+                    {
+                        <div class="timeline-item @milestone.PriorityClass">
+                            <div class="timeline-marker">
+                                <span class="marker-icon">@GetCategoryIcon(milestone.Category)</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <h4 class="timeline-title">@milestone.Title</h4>
+                                    <span class="timeline-date">@milestone.EstimatedCompletionDate?.ToString("MMM yyyy")</span>
+                                </div>
+                                <p class="timeline-description">@milestone.Description</p>
+                                <div class="timeline-meta">
+                                    <span class="timeline-category @milestone.PriorityClass">@milestone.Category</span>
+                                    <span class="timeline-priority">@milestone.Priority Priority</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="timeline-actions">
+                    <button class="btn-secondary" id="view-all-upcoming">
+                        View All Upcoming Milestones
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Development Timeline Chart -->
+        <section class="timeline-chart-section">
+            <div class="container">
+                <div class="section-header">
+                    <h3>Development Timeline</h3>
+                    <p>Interactive Gantt chart showing milestone schedules and dependencies</p>
+                </div>
+
+                <div class="chart-container">
+                    <div id="timeline-chart" class="timeline-chart"></div>
+                </div>
+
+                <div class="chart-controls">
+                    <div class="time-range-controls">
+                        <button class="range-btn active" data-range="6m">6 Months</button>
+                        <button class="range-btn" data-range="1y">1 Year</button>
+                        <button class="range-btn" data-range="all">All Time</button>
+                    </div>
+                    <div class="chart-actions">
+                        <button class="chart-action" id="chart-zoom-reset">Reset Zoom</button>
+                        <button class="chart-action" id="chart-export">Export Chart</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Updates Section -->
+        <section class="recent-updates-section">
+            <div class="container">
+                <div class="updates-header">
+                    <h3>Recent Development Updates</h3>
+                    <a href="#" class="view-all-updates">View All Updates →</a>
+                </div>
+
+                <div class="updates-grid">
+                    @foreach (var update in Model.RecentUpdates.Take(6))
+                    {
+                        <div class="update-card @update.TypeClass">
+                            <div class="update-header">
+                                <div class="update-type @update.TypeClass">@update.Type</div>
+                                <div class="update-date">@update.FormattedDate</div>
+                            </div>
+                            <div class="update-content">
+                                <h4 class="update-title">@update.Title</h4>
+                                <p class="update-description">@update.Content</p>
+                                @if (!string.IsNullOrEmpty(update.MilestoneTitle))
+                                {
+                                    <div class="update-milestone">
+                                        <span class="milestone-label">Related to:</span>
+                                        <span class="milestone-name">@update.MilestoneTitle</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="update-footer">
+                                <span class="update-author">@update.AuthorName</span>
+                                <span class="update-time">@update.TimeAgo</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Releases Section -->
+        <section class="releases-section">
+            <div class="container">
+                <div class="section-header">
+                    <h3>Latest Releases</h3>
+                    <p>Production deployments and version history</p>
+                </div>
+
+                <div class="releases-timeline">
+                    @foreach (var release in Model.Releases.Take(4))
+                    {
+                        <div class="release-item">
+                            <div class="release-marker">
+                                <span class="version-tag">@release.Version</span>
+                            </div>
+                            <div class="release-content">
+                                <div class="release-header">
+                                    <h4 class="release-title">@release.Title</h4>
+                                    <span class="release-date">@release.FormattedReleaseDate</span>
+                                </div>
+                                <p class="release-description">@release.Description</p>
+                                @if (!string.IsNullOrEmpty(release.DownloadUrl))
+                                {
+                                    <div class="release-actions">
+                                        <a href="@release.DownloadUrl" target="_blank" class="release-download">
+                                            📥 Download
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Milestone Details Modal -->
+    <div class="modal-overlay" id="milestone-modal" style="display: none;">
+        <div class="modal-content milestone-details-modal">
+            <div class="modal-header">
+                <h3 id="modal-milestone-title">Milestone Details</h3>
+                <button class="modal-close" id="close-milestone-modal">×</button>
+            </div>
+            <div class="modal-body" id="milestone-details-content">
+                <!-- Milestone details will be loaded here via AJAX -->
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <p>Loading milestone details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <p>Revolutionary education funding through blockchain technology</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Development</h4>
+                    <ul>
+                        <li><a href="/roadmap">Roadmap</a></li>
+                        <li><a href="@Model.GitHubStats.RepositoryUrl" target="_blank">GitHub</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/tokenomics">Tokenomics</a></li>
+                        <li><a href="/analytics">Analytics</a></li>
+                        <li><a href="/staking">Staking</a></li>
+                        <li><a href="/buy">Buy TEACH</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Legal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Syncfusion JS -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/roadmap.js" asp-append-version="true"></script>
+
+    <!-- Initialize page data -->
+    <script>
+        // Pass server data to JavaScript
+        window.roadmapData = @Html.Raw(ViewBag.JsonData ?? "{}");
+        window.apiEndpoints = {
+            getMilestones: '/roadmap/GetMilestones',
+            getMilestoneDetails: '/roadmap/GetMilestoneDetails',
+            getProgressData: '/roadmap/GetProgressData',
+            search: '/roadmap/Search',
+            export: '/roadmap/Export'
+        };
+    </script>
+</body>
+</html>
+
+@functions {
+    string GetStatusIcon(string status)
+    {
+        return status.ToLower() switch
+        {
+            "completed" => "✅",
+            "in progress" => "🔄",
+            "testing" => "🧪",
+            "planning" => "📋",
+            "on hold" => "⏸️",
+            "blocked" => "🚫",
+            _ => "📌"
+        };
+    }
+
+    string GetCategoryIcon(string category)
+    {
+        return category.ToLower() switch
+        {
+            "blockchain" => "⛓️",
+            "platform" => "🏗️",
+            "mobile" => "📱",
+            "security" => "🔒",
+            "integration" => "🔗",
+            _ => "⚙️"
+        };
+    }
+}

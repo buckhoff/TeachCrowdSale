@@ -211,7 +211,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("stats")]
         [ResponseCache(Duration = 900)] // 15 minutes
-        public async Task<ActionResult<DevelopmentStatsModel>> GetDevelopmentStats()
+        public async Task<ActionResult<GitHubDevelopmentStatsModel>> GetDevelopmentStats()
         {
             try
             {

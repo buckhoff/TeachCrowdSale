@@ -27,7 +27,7 @@ namespace TeachCrowdSale.Core.Interfaces
         /// <summary>
         /// Get development statistics
         /// </summary>
-        Task<DevelopmentStatsModel> GetDevelopmentStatsAsync();
+        Task<GitHubDevelopmentStatsModel> GetDevelopmentStatsAsync();
 
         /// <summary>
         /// Get recent development updates

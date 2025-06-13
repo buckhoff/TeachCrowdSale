@@ -28,5 +28,10 @@
         public string FormattedReleaseDate { get; set; } = string.Empty;
         public bool IsOverdue { get; set; }
         public string TimeToRelease { get; set; } = string.Empty;
+
+        public string Title { get; set; } = string.Empty; 
+        public DateTime? ReleaseDate { get; set; } 
+        public bool IsPreRelease { get; set; } 
+        public string? DownloadUrl { get; set; } 
     }
 }

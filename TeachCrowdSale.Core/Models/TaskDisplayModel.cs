@@ -15,6 +15,9 @@ namespace TeachCrowdSale.Core.Models
         public string Type { get; set; } = string.Empty;
         public string TypeClass { get; set; } = string.Empty;
 
+        public string Priority { get; set; } = string.Empty;
+        public string PriorityClass { get; set; } = string.Empty;
+
         public DateTime? StartDate { get; set; }
         public DateTime? EstimatedCompletionDate { get; set; }
         public DateTime? ActualCompletionDate { get; set; }
@@ -28,7 +31,10 @@ namespace TeachCrowdSale.Core.Models
 
         // Calculated fields
         public string DurationEstimate { get; set; } = string.Empty;
+        public string TimeRemaining { get; set; } = string.Empty;
         public bool IsOverdue { get; set; }
         public bool IsBlocked { get; set; }
+        public bool HasExternalLinks { get; set; }
+        public string ProgressBarClass { get; set; } = string.Empty;
     }
 }

@@ -17,7 +17,7 @@ namespace TeachCrowdSale.Core.Models
         public DevelopmentStatsModel DevelopmentStats { get; set; } = new();
         public List<ReleaseDisplayModel> Releases { get; set; } = new();
         public List<UpdateDisplayModel> RecentUpdates { get; set; } = new();
-        public GitHubStatsModel GitHubStats { get; set; } = new();
+        public GitHubStats GitHubStats { get; set; } = new();
         public DateTime LoadedAt { get; set; } = DateTime.UtcNow;
     }
 }

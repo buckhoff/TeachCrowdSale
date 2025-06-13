@@ -25,5 +25,8 @@ namespace TeachCrowdSale.Core.Models
 
         public string Status { get; set; } = string.Empty;
         public string PoolName { get; set; } = string.Empty;
+        public string RewardType { get; set; } = string.Empty; // e.g. "Daily", "Compound"
+
+
     }
 }

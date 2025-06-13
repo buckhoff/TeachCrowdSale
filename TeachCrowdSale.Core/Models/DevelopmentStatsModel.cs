@@ -1,48 +1,41 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace TeachCrowdSale.Core.Models
 {
     /// <summary>
-    /// Development statistics model
+    /// Development statistics model for widgets
     /// </summary>
     public class DevelopmentStatsModel
     {
-        [Range(0, int.MaxValue)]
-        public int TotalMilestones { get; set; }
+        // Code metrics
+        public int TotalCommits { get; set; }
+        public int ActiveBranches { get; set; }
+        public int OpenIssues { get; set; }
+        public int ClosedIssues { get; set; }
+        public int PullRequests { get; set; }
+        public int LinesOfCode { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int CompletedMilestones { get; set; }
+        // Quality metrics
+        public decimal CodeCoverage { get; set; }
+        public string TechnicalDebt { get; set; } = string.Empty;
+        public int SecurityVulnerabilities { get; set; }
+        public string CodeQualityGrade { get; set; } = "A";
 
-        [Range(0, int.MaxValue)]
-        public int InProgressMilestones { get; set; }
+        // Team metrics
+        public int Contributors { get; set; }
+        public int ActiveContributors { get; set; }
+        public DateTime LastDeployment { get; set; }
+        public DateTime LastCommit { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int PlannedMilestones { get; set; }
-
-        [Range(0, 100)]
-        public decimal OverallProgress { get; set; }
-
-        [Range(0, int.MaxValue)]
-        public int TotalTasks { get; set; }
-
-        [Range(0, int.MaxValue)]
-        public int CompletedTasks { get; set; }
-
-        [Range(0, int.MaxValue)]
-        public int BlockedTasks { get; set; }
-
-        [Range(0, 100)]
-        public decimal TaskCompletionRate { get; set; }
-
-        [Range(0, int.MaxValue)]
-        public int ActiveDevelopers { get; set; }
-
-        [Range(0, double.MaxValue)]
-        public decimal AverageCompletionTime { get; set; }
-
-        public string CurrentSprintName { get; set; } = string.Empty;
-        public DateTime? CurrentSprintEndDate { get; set; }
-
-        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+        // Display properties
+        public string LastDeploymentText { get; set; } = string.Empty;
+        public string LastCommitText { get; set; } = string.Empty;
+        public string ActivityLevel { get; set; } = "High";
+        public string ActivityLevelClass { get; set; } = "activity-high";
+        public bool IsHealthy { get; set; } = true;
     }
 }
-

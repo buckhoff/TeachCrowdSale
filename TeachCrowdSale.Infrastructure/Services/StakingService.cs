@@ -689,7 +689,7 @@ public class StakingService : IStakingService
             City = school.City,
             LogoUrl = school.LogoUrl,
             StudentCount = school.StudentCount,
-            TotalReceived = school.TotalReceived,
+            TotalFundingReceived = school.TotalReceived,
             IsVerified = school.IsVerified,
             Location = $"{school.City}, {school.State}, {school.Country}".Trim(new[] { ',', ' ' }),
             ImpactSummary = $"Supporting {school.StudentCount} students"

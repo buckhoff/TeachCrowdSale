@@ -11,7 +11,14 @@ namespace TeachCrowdSale.Core.Models
         public List<string> Priorities { get; set; } = new();
         public List<string> Developers { get; set; } = new();
         public List<string> Types { get; set; } = new();
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+
+        public DateFilterModel DateRange { get; set; } = new();
+
+        public string SelectedStatus { get; set; } = string.Empty;
+        public string SelectedCategory { get; set; } = string.Empty;
+        public string SelectedPriority { get; set; } = string.Empty;
+        public string SearchTerm { get; set; } = string.Empty;
+        public bool ShowCompleted { get; set; } = true;
+        public bool ShowOnHold { get; set; } = false;
     }
 }

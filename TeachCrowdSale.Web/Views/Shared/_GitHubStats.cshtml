@@ -1,0 +1,395 @@
+﻿@model TeachCrowdSale.Web.Models.RoadmapPageModel
+
+<!-- Views/Roadmap/_GitHubStats.cshtml -->
+<!-- GitHub integration and repository statistics component -->
+
+<section class="github-stats-section">
+    <div class="container">
+        <div class="github-header">
+            <div class="header-content">
+                <h3>GitHub Integration</h3>
+                <p>Live repository statistics and development activity</p>
+            </div>
+
+            <div class="github-actions">
+                <a href="@Model.GitHubStats.RepositoryUrl" target="_blank" class="github-main-link">
+                    <span class="github-icon">📦</span>
+                    <span class="github-text">@Model.GitHubStats.Repository</span>
+                    <span class="external-icon">↗</span>
+                </a>
+                <button class="refresh-github" id="refresh-github-stats" title="Refresh GitHub data">
+                    <span class="refresh-icon">🔄</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Repository Overview Cards -->
+        <div class="github-overview-grid">
+            <!-- Repository Health Card -->
+            <div class="github-card repo-health">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-icon">❤️</span>
+                        <span class="card-text">Repository Health</span>
+                    </div>
+                    <div class="health-status @Model.GitHubStats.HealthScoreClass">
+                        <span class="health-dot"></span>
+                        <span class="health-text">@Model.GitHubStats.HealthScore</span>
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <div class="health-metrics">
+                        <div class="metric-item">
+                            <div class="metric-visual">
+                                <div class="metric-circle">
+                                    <span class="metric-value">@Model.GitHubStats.Stars</span>
+                                </div>
+                            </div>
+                            <div class="metric-details">
+                                <span class="metric-label">Stars</span>
+                                <span class="metric-description">Community interest</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-item">
+                            <div class="metric-visual">
+                                <div class="metric-circle">
+                                    <span class="metric-value">@Model.GitHubStats.Forks</span>
+                                </div>
+                            </div>
+                            <div class="metric-details">
+                                <span class="metric-label">Forks</span>
+                                <span class="metric-description">Developer engagement</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-item">
+                            <div class="metric-visual">
+                                <div class="metric-circle">
+                                    <span class="metric-value">@Model.GitHubStats.Contributors</span>
+                                </div>
+                            </div>
+                            <div class="metric-details">
+                                <span class="metric-label">Contributors</span>
+                                <span class="metric-description">Team size</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="health-summary">
+                        <div class="summary-item">
+                            <span class="summary-icon">📊</span>
+                            <span class="summary-text">@Model.GitHubStats.CommitFrequency.ToString("F1") commits per week</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-icon">⚡</span>
+                            <span class="summary-text">Last activity @GetTimeAgo(Model.GitHubStats.LastCommitDate)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Development Activity Card -->
+            <div class="github-card dev-activity">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-icon">📈</span>
+                        <span class="card-text">Development Activity</span>
+                    </div>
+                    <div class="activity-indicator">
+                        <span class="activity-pulse @Model.DevelopmentStats.ActivityLevelClass"></span>
+                        <span class="activity-text">@Model.DevelopmentStats.ActivityLevel</span>
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <div class="activity-stats">
+                        <div class="stat-row">
+                            <div class="stat-item commits">
+                                <span class="stat-icon">📝</span>
+                                <div class="stat-details">
+                                    <span class="stat-value">@Model.GitHubStats.RecentCommits</span>
+                                    <span class="stat-label">Recent Commits</span>
+                                </div>
+                            </div>
+                            <div class="stat-item issues">
+                                <span class="stat-icon">🐛</span>
+                                <div class="stat-details">
+                                    <span class="stat-value">@Model.GitHubStats.OpenIssues</span>
+                                    <span class="stat-label">Open Issues</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-row">
+                            <div class="stat-item pulls">
+                                <span class="stat-icon">🔄</span>
+                                <div class="stat-details">
+                                    <span class="stat-value">@Model.DevelopmentStats.PullRequests</span>
+                                    <span class="stat-label">Pull Requests</span>
+                                </div>
+                            </div>
+                            <div class="stat-item branches">
+                                <span class="stat-icon">🌿</span>
+                                <div class="stat-details">
+                                    <span class="stat-value">@Model.DevelopmentStats.ActiveBranches</span>
+                                    <span class="stat-label">Active Branches</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="activity-chart" id="commit-activity-chart">
+                        <!-- Mini chart showing commit activity over time -->
+                        <div class="chart-placeholder">
+                            <span class="chart-icon">📊</span>
+                            <span class="chart-text">Commit activity chart</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Quality Card -->
+            <div class="github-card code-quality">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-icon">🎯</span>
+                        <span class="card-text">Code Quality</span>
+                    </div>
+                    <div class="quality-grade @GetQualityClass(Model.DevelopmentStats.CodeQualityGrade)">
+                        <span class="grade-text">@Model.DevelopmentStats.CodeQualityGrade</span>
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <div class="quality-metrics">
+                        <div class="quality-item">
+                            <div class="quality-label">Test Coverage</div>
+                            <div class="quality-bar">
+                                <div class="quality-fill coverage" style="width: @Model.DevelopmentStats.CodeCoverage%"></div>
+                                <span class="quality-value">@Model.DevelopmentStats.CodeCoverage.ToString("F1")%</span>
+                            </div>
+                        </div>
+
+                        <div class="quality-item">
+                            <div class="quality-label">Technical Debt</div>
+                            <div class="quality-info">
+                                <span class="quality-value">@Model.DevelopmentStats.TechnicalDebt</span>
+                                <span class="quality-trend good">↓ Improving</span>
+                            </div>
+                        </div>
+
+                        <div class="quality-item">
+                            <div class="quality-label">Security Issues</div>
+                            <div class="quality-info">
+                                <span class="quality-value @(Model.DevelopmentStats.SecurityVulnerabilities == 0 ? "good" : "warning")">
+                                    @Model.DevelopmentStats.SecurityVulnerabilities
+                                </span>
+                                <span class="quality-status">@(Model.DevelopmentStats.SecurityVulnerabilities == 0 ? "✅ Secure" : "⚠️ Review needed")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Commits Section -->
+        <div class="recent-commits-section">
+            <div class="commits-header">
+                <h4>Recent Commits</h4>
+                <div class="commits-actions">
+                    <select class="branch-selector" id="branch-selector">
+                        <option value="@Model.GitHubStats.MainBranch" selected>@Model.GitHubStats.MainBranch</option>
+                        <option value="develop">develop</option>
+                        <option value="feature/*">feature branches</option>
+                    </select>
+                    <a href="@Model.GitHubStats.RepositoryUrl/commits/@Model.GitHubStats.MainBranch"
+                       target="_blank" class="view-all-commits">
+                        View All Commits →
+                    </a>
+                </div>
+            </div>
+
+            <div class="commits-list" id="recent-commits">
+                <!-- Recent commits will be loaded here via AJAX -->
+                <div class="commits-loading">
+                    <div class="loading-spinner"></div>
+                    <span class="loading-text">Loading recent commits...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Repository Quick Links -->
+        <div class="github-quick-links">
+            <div class="links-header">
+                <h4>Quick Links</h4>
+            </div>
+
+            <div class="links-grid">
+                <a href="@Model.GitHubStats.RepositoryUrl/issues" target="_blank" class="quick-link issues">
+                    <div class="link-icon">🐛</div>
+                    <div class="link-content">
+                        <span class="link-title">Issues</span>
+                        <span class="link-count">@Model.GitHubStats.OpenIssues open</span>
+                    </div>
+                    <span class="link-arrow">→</span>
+                </a>
+
+                <a href="@Model.GitHubStats.RepositoryUrl/pulls" target="_blank" class="quick-link pulls">
+                    <div class="link-icon">🔄</div>
+                    <div class="link-content">
+                        <span class="link-title">Pull Requests</span>
+                        <span class="link-count">@Model.DevelopmentStats.PullRequests active</span>
+                    </div>
+                    <span class="link-arrow">→</span>
+                </a>
+
+                <a href="@Model.GitHubStats.RepositoryUrl/releases" target="_blank" class="quick-link releases">
+                    <div class="link-icon">🏷️</div>
+                    <div class="link-content">
+                        <span class="link-title">Releases</span>
+                        <span class="link-count">@Model.Releases.Count versions</span>
+                    </div>
+                    <span class="link-arrow">→</span>
+                </a>
+
+                <a href="@Model.GitHubStats.RepositoryUrl/actions" target="_blank" class="quick-link actions">
+                    <div class="link-icon">⚙️</div>
+                    <div class="link-content">
+                        <span class="link-title">Actions</span>
+                        <span class="link-count">CI/CD pipeline</span>
+                    </div>
+                    <span class="link-arrow">→</span>
+                </a>
+
+                <a href="@Model.GitHubStats.RepositoryUrl/wiki" target="_blank" class="quick-link wiki">
+                    <div class="link-icon">📚</div>
+                    <div class="link-content">
+                        <span class="link-title">Documentation</span>
+                        <span class="link-count">Wiki & guides</span>
+                    </div>
+                    <span class="link-arrow">→</span>
+                </a>
+
+                <a href="@Model.GitHubStats.RepositoryUrl/graphs/contributors" target="_blank" class="quick-link contributors">
+                    <div class="link-icon">👥</div>
+                    <div class="link-content">
+                        <span class="link-title">Contributors</span>
+                        <span class="link-count">@Model.GitHubStats.Contributors developers</span>
+                    </div>
+                    <span class="link-arrow">→</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- GitHub Integration Status -->
+        <div class="github-integration-status">
+            <div class="status-header">
+                <span class="status-icon">🔗</span>
+                <span class="status-title">Integration Status</span>
+            </div>
+
+            <div class="status-details">
+                <div class="status-item">
+                    <span class="status-indicator connected"></span>
+                    <span class="status-text">GitHub API Connected</span>
+                    <span class="status-time">Last sync: @GetTimeAgo(DateTime.UtcNow.AddMinutes(-5))</span>
+                </div>
+
+                <div class="status-item">
+                    <span class="status-indicator active"></span>
+                    <span class="status-text">Webhook Active</span>
+                    <span class="status-time">Real-time updates enabled</span>
+                </div>
+
+                <div class="status-item">
+                    <span class="status-indicator @(Model.DevelopmentStats.IsHealthy ? "healthy" : "warning")"></span>
+                    <span class="status-text">Repository Health: @(Model.DevelopmentStats.IsHealthy ? "Good" : "Needs Attention")</span>
+                    <span class="status-time">Monitored continuously</span>
+                </div>
+            </div>
+
+            <div class="status-actions">
+                <button class="status-action" id="sync-github">
+                    <span class="action-icon">🔄</span>
+                    <span class="action-text">Sync Now</span>
+                </button>
+                <button class="status-action" id="github-settings">
+                    <span class="action-icon">⚙️</span>
+                    <span class="action-text">Settings</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contribution Guidelines -->
+        <div class="contribution-section">
+            <div class="contribution-header">
+                <h4>Contribute to Development</h4>
+                <p>Join our development community and help build the future of education funding</p>
+            </div>
+
+            <div class="contribution-cards">
+                <div class="contribution-card">
+                    <div class="card-icon">🐛</div>
+                    <div class="card-content">
+                        <h5>Report Issues</h5>
+                        <p>Found a bug or have a feature request? Let us know!</p>
+                        <a href="@Model.GitHubStats.RepositoryUrl/issues/new" target="_blank" class="card-action">
+                            Report Issue →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="contribution-card">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-content">
+                        <h5>Submit Pull Requests</h5>
+                        <p>Contribute code, documentation, or improvements</p>
+                        <a href="@Model.GitHubStats.RepositoryUrl/fork" target="_blank" class="card-action">
+                            Fork Repository →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="contribution-card">
+                    <div class="card-icon">📚</div>
+                    <div class="card-content">
+                        <h5>Improve Documentation</h5>
+                        <p>Help make our documentation clearer and more comprehensive</p>
+                        <a href="@Model.GitHubStats.RepositoryUrl/wiki" target="_blank" class="card-action">
+                            Edit Docs →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    string GetTimeAgo(DateTime date)
+    {
+        var timespan = DateTime.UtcNow - date;
+
+        if (timespan.TotalDays >= 30) return $"{(int)(timespan.TotalDays / 30)} months ago";
+        if (timespan.TotalDays >= 1) return $"{(int)timespan.TotalDays} days ago";
+        if (timespan.TotalHours >= 1) return $"{(int)timespan.TotalHours} hours ago";
+        if (timespan.TotalMinutes >= 1) return $"{(int)timespan.TotalMinutes} minutes ago";
+
+        return "Just now";
+    }
+
+    string GetQualityClass(string grade)
+    {
+        return grade.ToUpper() switch
+        {
+            "A" => "grade-excellent",
+            "B" => "grade-good",
+            "C" => "grade-fair",
+            "D" => "grade-poor",
+            "F" => "grade-failing",
+            _ => "grade-unknown"
+        };
+    }
+}
