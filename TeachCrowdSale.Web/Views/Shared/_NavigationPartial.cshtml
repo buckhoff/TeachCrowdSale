@@ -1,5 +1,5 @@
-﻿<!-- Views/Shared/_NavigationPartial.cshtml -->
-<!-- Reusable navigation component for all pages -->
+﻿<!-- TeachCrowdSale.Web/Views/Shared/_NavigationPartial.cshtml -->
+<!-- Updated navigation component with roadmap integration -->
 @{
     var currentPage = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
@@ -37,8 +37,18 @@
                         Buy TEACH
                     </a>
                 </li>
-                <li><a href="#platform" class="nav-link">Platform</a></li>
-                <li><a href="#community" class="nav-link">Community</a></li>
+                <li>
+                    <a href="/staking" class="nav-link @(currentPage == "staking" ? "active" : "")">
+                        Staking
+                    </a>
+                </li>
+                <!-- NEW: Roadmap Navigation Link -->
+                <li>
+                    <a href="/roadmap" class="nav-link @(currentPage == "roadmap" ? "active" : "")">
+                        <span>Roadmap</span>
+                        <span class="nav-badge development">Dev</span>
+                    </a>
+                </li>
             </ul>
 
             <div class="nav-actions">
@@ -86,26 +96,475 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#platform" class="mobile-nav-link">
-                            <span class="mobile-nav-icon">🚀</span>
-                            <span>Platform</span>
+                        <a href="/staking" class="mobile-nav-link @(currentPage == "staking" ? "active" : "")">
+                            <span class="mobile-nav-icon">🔐</span>
+                            <span>Staking</span>
                         </a>
                     </li>
+                    <!-- NEW: Mobile Roadmap Link -->
                     <li>
-                        <a href="#community" class="mobile-nav-link">
-                            <span class="mobile-nav-icon">👥</span>
-                            <span>Community</span>
+                        <a href="/roadmap" class="mobile-nav-link @(currentPage == "roadmap" ? "active" : "")">
+                            <span class="mobile-nav-icon">🗺️</span>
+                            <span>Development Roadmap</span>
+                            <span class="mobile-nav-badge development">Dev</span>
                         </a>
                     </li>
                 </ul>
 
                 <div class="mobile-nav-cta">
-                    <a href="/buy" class="btn-primary">
-                        <span>Buy TEACH Now</span>
-                        <i>→</i>
+                    <a href="/buy" class="nav-cta mobile-cta">
+                        <span>Buy TEACH</span>
+                        <i class="nav-cta-icon">→</i>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
+
+<!-- Additional CSS for roadmap navigation styling -->
+<style>
+    /* Roadmap-specific navigation badge */
+    .nav-badge.development {
+        background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 8px;
+        margin-left: 0.5rem;
+        animation: pulse-development 2s infinite;
+    }
+
+    .mobile-nav-badge.development {
+        background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 8px;
+        margin-left: auto;
+        animation: pulse-development 2s infinite;
+    }
+
+    @keyframes pulse-development {
+        0%, 100%
+
+    {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+
+    }
+
+    /* Active state for roadmap navigation */
+    .nav-link[href="/roadmap"].active {
+        color: var(--primary-color);
+        position: relative;
+    }
+
+        .nav-link[href="/roadmap"].active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            border-radius: 50%;
+            animation: pulse-development 2s infinite;
+        }
+
+    /* Mobile active state for roadmap */
+    .mobile-nav-link[href="/roadmap"].active::before {
+        background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .nav-menu
+
+    {
+        gap: 1.5rem;
+    }
+
+    .nav-badge {
+        font-size: 0.6rem;
+    }
+
+    }
+
+    @media (max-width: 768px) {
+        .nav-badge.development
+
+    {
+        display: none;
+    }
+
+    }
+</style>
+
+<!-- TeachCrowdSale.Web/Views/Shared/_Layout.cshtml -->
+<!-- Updated main layout to use the navigation partial -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TeachToken</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Page-specific CSS -->
+    @await RenderSectionAsync("Styles", required: false)
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+<body>
+    <!-- Navigation using the updated partial -->
+    @await Html.PartialAsync("_NavigationPartial")
+
+    <!-- Main content -->
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <p>Revolutionary education funding through blockchain technology</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/tokenomics">Tokenomics</a></li>
+                        <li><a href="/analytics">Analytics</a></li>
+                        <li><a href="/staking">Staking</a></li>
+                        <li><a href="/buy">Buy TEACH</a></li>
+                    </ul>
+                </div>
+
+                <!-- NEW: Development Footer Section -->
+                <div class="footer-section">
+                    <h4>Development</h4>
+                    <ul>
+                        <li><a href="/roadmap">Development Roadmap</a></li>
+                        <li><a href="/roadmap#milestones">Current Milestones</a></li>
+                        <li><a href="/roadmap#timeline">Timeline</a></li>
+                        <li><a href="https://github.com/buckhoff/TeachCrowdSale" target="_blank">GitHub Repository</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/legal">Legal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core JavaScript -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Syncfusion JS -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Page-specific JavaScript -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+<!-- TeachCrowdSale.Web/Views/Shared/_RoadmapBreadcrumb.cshtml -->
+<!-- Roadmap-specific breadcrumb navigation component -->
+@model TeachCrowdSale.Core.Models.RoadmapPageModel
+
+<div class="roadmap-breadcrumb">
+    <div class="container">
+        <nav class="breadcrumb-container" aria-label="Roadmap navigation">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/" class="breadcrumb-link">
+                        <span class="breadcrumb-icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-separator">›</li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <span class="breadcrumb-icon">🗺️</span>
+                    <span>Development Roadmap</span>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Roadmap Quick Navigation -->
+        <div class="roadmap-quick-nav">
+            <div class="quick-nav-title">Quick Navigation</div>
+            <div class="quick-nav-links">
+                <a href="#overview" class="quick-nav-link" data-section="overview">
+                    <span class="quick-nav-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="#milestones" class="quick-nav-link" data-section="milestones">
+                    <span class="quick-nav-icon">🎯</span>
+                    <span>Milestones</span>
+                </a>
+                <a href="#timeline" class="quick-nav-link" data-section="timeline">
+                    <span class="quick-nav-icon">📅</span>
+                    <span>Timeline</span>
+                </a>
+                <a href="#github" class="quick-nav-link" data-section="github">
+                    <span class="quick-nav-icon">📝</span>
+                    <span>GitHub Stats</span>
+                </a>
+                <a href="#progress" class="quick-nav-link" data-section="progress">
+                    <span class="quick-nav-icon">📈</span>
+                    <span>Progress</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Roadmap breadcrumb styling */
+    .roadmap-breadcrumb {
+        background: var(--card-bg);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb-item {
+        color: var(--text-secondary);
+    }
+
+    .breadcrumb-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: var(--transition-smooth);
+    }
+
+        .breadcrumb-link:hover {
+            color: var(--primary-color);
+        }
+
+    .breadcrumb-item.active {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .breadcrumb-separator {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+
+    .breadcrumb-icon {
+        font-size: 0.8rem;
+    }
+
+    /* Roadmap quick navigation */
+    .roadmap-quick-nav {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .quick-nav-title {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .quick-nav-links {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .quick-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        transition: var(--transition-smooth);
+        border: 1px solid transparent;
+    }
+
+        .quick-nav-link:hover,
+        .quick-nav-link.active {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+    .quick-nav-icon {
+        font-size: 0.8rem;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .roadmap-quick-nav
+
+    {
+        display: none;
+    }
+
+    .quick-nav-links {
+        justify-content: center;
+    }
+
+    .quick-nav-link {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    }
+
+    @media (max-width: 480px) {
+        .breadcrumb
+
+    {
+        font-size: 0.8rem;
+    }
+
+    .breadcrumb-icon {
+        display: none;
+    }
+
+    }
+</style>
+
+<!-- JavaScript for navigation enhancements -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup roadmap navigation active states
+        setupRoadmapNavigation();
+
+        // Setup quick navigation smooth scrolling
+        setupQuickNavigation();
+    });
+
+    function setupRoadmapNavigation() {
+        const currentPath = window.location.pathname;
+
+        // Update active states for roadmap navigation
+        if (currentPath === '/roadmap') {
+            const roadmapNavLink = document.querySelector('.nav-link[href="/roadmap"]');
+            const mobileRoadmapLink = document.querySelector('.mobile-nav-link[href="/roadmap"]');
+
+            if (roadmapNavLink) roadmapNavLink.classList.add('active');
+            if (mobileRoadmapLink) mobileRoadmapLink.classList.add('active');
+        }
+    }
+
+    function setupQuickNavigation() {
+        const quickNavLinks = document.querySelectorAll('.quick-nav-link');
+
+        quickNavLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+
+                    if (targetElement) {
+                        // Update active state
+                        quickNavLinks.forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+
+                        // Smooth scroll to target
+                        const offsetTop = targetElement.getBoundingClientRect().top + window.pageYOffset - 100;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+
+        // Update active quick nav on scroll
+        const observerOptions = {
+            rootMargin: '-20% 0px -20% 0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sectionId = entry.target.id;
+                    const activeLink = document.querySelector(`.quick-nav-link[href="#${sectionId}"]`);
+
+                    if (activeLink) {
+                        quickNavLinks.forEach(l => l.classList.remove('active'));
+                        activeLink.classList.add('active');
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observe roadmap sections
+        const sections = document.querySelectorAll('[id]');
+        sections.forEach(section => {
+            if (section.id && ['overview', 'milestones', 'timeline', 'github', 'progress'].includes(section.id)) {
+                observer.observe(section);
+            }
+        });
+    }
+</script>

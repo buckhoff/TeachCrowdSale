@@ -12,19 +12,12 @@ namespace TeachCrowdSale.Core.Interfaces.Services
     /// </summary>
     public interface IRoadmapDashboardService
     {
-        Task<RoadmapDataModel> GetRoadmapPageDataAsync();
-        Task<List<MilestoneDisplayModel>> GetMilestonesAsync(string? status = null, string? category = null);
-        Task<MilestoneDisplayModel?> GetMilestoneDetailsAsync(int id);
+        Task<RoadmapPageModel> GetRoadmapPageDataAsync();
+        Task<MilestoneModel?> GetMilestoneDetailsAsync(int milestoneId);
+        Task<IEnumerable<MilestoneModel>> GetFilteredMilestonesAsync(string? status, string? category);
+        Task<ProgressSummaryModel> GetProgressSummaryAsync();
+        Task<GitHubStatsModel> GetGitHubStatsAsync();
+        Task<IEnumerable<ReleaseModel>> GetRecentReleasesAsync(int count = 5);
         Task<DevelopmentStatsModel> GetDevelopmentStatsAsync();
-        Task<List<UpdateDisplayModel>> GetRecentUpdatesAsync(int count = 10);
-        Task<List<ReleaseDisplayModel>> GetReleasesAsync();
-        Task<GitHubStats> GetGitHubStatsAsync();
-        Task<RoadmapFilterModel> GetFilterOptionsAsync();
-        Task<List<TaskDisplayModel>> GetMilestoneTasksAsync(int milestoneId);
-        Task<List<MilestoneDisplayModel>> SearchMilestonesAsync(string searchTerm);
-        Task<List<DependencyDisplayModel>> GetMilestoneDependenciesAsync(int milestoneId);
-        Task<object> GetTimelineDataAsync();
-        Task<object> GetProgressHistoryAsync(int milestoneId);
-        Task<bool> CheckServiceHealthAsync();
     }
 }

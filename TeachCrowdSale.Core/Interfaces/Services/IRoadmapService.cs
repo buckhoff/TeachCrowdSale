@@ -12,32 +12,32 @@ namespace TeachCrowdSale.Core.Interfaces
         /// <summary>
         /// Get comprehensive roadmap page data
         /// </summary>
-        Task<RoadmapDataModel> GetRoadmapDataAsync();
+        Task<RoadmapPageModel> GetRoadmapDataAsync();
 
         /// <summary>
         /// Get all milestones with optional filtering
         /// </summary>
-        Task<List<MilestoneDisplayModel>> GetMilestonesAsync(string? status = null, string? category = null);
+        Task<List<MilestoneModel>> GetMilestonesAsync(string? status = null, string? category = null);
 
         /// <summary>
         /// Get milestone by ID with full details
         /// </summary>
-        Task<MilestoneDisplayModel?> GetMilestoneAsync(int id);
+        Task<MilestoneModel?> GetMilestoneAsync(int id);
 
         /// <summary>
         /// Get development statistics
         /// </summary>
-        Task<GitHubDevelopmentStatsModel> GetDevelopmentStatsAsync();
+        Task<DevelopmentStatsModel> GetDevelopmentStatsAsync();
 
         /// <summary>
         /// Get recent development updates
         /// </summary>
-        Task<List<UpdateDisplayModel>> GetRecentUpdatesAsync(int count = 10);
+        Task<List<UpdateModel>> GetRecentUpdatesAsync(int count = 10);
 
         /// <summary>
         /// Get releases information
         /// </summary>
-        Task<List<ReleaseDisplayModel>> GetReleasesAsync();
+        Task<List<ReleaseModel>> GetReleasesAsync();
 
         /// <summary>
         /// Get GitHub statistics
@@ -52,17 +52,17 @@ namespace TeachCrowdSale.Core.Interfaces
         /// <summary>
         /// Get tasks for a specific milestone
         /// </summary>
-        Task<List<TaskDisplayModel>> GetMilestoneTasksAsync(int milestoneId);
+        Task<List<TaskModel>> GetMilestoneTasksAsync(int milestoneId);
 
         /// <summary>
         /// Search milestones by term
         /// </summary>
-        Task<List<MilestoneDisplayModel>> SearchMilestonesAsync(string searchTerm);
+        Task<List<MilestoneModel>> SearchMilestonesAsync(string searchTerm);
 
         /// <summary>
         /// Get milestone dependencies
         /// </summary>
-        Task<List<DependencyDisplayModel>> GetMilestoneDependenciesAsync(int milestoneId);
+        Task<List<DependencyModel>> GetMilestoneDependenciesAsync(int milestoneId);
 
         /// <summary>
         /// Get development timeline data for charts

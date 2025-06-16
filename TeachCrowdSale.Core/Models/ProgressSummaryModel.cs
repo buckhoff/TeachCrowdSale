@@ -11,17 +11,27 @@ namespace TeachCrowdSale.Core.Models
     /// </summary>
     public class ProgressSummaryModel
     {
-        public string Title { get; set; } = string.Empty;
-        public decimal CurrentValue { get; set; }
-        public decimal TargetValue { get; set; }
-        public string Unit { get; set; } = string.Empty;
-        public string DisplayText { get; set; } = string.Empty;
-        public string TrendDirection { get; set; } = "stable"; // up, down, stable
-        public string TrendClass { get; set; } = "trend-stable";
-        public decimal PercentageComplete { get; set; }
-        public string ProgressBarClass { get; set; } = string.Empty;
-        public string Icon { get; set; } = string.Empty;
-        public string BackgroundClass { get; set; } = string.Empty;
-        public DateTime LastUpdated { get; set; }
+        public decimal OverallProgress { get; set; }
+        public int TotalMilestones { get; set; }
+        public int CompletedMilestones { get; set; }
+        public int InProgressMilestones { get; set; }
+        public int UpcomingMilestones { get; set; }
+        public int TotalTasks { get; set; }
+        public int CompletedTasks { get; set; }
+        public int ActiveTasks { get; set; }
+        public int OverdueTasks { get; set; }
+        public string AverageCompletionTime { get; set; } = string.Empty;
+        public string CurrentPhase { get; set; } = string.Empty;
+        public string NextMilestone { get; set; } = string.Empty;
+        public DateTime? EstimatedProjectCompletion { get; set; }
+
+        // Display helper properties
+        public string OverallProgressFormatted => $"{OverallProgress:F1}%";
+        public string CompletionRateText => $"{CompletedMilestones}/{TotalMilestones} milestones";
+        public string TaskProgressText => $"{CompletedTasks}/{TotalTasks} tasks";
+        public string EstimatedCompletionFormatted => EstimatedProjectCompletion?.ToString("MMM yyyy") ?? "TBD";
+        public bool HasOverdueTasks => OverdueTasks > 0;
+        public string ProgressBarClass => OverallProgress >= 75 ? "success" : OverallProgress >= 50 ? "warning" : "info";
+        public string HealthStatus => OverdueTasks == 0 ? "healthy" : OverdueTasks <= 2 ? "caution" : "warning";
     }
 }

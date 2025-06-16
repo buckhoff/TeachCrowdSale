@@ -12,7 +12,7 @@ namespace TeachCrowdSale.Core.Models
     public class RoadmapExportModel
     {
         public string ExportType { get; set; } = "csv"; // csv, pdf, json
-        public List<MilestoneDisplayModel> Milestones { get; set; } = new();
+        public List<MilestoneModel> Milestones { get; set; } = new();
         public RoadmapFilterModel AppliedFilters { get; set; } = new();
         public DateTime ExportDate { get; set; } = DateTime.UtcNow;
         public string ExportedBy { get; set; } = "Anonymous";

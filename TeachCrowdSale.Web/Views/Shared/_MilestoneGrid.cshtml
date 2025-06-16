@@ -1,4 +1,5 @@
-﻿@model TeachCrowdSale.Web.Models.RoadmapPageModel
+﻿@using TeachCrowdSale.Core.Data.Enum
+@model TeachCrowdSale.Core.Models.RoadmapPageModel
 
 <!-- Views/Roadmap/_MilestoneGrid.cshtml -->
 <!-- Interactive milestone grid with filtering and card display -->
@@ -262,7 +263,7 @@
                     <div class="stat-icon">🔥</div>
                     <div class="stat-details">
                         <div class="stat-value" id="active-count">
-                            @Model.ActiveMilestones.Count(m => m.Status == "In Progress")
+                            @Model.ActiveMilestones.Count(m => m.Status.Equals(MilestoneStatus.InProgress))
                         </div>
                         <div class="stat-label">Actively Developed</div>
                     </div>

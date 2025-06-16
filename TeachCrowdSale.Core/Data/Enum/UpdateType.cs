@@ -4,8 +4,10 @@
     {
         Progress,
         StatusChange,
+        Feature,
         Blocker,
         Completion,
+        Security,
         Delay,
         General
     }

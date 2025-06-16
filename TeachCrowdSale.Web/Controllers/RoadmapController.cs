@@ -1,33 +1,29 @@
-﻿// TeachCrowdSale.Web/Controllers/RoadmapController.cs
-using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using TeachCrowdSale.Core.Models;
-using TeachCrowdSale.Core.Models.Response;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using TeachCrowdSale.Core.Helper;
 using TeachCrowdSale.Core.Interfaces.Services;
+using TeachCrowdSale.Core.Models;
 
 namespace TeachCrowdSale.Web.Controllers
 {
     /// <summary>
-    /// Web controller for roadmap and development dashboard operations
+    /// Controller for the Platform Roadmap & Development section
+    /// Follows the established TeachToken architecture patterns
     /// </summary>
-    [Route("roadmap")]
     public class RoadmapController : Controller
     {
         private readonly IRoadmapDashboardService _roadmapService;
         private readonly ILogger<RoadmapController> _logger;
-        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IMemoryCache _cache;
 
         public RoadmapController(
             IRoadmapDashboardService roadmapService,
-            ILogger<RoadmapController> logger)
+            ILogger<RoadmapController> logger,
+            IMemoryCache cache)
         {
-            _roadmapService = roadmapService ?? throw new ArgumentNullException(nameof(roadmapService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+            _roadmapService = roadmapService;
+            _logger = logger;
+            _cache = cache;
         }
 
         #region Main Views
@@ -35,81 +31,47 @@ namespace TeachCrowdSale.Web.Controllers
         /// <summary>
         /// Main roadmap dashboard page
         /// </summary>
-        [HttpGet("")]
-        [HttpGet("index")]
+        [HttpGet]
+        [Route("roadmap")]
+        [Route("roadmap/index")]
+        [ResponseCache(Duration = 900, Location = ResponseCacheLocation.Client)] // 15 minutes
         public async Task<IActionResult> Index()
         {
             try
             {
                 _logger.LogInformation("Loading roadmap dashboard page");
 
-                // Get comprehensive roadmap data
                 var roadmapData = await _roadmapService.GetRoadmapPageDataAsync();
-                var developmentStats = await _roadmapService.GetDevelopmentStatsAsync();
-                var gitHubStats = await _roadmapService.GetGitHubStatsAsync();
-                var filterOptions = await _roadmapService.GetFilterOptionsAsync();
 
-                // Create page model
-                var pageModel = new RoadmapPageModel
-                {
-                    PageTitle = "Platform Roadmap & Development - TeachToken",
-                    PageDescription = "Track TeachToken development progress, milestones, and upcoming features. See our commitment to transparent development and education innovation.",
-                    PageKeywords = "roadmap, development, milestones, progress, TeachToken, blockchain, education, platform",
-                    ActiveMilestones = roadmapData.CurrentMilestones,
-                    UpcomingMilestones = roadmapData.UpcomingMilestones,
-                    CompletedMilestones = roadmapData.CompletedMilestones,
-                    DevelopmentStats = developmentStats,
-                    RecentUpdates = roadmapData.RecentUpdates,
-                    Releases = roadmapData.Releases,
-                    GitHubStats = gitHubStats,
-                    FilterOptions = filterOptions,
-                    LoadedAt = DateTime.UtcNow
-                };
+                // Set page metadata
+                ViewData["Title"] = "Platform Roadmap & Development - TeachToken";
+                ViewData["Description"] = "Track TeachToken's development progress, upcoming milestones, GitHub activity, and platform roadmap. See real-time updates on our educational blockchain platform development.";
+                ViewData["Keywords"] = "TeachToken roadmap, development progress, blockchain milestones, GitHub activity, platform updates, educational technology";
 
-                // Create overview model
-                pageModel.Overview = new RoadmapOverviewModel
-                {
-                    TotalMilestones = roadmapData.CurrentMilestones.Count + roadmapData.UpcomingMilestones.Count + roadmapData.CompletedMilestones.Count,
-                    CompletedMilestones = roadmapData.CompletedMilestones.Count,
-                    InProgressMilestones = roadmapData.CurrentMilestones.Count(m => m.Status == "In Progress"),
-                    UpcomingMilestones = roadmapData.UpcomingMilestones.Count,
-                    OnHoldMilestones = roadmapData.CurrentMilestones.Count(m => m.Status == "On Hold"),
-                    OverallProgress = CalculateOverallProgress(roadmapData.CurrentMilestones.Concat(roadmapData.CompletedMilestones).ToList()),
-                    EstimatedCompletionDate = GetEstimatedCompletionDate(roadmapData.UpcomingMilestones),
-                    LastUpdateDate = roadmapData.RecentUpdates.FirstOrDefault()?.UpdateDate ?? DateTime.UtcNow.AddDays(-1),
-                    IsOnTrack = CheckIfOnTrack(roadmapData.CurrentMilestones),
-                    ProjectHealthStatus = GetProjectHealthStatus(roadmapData.CurrentMilestones, developmentStats),
-                    ProjectHealthClass = GetProjectHealthClass(roadmapData.CurrentMilestones, developmentStats)
-                };
+                // Add structured data for better SEO
+                ViewBag.StructuredData = GetStructuredData(roadmapData);
 
-                // Set calculated display properties
-                pageModel.Overview.ProgressDisplayText = $"{pageModel.Overview.OverallProgress:F1}% Complete";
-                pageModel.Overview.CompletionTimeframe = GetCompletionTimeframe(pageModel.Overview.EstimatedCompletionDate);
-                pageModel.Overview.LastUpdateTimeAgo = GetTimeAgo(pageModel.Overview.LastUpdateDate);
-
-                // Pass data to view
-                ViewData["Title"] = pageModel.PageTitle;
-                ViewData["Description"] = pageModel.PageDescription;
-                ViewData["Keywords"] = pageModel.PageKeywords;
-
-                ViewBag.RoadmapData = pageModel;
-                ViewBag.JsonData = JsonSerializer.Serialize(pageModel, _jsonOptions);
-
-                return View(pageModel);
+                return View(roadmapData);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading roadmap dashboard");
 
-                // Return fallback view with error state
+                // Create fallback model for error scenarios
                 var errorModel = new RoadmapPageModel
                 {
-                    HasErrors = true,
-                    ErrorMessages = new List<string> { "Unable to load latest roadmap data. Please try again later." }
+                    ProgressSummary = new ProgressSummaryModel
+                    {
+                        OverallProgress = 0,
+                        CurrentPhase = "Unable to load data",
+                        NextMilestone = "Please try again later."
+                    },
+                    LastUpdated = DateTime.UtcNow
                 };
 
                 ViewData["Title"] = "Roadmap - TeachToken";
-                ViewBag.RoadmapData = errorModel;
+                ViewData["Description"] = "TeachToken development roadmap and progress tracking.";
+                ViewBag.ErrorMessage = "Unable to load roadmap data. Please try again later.";
 
                 return View(errorModel);
             }
@@ -122,35 +84,58 @@ namespace TeachCrowdSale.Web.Controllers
         /// <summary>
         /// Get milestones with optional filtering via AJAX
         /// </summary>
-        [HttpGet("GetMilestones")]
-        [ResponseCache(Duration = 300)] // 5 minutes
-        public async Task<IActionResult> GetMilestones(string? status = null, string? category = null, string? priority = null)
+        [HttpGet]
+        [Route("roadmap/api/milestones")]
+        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Client)] // 5 minutes
+        public async Task<IActionResult> GetMilestones(
+            [FromQuery] string? status = null,
+            [FromQuery] string? category = null,
+            [FromQuery] string? priority = null)
         {
             try
             {
                 _logger.LogDebug("Fetching milestones with filters - Status: {Status}, Category: {Category}, Priority: {Priority}",
                     status, category, priority);
 
-                var milestones = await _roadmapService.GetMilestonesAsync(status, category);
+                var milestones = await _roadmapService.GetFilteredMilestonesAsync(status, category);
 
-                // Apply priority filter if specified
+                // Apply priority filter if specified (done in memory for simplicity)
                 if (!string.IsNullOrWhiteSpace(priority))
                 {
-                    milestones = milestones.Where(m => m.Priority.Equals(priority, StringComparison.OrdinalIgnoreCase)).ToList();
+                    milestones = milestones.Where(m =>
+                        string.Equals(m.Priority, priority, StringComparison.OrdinalIgnoreCase));
                 }
 
-                // Convert to card models for grid display
-                var milestoneCards = milestones.Select(ConvertToMilestoneCard).ToList();
+                // Transform to simplified card models for grid display
+                var milestoneCards = milestones.Select(m => new
+                {
+                    id = m.Id,
+                    title = m.Title,
+                    description = m.Description.Length > 120 ? m.Description[..120] + "..." : m.Description,
+                    category = m.Category,
+                    categoryIcon = DisplayHelpers.GetCategoryIcon(m.Category),
+                    status = m.Status,
+                    statusClass = m.StatusClass,
+                    priority = m.Priority,
+                    priorityClass = m.PriorityClass,
+                    progressPercentage = m.ProgressPercentage,
+                    progressText = m.ProgressText,
+                    timeRemaining = m.TimeRemaining,
+                    estimatedCompletion = m.EstimatedCompletionFormatted,
+                    isCompleted = m.IsCompleted,
+                    isOverdue = m.IsOverdue
+                }).ToList();
 
-                return Json(milestoneCards);
+                return Json(new { success = true, data = milestoneCards });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching filtered milestones");
-                return StatusCode(500, new ErrorResponse
+                return Json(new
                 {
-                    Message = "Error fetching milestones",
-                    TraceId = HttpContext.TraceIdentifier
+                    success = false,
+                    message = "Error loading milestones",
+                    error = ex.Message
                 });
             }
         }
@@ -158,539 +143,307 @@ namespace TeachCrowdSale.Web.Controllers
         /// <summary>
         /// Get milestone details by ID via AJAX
         /// </summary>
-        [HttpGet("GetMilestoneDetails/{id:int}")]
-        [ResponseCache(Duration = 180)] // 3 minutes
+        [HttpGet]
+        [Route("roadmap/api/milestone/{id:int}")]
+        [ResponseCache(Duration = 180, Location = ResponseCacheLocation.Client)] // 3 minutes
         public async Task<IActionResult> GetMilestoneDetails([FromRoute] int id)
         {
             try
             {
                 if (id <= 0)
                 {
-                    return BadRequest(new ErrorResponse { Message = "Invalid milestone ID" });
+                    return BadRequest(new { success = false, message = "Invalid milestone ID" });
                 }
 
                 var milestone = await _roadmapService.GetMilestoneDetailsAsync(id);
 
                 if (milestone == null)
                 {
-                    return NotFound(new ErrorResponse { Message = "Milestone not found" });
+                    return NotFound(new { success = false, message = "Milestone not found" });
                 }
 
-                // Get milestone tasks and dependencies
-                var tasks = await _roadmapService.GetMilestoneTasksAsync(id);
-                var dependencies = await _roadmapService.GetMilestoneDependenciesAsync(id);
-
-                var detailsModel = new
+                // Return detailed milestone data
+                var detailModel = new
                 {
-                    milestone = milestone,
-                    tasks = tasks,
-                    dependencies = dependencies,
-                    tasksCompleted = tasks.Count(t => t.Status == "Completed"),
-                    totalTasks = tasks.Count,
-                    hasBlockedTasks = tasks.Any(t => t.Status == "Blocked"),
-                    recentActivity = tasks.Where(t => t.ActualCompletionDate >= DateTime.UtcNow.AddDays(-7)).Count()
+                    success = true,
+                    data = new
+                    {
+                        milestone.Id,
+                        milestone.Title,
+                        milestone.Description,
+                        milestone.Category,
+                        categoryIcon = DisplayHelpers.GetCategoryIcon(milestone.Category),
+                        milestone.Status,
+                        milestone.StatusClass,
+                        milestone.Priority,
+                        milestone.PriorityClass,
+                        milestone.ProgressPercentage,
+                        milestone.StartDate,
+                        milestone.EstimatedCompletionDate,
+                        milestone.ActualCompletionDate,
+                        milestone.DurationEstimate,
+                        milestone.TimeRemaining,
+                        milestone.CompletedTasksCount,
+                        milestone.TotalTasksCount,
+                        startDateFormatted = milestone.StartDateFormatted,
+                        estimatedCompletionFormatted = milestone.EstimatedCompletionFormatted,
+                        actualCompletionFormatted = milestone.ActualCompletionFormatted,
+                        progressText = milestone.ProgressText,
+                        milestone.IsCompleted,
+                        milestone.IsInProgress,
+                        milestone.IsOverdue,
+                        tasks = milestone.Tasks?.Select(t => new
+                        {
+                            t.Id,
+                            t.Title,
+                            t.Status,
+                            t.StatusClass,
+                            t.Priority,
+                            t.PriorityClass,
+                            t.ProgressPercentage,
+                            t.Assignee,
+                            assigneeDisplay = t.AssigneeDisplay,
+                            dueDateFormatted = t.DueDateFormatted,
+                            t.IsCompleted,
+                            t.IsOverdue,
+                            timeTrackingText = t.TimeTrackingText
+                        }),
+                        updates = milestone.Updates?.OrderByDescending(u => u.CreatedAt).Take(5).Select(u => new
+                        {
+                            u.Id,
+                            u.Title,
+                            contentPreview = u.ContentPreview,
+                            u.UpdateType,
+                            updateTypeIcon = DisplayHelpers.GetUpdateTypeIcon(u.UpdateType),
+                            u.Author,
+                            authorDisplay = u.AuthorDisplay,
+                            createdAtFormatted = u.CreatedAtFormatted,
+                            u.HasTags,
+                            u.HasAttachments
+                        }),
+                        dependencies = milestone.Dependencies?.Select(d => new
+                        {
+                            d.Id,
+                            d.DependencyType,
+                            dependencyTypeIcon = DisplayHelpers.GetDependencyTypeIcon(d.DependencyType),
+                            dependencyText = d.DependencyText,
+                            d.Description,
+                            d.IsActive
+                        })
+                    }
                 };
 
-                return Json(detailsModel);
+                return Json(detailModel);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching milestone details for ID: {MilestoneId}", id);
-                return StatusCode(500, new ErrorResponse
+                return Json(new
                 {
-                    Message = "Error fetching milestone details",
-                    TraceId = HttpContext.TraceIdentifier
+                    success = false,
+                    message = "Error loading milestone details",
+                    error = ex.Message
                 });
             }
         }
 
         /// <summary>
-        /// Get development progress data for charts via AJAX
+        /// Get progress data for charts via AJAX
         /// </summary>
-        [HttpGet("GetProgressData")]
-        [ResponseCache(Duration = 600)] // 10 minutes
+        [HttpGet]
+        [Route("roadmap/api/progress")]
+        [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Client)] // 10 minutes
         public async Task<IActionResult> GetProgressData()
         {
             try
             {
-                var progressData = await _roadmapService.GetProgressHistoryAsync(0); // 0 for overall progress
-                var timelineData = await _roadmapService.GetTimelineDataAsync();
-
-                var chartData = new
-                {
-                    progressHistory = progressData,
-                    timeline = timelineData,
-                    generatedAt = DateTime.UtcNow
-                };
-
-                return Json(chartData);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching progress chart data");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error fetching progress data",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Search milestones by term via AJAX
-        /// </summary>
-        [HttpGet("Search")]
-        [ResponseCache(Duration = 120)] // 2 minutes
-        public async Task<IActionResult> Search(string term)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(term))
-                {
-                    return BadRequest(new ErrorResponse { Message = "Search term is required" });
-                }
-
-                if (term.Length < 2)
-                {
-                    return BadRequest(new ErrorResponse { Message = "Search term must be at least 2 characters" });
-                }
-
-                var searchResults = await _roadmapService.SearchMilestonesAsync(term);
-                var milestoneCards = searchResults.Select(ConvertToMilestoneCard).ToList();
-
-                return Json(new
-                {
-                    term = term,
-                    results = milestoneCards,
-                    count = milestoneCards.Count,
-                    searchedAt = DateTime.UtcNow
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching milestones for term: {SearchTerm}", term);
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error performing search",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get development statistics via AJAX
-        /// </summary>
-        [HttpGet("GetDevelopmentStats")]
-        [ResponseCache(Duration = 900)] // 15 minutes
-        public async Task<IActionResult> GetDevelopmentStats()
-        {
-            try
-            {
+                var progressSummary = await _roadmapService.GetProgressSummaryAsync();
+                var githubStats = await _roadmapService.GetGitHubStatsAsync();
                 var devStats = await _roadmapService.GetDevelopmentStatsAsync();
-                var gitHubStats = await _roadmapService.GetGitHubStatsAsync();
 
-                var statsModel = new
+                var progressData = new
                 {
-                    development = devStats,
-                    github = gitHubStats,
-                    summary = new
+                    success = true,
+                    data = new
                     {
-                        totalCommits = devStats.TotalCommits,
-                        activeContributors = devStats.ActiveContributors,
-                        codeQuality = devStats.CodeQualityGrade,
-                        activityLevel = devStats.ActivityLevel,
-                        lastUpdate = Math.Max(
-                            ((DateTimeOffset)devStats.LastCommit).ToUnixTimeSeconds(),
-                            ((DateTimeOffset)gitHubStats.LastCommitDate).ToUnixTimeSeconds()
-                        )
+                        overall = new
+                        {
+                            progressSummary.OverallProgress,
+                            progressSummary.TotalMilestones,
+                            progressSummary.CompletedMilestones,
+                            progressSummary.InProgressMilestones,
+                            progressSummary.UpcomingMilestones,
+                            progressSummary.TotalTasks,
+                            progressSummary.CompletedTasks,
+                            progressSummary.ActiveTasks,
+                            progressSummary.OverdueTasks,
+                            progressSummary.CurrentPhase,
+                            progressSummary.NextMilestone,
+                            estimatedCompletionFormatted = progressSummary.EstimatedCompletionFormatted,
+                            completionRateText = progressSummary.CompletionRateText,
+                            taskProgressText = progressSummary.TaskProgressText,
+                            progressSummary.HasOverdueTasks,
+                            healthStatus = progressSummary.HealthStatus
+                        },
+                        github = new
+                        {
+                            githubStats.TotalCommits,
+                            githubStats.CommitsThisMonth,
+                            githubStats.CommitsThisWeek,
+                            githubStats.TotalContributors,
+                            githubStats.ActiveContributors,
+                            githubStats.OpenPullRequests,
+                            githubStats.MergedPullRequests,
+                            githubStats.OpenIssues,
+                            githubStats.ClosedIssues,
+                            lastCommitFormatted = githubStats.LastCommitFormatted,
+                            lastCommitMessageDisplay = githubStats.LastCommitMessageDisplay,
+                            lastCommitAuthorDisplay = githubStats.LastCommitAuthorDisplay,
+                            activityLevel = githubStats.ActivityLevel,
+                            commitFrequencyText = githubStats.CommitFrequencyText,
+                            repositoryStatsText = githubStats.RepositoryStatsText,
+                            githubStats.HasRecentActivity
+                        },
+                        development = new
+                        {
+                            linesOfCodeFormatted = devStats.LinesOfCodeFormatted,
+                            devStats.FilesChanged,
+                            devStats.CommitsThisWeek,
+                            devStats.CommitsThisMonth,
+                            devStats.ActiveBranches,
+                            codeCoverageFormatted = devStats.CodeCoverageFormatted,
+                            testStatusText = devStats.TestStatusText,
+                            devStats.BuildStatus,
+                            buildStatusClass = devStats.BuildStatusClass,
+                            lastBuildFormatted = devStats.LastBuildFormatted,
+                            topContributorsText = devStats.TopContributorsText,
+                            activitySummary = devStats.ActivitySummary,
+                            codeQualityStatus = devStats.CodeQualityStatus,
+                            devStats.HasFailingTests,
+                            devStats.IsBuildHealthy,
+                            technicalDebtFormatted = devStats.TechnicalDebtFormatted,
+                            lastDeploymentFormatted = devStats.LastDeploymentFormatted
+                        }
                     }
                 };
 
-                return Json(statsModel);
+                return Json(progressData);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching development statistics");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error fetching development statistics",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get recent development updates via AJAX
-        /// </summary>
-        [HttpGet("GetRecentUpdates")]
-        [ResponseCache(Duration = 300)] // 5 minutes
-        public async Task<IActionResult> GetRecentUpdates(int count = 10)
-        {
-            try
-            {
-                if (count < 1 || count > 50)
-                {
-                    count = 10; // Default to reasonable limit
-                }
-
-                var updates = await _roadmapService.GetRecentUpdatesAsync(count);
-
+                _logger.LogError(ex, "Error fetching progress data");
                 return Json(new
                 {
-                    updates = updates,
-                    count = updates.Count,
-                    lastUpdate = updates.FirstOrDefault()?.UpdateDate ?? DateTime.MinValue
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching recent updates");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error fetching recent updates",
-                    TraceId = HttpContext.TraceIdentifier
+                    success = false,
+                    message = "Error loading progress data",
+                    error = ex.Message
                 });
             }
         }
 
         /// <summary>
-        /// Export roadmap data via AJAX
+        /// Get recent releases via AJAX
         /// </summary>
-        [HttpPost("Export")]
-        public async Task<IActionResult> Export([FromBody] RoadmapExportRequest request)
+        [HttpGet]
+        [Route("roadmap/api/releases")]
+        [ResponseCache(Duration = 1800, Location = ResponseCacheLocation.Client)] // 30 minutes
+        public async Task<IActionResult> GetRecentReleases([FromQuery] int limit = 10)
         {
             try
             {
-                if (!ModelState.IsValid)
+                var releases = await _roadmapService.GetRecentReleasesAsync(limit);
+
+                var releaseData = releases.Select(r => new
                 {
-                    return BadRequest(new ErrorResponse
+                    r.Id,
+                    r.Version,
+                    r.Title,
+                    descriptionPreview = r.DescriptionPreview,
+                    r.ReleaseDate,
+                    releaseDateFormatted = r.ReleaseDateFormatted,
+                    r.ReleaseType,
+                    releaseTypeIcon = DisplayHelpers.GetReleaseTypeIcon(r.ReleaseType),
+                    versionDisplay = r.VersionDisplay,
+                    statusBadge = r.StatusBadge,
+                    r.IsPreRelease,
+                    r.IsDraft,
+                    r.HasAssets,
+                    r.HasGitHubLink,
+                    r.HasDownload,
+                    r.GitHubUrl,
+                    r.DownloadUrl
+                }).ToList();
+
+                return Json(new { success = true, data = releaseData });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching recent releases");
+                return Json(new
+                {
+                    success = false,
+                    message = "Error loading releases",
+                    error = ex.Message
+                });
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Generate structured data for SEO
+        /// </summary>
+        private object GetStructuredData(RoadmapPageModel model)
+        {
+            return new
+            {
+                "@context" = "https://schema.org",
+                "@type" = "WebPage",
+                "name" = "TeachToken Platform Roadmap",
+                "description" = "Development roadmap and progress tracking for the TeachToken educational blockchain platform",
+                "url" = "https://teachtoken.io/roadmap",
+                "mainEntity" = new
+                {
+                    "@type" = "SoftwareApplication",
+                    "name" = "TeachToken Platform",
+                    "applicationCategory" = "Educational Technology",
+                    "operatingSystem" = "Web, Mobile",
+                    "description" = "Blockchain-based educational platform for decentralized learning and teaching",
+                    "softwareVersion" = model.RecentReleases?.FirstOrDefault()?.Version ?? "1.0.0",
+                    "dateModified" = model.LastUpdated.ToString("yyyy-MM-dd"),
+                    "offers" = new
                     {
-                        Message = "Invalid export request",
-                        ValidationErrors = ModelState.ToDictionary(
-                            kvp => kvp.Key,
-                            kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
-                        )
-                    });
+                        "@type" = "Offer",
+                        "price" = "0",
+                        "priceCurrency" = "USD"
+                    }
+                },
+                "breadcrumb" = new
+                {
+                    "@type" = "BreadcrumbList",
+                    "itemListElement" = new[]
+                    {
+                        new
+                        {
+                            "@type" = "ListItem",
+                            "position" = 1,
+                            "name" = "Home",
+                            "item" = "https://teachtoken.io"
+                        },
+                        new
+                        {
+                            "@type" = "ListItem",
+                            "position" = 2,
+                            "name" = "Roadmap",
+                            "item" = "https://teachtoken.io/roadmap"
+                        }
+                    }
                 }
-
-                var milestones = await _roadmapService.GetMilestonesAsync(
-                    request.FilterStatus,
-                    request.FilterCategory
-                );
-
-                var exportData = new RoadmapExportModel
-                {
-                    ExportType = request.ExportType,
-                    Milestones = milestones,
-                    ExportDate = DateTime.UtcNow,
-                    ExportedBy = "Web User", // Could be enhanced with user context
-                    FileName = GenerateExportFileName(request.ExportType)
-                };
-
-                // Return appropriate format based on request
-                return request.ExportType.ToLower() switch
-                {
-                    "csv" => GenerateCsvExport(exportData),
-                    "json" => Json(exportData),
-                    _ => BadRequest(new ErrorResponse { Message = "Unsupported export format" })
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error exporting roadmap data");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error exporting data",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Service health check via AJAX
-        /// </summary>
-        [HttpGet("HealthCheck")]
-        public async Task<IActionResult> HealthCheck()
-        {
-            try
-            {
-                var isHealthy = await _roadmapService.CheckServiceHealthAsync();
-
-                return Json(new
-                {
-                    status = isHealthy ? "healthy" : "degraded",
-                    timestamp = DateTime.UtcNow,
-                    service = "roadmap-dashboard"
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking roadmap service health");
-                return Json(new
-                {
-                    status = "unhealthy",
-                    timestamp = DateTime.UtcNow,
-                    service = "roadmap-dashboard",
-                    error = "Service check failed"
-                });
-            }
+            };
         }
 
         #endregion
-
-        #region Private Helper Methods
-
-        /// <summary>
-        /// Convert milestone to card model for grid display
-        /// </summary>
-        private MilestoneCardModel ConvertToMilestoneCard(MilestoneDisplayModel milestone)
-        {
-            return new MilestoneCardModel
-            {
-                Id = milestone.Id,
-                Title = milestone.Title,
-                Description = milestone.Description,
-                ShortDescription = TruncateText(milestone.Description, 120),
-                Category = milestone.Category,
-                CategoryClass = GetCategoryClass(milestone.Category),
-                Status = milestone.Status,
-                StatusClass = milestone.StatusClass,
-                StatusIcon = GetStatusIcon(milestone.Status),
-                Priority = milestone.Priority,
-                PriorityClass = milestone.PriorityClass,
-                ProgressPercentage = milestone.ProgressPercentage,
-                StartDate = milestone.StartDate,
-                EstimatedCompletionDate = milestone.EstimatedCompletionDate,
-                ActualCompletionDate = milestone.ActualCompletionDate,
-                ProgressBarClass = GetProgressBarClass(milestone.ProgressPercentage, milestone.Status),
-                TimelineText = GetTimelineText(milestone.StartDate, milestone.EstimatedCompletionDate, milestone.ActualCompletionDate),
-                DurationText = milestone.DurationEstimate,
-                ShowProgressBar = milestone.Status != "Completed",
-                ShowDueDate = milestone.EstimatedCompletionDate.HasValue,
-                IsOverdue = milestone.IsOverdue,
-                IsBlocked = milestone.IsBlocked,
-                IsNew = milestone.StartDate >= DateTime.UtcNow.AddDays(-14),
-                HasRecentActivity = milestone.RecentUpdates.Any(u => u.CreatedAt >= DateTime.UtcNow.AddDays(-7)),
-                CompletedTasksCount = milestone.CompletedTasksCount,
-                TotalTasksCount = milestone.TotalTasksCount,
-                TasksSummary = $"{milestone.CompletedTasksCount}/{milestone.TotalTasksCount} tasks",
-                GitHubIssueUrl = milestone.GitHubIssueUrl,
-                DocumentationUrl = milestone.DocumentationUrl,
-                HasExternalLinks = !string.IsNullOrWhiteSpace(milestone.GitHubIssueUrl) || !string.IsNullOrWhiteSpace(milestone.DocumentationUrl)
-            };
-        }
-
-        /// <summary>
-        /// Calculate overall progress across all milestones
-        /// </summary>
-        private decimal CalculateOverallProgress(List<MilestoneDisplayModel> milestones)
-        {
-            if (!milestones.Any()) return 0;
-
-            var totalWeight = milestones.Count;
-            var completedWeight = milestones.Where(m => m.Status == "Completed").Count();
-            var inProgressWeight = milestones.Where(m => m.Status == "In Progress")
-                .Sum(m => m.ProgressPercentage / 100m);
-
-            return ((completedWeight + inProgressWeight) / totalWeight) * 100;
-        }
-
-        /// <summary>
-        /// Get estimated completion date from upcoming milestones
-        /// </summary>
-        private DateTime? GetEstimatedCompletionDate(List<MilestoneDisplayModel> upcomingMilestones)
-        {
-            return upcomingMilestones
-                .Where(m => m.EstimatedCompletionDate.HasValue)
-                .Select(m => m.EstimatedCompletionDate!.Value)
-                .DefaultIfEmpty()
-                .Max();
-        }
-
-        /// <summary>
-        /// Check if project is on track based on milestone status
-        /// </summary>
-        private bool CheckIfOnTrack(List<MilestoneDisplayModel> currentMilestones)
-        {
-            var overdueMilestones = currentMilestones.Count(m => m.IsOverdue);
-            var blockedMilestones = currentMilestones.Count(m => m.IsBlocked);
-
-            return overdueMilestones <= 1 && blockedMilestones == 0;
-        }
-
-        /// <summary>
-        /// Get project health status
-        /// </summary>
-        private string GetProjectHealthStatus(List<MilestoneDisplayModel> milestones, DevelopmentStatsModel stats)
-        {
-            var overdue = milestones.Count(m => m.IsOverdue);
-            var blocked = milestones.Count(m => m.IsBlocked);
-            var recentActivity = stats.LastCommit >= DateTime.UtcNow.AddDays(-3);
-
-            if (blocked > 0 || overdue > 2 || !recentActivity) return "At Risk";
-            if (overdue > 0 || stats.OpenIssues > 20) return "Needs Attention";
-            return "Healthy";
-        }
-
-        /// <summary>
-        /// Get CSS class for project health status
-        /// </summary>
-        private string GetProjectHealthClass(List<MilestoneDisplayModel> milestones, DevelopmentStatsModel stats)
-        {
-            return GetProjectHealthStatus(milestones, stats).ToLower() switch
-            {
-                "healthy" => "health-good",
-                "needs attention" => "health-warning",
-                "at risk" => "health-danger",
-                _ => "health-unknown"
-            };
-        }
-
-        /// <summary>
-        /// Get completion timeframe display text
-        /// </summary>
-        private string GetCompletionTimeframe(DateTime? completionDate)
-        {
-            if (!completionDate.HasValue) return "TBD";
-
-            var timespan = completionDate.Value - DateTime.UtcNow;
-
-            if (timespan.TotalDays < 0) return "Overdue";
-            if (timespan.TotalDays < 30) return $"{(int)timespan.TotalDays} days";
-            if (timespan.TotalDays < 365) return $"{(int)(timespan.TotalDays / 30)} months";
-
-            return $"{(int)(timespan.TotalDays / 365)} years";
-        }
-
-        /// <summary>
-        /// Get time ago display text
-        /// </summary>
-        private string GetTimeAgo(DateTime date)
-        {
-            var timespan = DateTime.UtcNow - date;
-
-            if (timespan.TotalDays >= 1) return $"{(int)timespan.TotalDays} days ago";
-            if (timespan.TotalHours >= 1) return $"{(int)timespan.TotalHours} hours ago";
-
-            return "Recently";
-        }
-
-        /// <summary>
-        /// Truncate text for card display
-        /// </summary>
-        private string TruncateText(string text, int maxLength)
-        {
-            if (string.IsNullOrWhiteSpace(text) || text.Length <= maxLength)
-                return text;
-
-            return text.Substring(0, maxLength - 3) + "...";
-        }
-
-        /// <summary>
-        /// Get CSS class for category
-        /// </summary>
-        private string GetCategoryClass(string category)
-        {
-            return category.ToLower() switch
-            {
-                "blockchain" => "category-blockchain",
-                "platform" => "category-platform",
-                "mobile" => "category-mobile",
-                "security" => "category-security",
-                "integration" => "category-integration",
-                _ => "category-default"
-            };
-        }
-
-        /// <summary>
-        /// Get icon for milestone status
-        /// </summary>
-        private string GetStatusIcon(string status)
-        {
-            return status.ToLower() switch
-            {
-                "completed" => "✅",
-                "in progress" => "🔄",
-                "testing" => "🧪",
-                "planning" => "📋",
-                "on hold" => "⏸️",
-                "blocked" => "🚫",
-                _ => "📌"
-            };
-        }
-
-        /// <summary>
-        /// Get progress bar CSS class
-        /// </summary>
-        private string GetProgressBarClass(decimal progress, string status)
-        {
-            if (status.ToLower() == "completed") return "progress-completed";
-            if (progress >= 80) return "progress-high";
-            if (progress >= 50) return "progress-medium";
-            if (progress >= 25) return "progress-low";
-            return "progress-minimal";
-        }
-
-        /// <summary>
-        /// Get timeline display text
-        /// </summary>
-        private string GetTimelineText(DateTime? start, DateTime? estimated, DateTime? actual)
-        {
-            if (actual.HasValue) return $"Completed {GetTimeAgo(actual.Value)}";
-            if (estimated.HasValue) return $"Due {GetCompletionTimeframe(estimated.Value)}";
-            if (start.HasValue) return $"Started {GetTimeAgo(start.Value)}";
-            return "Not scheduled";
-        }
-
-        /// <summary>
-        /// Generate CSV export response
-        /// </summary>
-        private IActionResult GenerateCsvExport(RoadmapExportModel exportData)
-        {
-            var csv = new System.Text.StringBuilder();
-
-            // CSV headers
-            csv.AppendLine("ID,Title,Description,Category,Status,Priority,Progress,Start Date,Estimated Completion,Actual Completion");
-
-            // CSV data
-            foreach (var milestone in exportData.Milestones)
-            {
-                csv.AppendLine($"{milestone.Id}," +
-                    $"\"{milestone.Title}\"," +
-                    $"\"{milestone.Description}\"," +
-                    $"{milestone.Category}," +
-                    $"{milestone.Status}," +
-                    $"{milestone.Priority}," +
-                    $"{milestone.ProgressPercentage}%," +
-                    $"{milestone.StartDate:yyyy-MM-dd}," +
-                    $"{milestone.EstimatedCompletionDate:yyyy-MM-dd}," +
-                    $"{milestone.ActualCompletionDate:yyyy-MM-dd}");
-            }
-
-            var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
-            return File(bytes, "text/csv", exportData.FileName);
-        }
-
-        /// <summary>
-        /// Generate export filename
-        /// </summary>
-        private string GenerateExportFileName(string exportType)
-        {
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-            return $"teachtoken_roadmap_{timestamp}.{exportType.ToLower()}";
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// Export request model
-    /// </summary>
-    public class RoadmapExportRequest
-    {
-        public string ExportType { get; set; } = "csv";
-        public string? FilterStatus { get; set; }
-        public string? FilterCategory { get; set; }
-        public string? FilterPriority { get; set; }
     }
 }

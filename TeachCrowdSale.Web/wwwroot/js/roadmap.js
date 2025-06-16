@@ -1,1276 +1,567 @@
-﻿// TeachCrowdSale.Web/wwwroot/js/roadmap.js
-// Phase 5: Core JavaScript Functionality for Roadmap Dashboard
-// Following established patterns from analytics.js and site.js
+﻿// TeachToken Roadmap Page JavaScript
+// Follows established patterns from site.js
 
-// ================================================
-// ROADMAP CONFIGURATION
-// ================================================
-const ROADMAP_CONFIG = {
-    REFRESH_INTERVAL: 300000, // 5 minutes
-    SEARCH_DEBOUNCE: 300,
-    ANIMATION_DURATION: 300,
-    MAX_RETRY_ATTEMPTS: 3,
-    CACHE_DURATION: 900000, // 15 minutes
-    API_ENDPOINTS: {
-        getMilestones: '/Roadmap/GetMilestones',
-        getMilestoneDetails: '/Roadmap/GetMilestoneDetails',
-        getProgressData: '/Roadmap/GetProgressData',
-        getFilteredData: '/Roadmap/GetFilteredMilestones',
-        searchMilestones: '/Roadmap/Search',
-        exportData: '/Roadmap/Export'
+class RoadmapDashboard {
+    constructor() {
+        this.init();
+        this.bindEvents();
+        this.startProgressAnimations();
+        this.initCharts();
     }
-};
 
-// ================================================
-// ROADMAP STATE MANAGEMENT
-// ================================================
-const RoadmapState = {
-    data: {
-        milestones: [],
-        progressData: {},
-        githubStats: {},
-        recentUpdates: []
-    },
-    filters: {
-        search: '',
-        status: '',
-        category: '',
-        priority: '',
-        dateRange: '6M'
-    },
-    ui: {
-        activeModal: null,
-        selectedMilestone: null,
-        isLoading: false,
-        connectionStatus: 'connected'
-    },
-    cache: new Map(),
-    retryAttempts: 0
-};
-
-// ================================================
-// ROADMAP API SERVICE
-// ================================================
-const RoadmapApiService = {
-    // Get milestone data
-    async getMilestones(filters = {}) {
-        try {
-            const cacheKey = `milestones_${JSON.stringify(filters)}`;
-            const cached = this.getCachedData(cacheKey);
-            if (cached) return cached;
-
-            const queryParams = new URLSearchParams(filters).toString();
-            const response = await fetch(`${ROADMAP_CONFIG.API_ENDPOINTS.getMilestones}?${queryParams}`);
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-            const data = await response.json();
-            this.setCachedData(cacheKey, data);
-            return data;
-        } catch (error) {
-            console.error('Failed to fetch milestones:', error);
-            return this.getFallbackMilestones();
-        }
-    },
-
-    // Get milestone details
-    async getMilestoneDetails(milestoneId) {
-        try {
-            const cacheKey = `milestone_${milestoneId}`;
-            const cached = this.getCachedData(cacheKey);
-            if (cached) return cached;
-
-            const response = await fetch(`${ROADMAP_CONFIG.API_ENDPOINTS.getMilestoneDetails}/${milestoneId}`);
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-            const data = await response.json();
-            this.setCachedData(cacheKey, data);
-            return data;
-        } catch (error) {
-            console.error(`Failed to fetch milestone ${milestoneId}:`, error);
-            return this.getFallbackMilestoneDetails(milestoneId);
-        }
-    },
-
-    // Get progress data for charts
-    async getProgressData(params = {}) {
-        try {
-            const cacheKey = `progress_${JSON.stringify(params)}`;
-            const cached = this.getCachedData(cacheKey);
-            if (cached) return cached;
-
-            const queryParams = new URLSearchParams(params).toString();
-            const response = await fetch(`${ROADMAP_CONFIG.API_ENDPOINTS.getProgressData}?${queryParams}`);
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-            const data = await response.json();
-            this.setCachedData(cacheKey, data, ROADMAP_CONFIG.CACHE_DURATION);
-            return data;
-        } catch (error) {
-            console.error('Failed to fetch progress data:', error);
-            return this.getFallbackProgressData();
-        }
-    },
-
-    // Search milestones
-    async searchMilestones(query, filters = {}) {
-        try {
-            if (!query.trim()) return [];
-
-            const searchParams = new URLSearchParams({
-                query: query.trim(),
-                ...filters
-            });
-
-            const response = await fetch(`${ROADMAP_CONFIG.API_ENDPOINTS.searchMilestones}?${searchParams}`);
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-            return await response.json();
-        } catch (error) {
-            console.error('Search failed:', error);
-            return this.performClientSideSearch(query);
-        }
-    },
-
-    // Export milestone data
-    async exportData(format = 'pdf', filters = {}) {
-        try {
-            const exportParams = new URLSearchParams({
-                format,
-                ...filters
-            });
-
-            const response = await fetch(`${ROADMAP_CONFIG.API_ENDPOINTS.exportData}?${exportParams}`);
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `roadmap-export-${new Date().toISOString().split('T')[0]}.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-
-            RoadmapUtils.showNotification('Export completed successfully', 'success');
-        } catch (error) {
-            console.error('Export failed:', error);
-            RoadmapUtils.showNotification('Export failed. Please try again.', 'error');
-        }
-    },
-
-    // Cache management
-    getCachedData(key) {
-        const cached = RoadmapState.cache.get(key);
-        if (cached && cached.expires > Date.now()) {
-            return cached.data;
-        }
-        RoadmapState.cache.delete(key);
-        return null;
-    },
-
-    setCachedData(key, data, duration = ROADMAP_CONFIG.CACHE_DURATION) {
-        RoadmapState.cache.set(key, {
-            data,
-            expires: Date.now() + duration
-        });
-    },
-
-    // Client-side search fallback
-    performClientSideSearch(query) {
-        const searchTerms = query.toLowerCase().split(' ');
-        return RoadmapState.data.milestones.filter(milestone => {
-            const searchText = `${milestone.title} ${milestone.description} ${milestone.category}`.toLowerCase();
-            return searchTerms.every(term => searchText.includes(term));
-        });
-    },
-
-    // Fallback data methods
-    getFallbackMilestones() {
-        return [
-            {
-                id: 1,
-                title: 'Phase 1: Core Infrastructure',
-                description: 'Foundation setup with API and database architecture',
-                status: 'completed',
-                category: 'Infrastructure',
-                priority: 'high',
-                progress: 100,
-                startDate: '2024-01-01',
-                endDate: '2024-03-31',
-                tasks: ['API Development', 'Database Setup', 'Authentication']
-            },
-            {
-                id: 2,
-                title: 'Phase 2: Frontend Development',
-                description: 'User interface and dashboard implementation',
-                status: 'in-progress',
-                category: 'Frontend',
-                priority: 'high',
-                progress: 75,
-                startDate: '2024-03-01',
-                endDate: '2024-06-30',
-                tasks: ['Home Page', 'Analytics Dashboard', 'Roadmap Page']
-            },
-            {
-                id: 3,
-                title: 'Phase 3: Integration Testing',
-                description: 'Comprehensive testing and quality assurance',
-                status: 'planned',
-                category: 'Testing',
-                priority: 'medium',
-                progress: 25,
-                startDate: '2024-06-01',
-                endDate: '2024-09-30',
-                tasks: ['Unit Tests', 'Integration Tests', 'User Acceptance Testing']
-            }
-        ];
-    },
-
-    getFallbackMilestoneDetails(id) {
-        const milestone = this.getFallbackMilestones().find(m => m.id === parseInt(id));
-        return milestone ? {
-            ...milestone,
-            detailedDescription: 'Detailed description not available in offline mode.',
-            dependencies: [],
-            assignedTeam: 'Development Team',
-            estimatedHours: 120,
-            actualHours: milestone.progress === 100 ? 115 : Math.floor(120 * (milestone.progress / 100))
-        } : null;
-    },
-
-    getFallbackProgressData() {
-        return {
-            overall: { completed: 42, inProgress: 18, planned: 15 },
-            byCategory: {
-                infrastructure: 85,
-                frontend: 65,
-                backend: 70,
-                testing: 25,
-                security: 40
-            },
-            timeline: this.generateTimelineData(),
-            velocity: this.generateVelocityData()
-        };
-    },
-
-    generateTimelineData() {
-        const timeline = [];
-        const baseDate = new Date('2024-01-01');
-
-        for (let i = 0; i < 12; i++) {
-            const date = new Date(baseDate);
-            date.setMonth(baseDate.getMonth() + i);
-            timeline.push({
-                date: date.toISOString(),
-                planned: 10 + Math.floor(Math.random() * 5),
-                completed: Math.max(0, (10 + Math.floor(Math.random() * 5)) - Math.floor(Math.random() * 3))
-            });
-        }
-        return timeline;
-    },
-
-    generateVelocityData() {
-        const velocity = [];
-        const today = new Date();
-
-        for (let i = 30; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - i);
-            velocity.push({
-                date: date.toISOString(),
-                commits: Math.floor(Math.random() * 10) + 1,
-                tasksCompleted: Math.floor(Math.random() * 5) + 1
-            });
-        }
-        return velocity;
-    }
-};
-
-// ================================================
-// ROADMAP FILTER MANAGER
-// ================================================
-const RoadmapFilterManager = {
-    // Initialize filter controls
     init() {
-        this.setupSearchFilter();
-        this.setupDropdownFilters();
-        this.setupDateRangeFilter();
-        this.setupFilterReset();
-    },
+        // Initialize components
+        this.modal = document.getElementById('milestoneModal');
+        this.modalBackdrop = document.getElementById('modalBackdrop');
+        this.modalClose = document.getElementById('modalClose');
+        this.modalTitle = document.getElementById('modalTitle');
+        this.modalBody = document.getElementById('modalBody');
 
-    // Setup search functionality
-    setupSearchFilter() {
-        const searchInput = document.getElementById('milestone-search');
-        const searchBtn = document.getElementById('search-btn');
-        const clearBtn = document.getElementById('search-clear');
+        // Cache DOM elements
+        this.progressBars = document.querySelectorAll('.progress-fill[data-progress]');
+        this.milestoneCards = document.querySelectorAll('.milestone-card[data-milestone-id]');
+        this.upcomingCards = document.querySelectorAll('.upcoming-card[data-milestone-id]');
+        this.showMoreBtn = document.getElementById('showMoreCompleted');
 
-        if (!searchInput) return;
+        // State
+        this.isModalOpen = false;
+        this.currentMilestoneId = null;
+        this.charts = {};
 
-        // Debounced search
-        const debouncedSearch = RoadmapUtils.debounce(async (query) => {
-            await this.performSearch(query);
-        }, ROADMAP_CONFIG.SEARCH_DEBOUNCE);
+        console.log('Roadmap Dashboard initialized');
+    }
 
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            RoadmapState.filters.search = query;
-
-            // Show/hide clear button
-            if (clearBtn) {
-                clearBtn.style.display = query ? 'flex' : 'none';
-            }
-
-            debouncedSearch(query);
-        });
-
-        // Search button click
-        if (searchBtn) {
-            searchBtn.addEventListener('click', () => {
-                this.performSearch(searchInput.value.trim());
-            });
+    bindEvents() {
+        // Modal events
+        if (this.modalClose) {
+            this.modalClose.addEventListener('click', () => this.closeModal());
         }
 
-        // Clear search
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                RoadmapState.filters.search = '';
-                clearBtn.style.display = 'none';
-                this.performSearch('');
-            });
+        if (this.modalBackdrop) {
+            this.modalBackdrop.addEventListener('click', () => this.closeModal());
         }
 
-        // Enter key search
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.performSearch(searchInput.value.trim());
+        // Escape key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isModalOpen) {
+                this.closeModal();
             }
         });
-    },
 
-    // Setup dropdown filters
-    setupDropdownFilters() {
-        const filters = ['status-filter', 'category-filter', 'priority-filter'];
-
-        filters.forEach(filterId => {
-            const filterElement = document.getElementById(filterId);
-            if (!filterElement) return;
-
-            filterElement.addEventListener('change', async (e) => {
-                const filterType = filterId.replace('-filter', '');
-                RoadmapState.filters[filterType] = e.target.value;
-                await this.applyFilters();
-            });
-        });
-    },
-
-    // Setup date range filter
-    setupDateRangeFilter() {
-        const dateRangeButtons = document.querySelectorAll('.chart-time-filter');
-
-        dateRangeButtons.forEach(button => {
-            button.addEventListener('click', async (e) => {
-                e.preventDefault();
-
-                // Update active state
-                dateRangeButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-
-                // Update filter
-                RoadmapState.filters.dateRange = button.dataset.range;
-                await this.applyFilters();
-            });
-        });
-    },
-
-    // Setup filter reset
-    setupFilterReset() {
-        const resetBtn = document.getElementById('reset-filters');
-        if (!resetBtn) return;
-
-        resetBtn.addEventListener('click', () => {
-            this.resetAllFilters();
-        });
-    },
-
-    // Perform search
-    async performSearch(query) {
-        try {
-            RoadmapMilestoneManager.showLoading();
-
-            if (!query) {
-                // Show all milestones when search is empty
-                await this.applyFilters();
-                return;
+        // Milestone card clicks
+        this.milestoneCards.forEach(card => {
+            const detailsBtn = card.querySelector('.milestone-details-btn');
+            if (detailsBtn) {
+                detailsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const milestoneId = card.dataset.milestoneId;
+                    this.showMilestoneDetails(milestoneId);
+                });
             }
 
-            const results = await RoadmapApiService.searchMilestones(query, RoadmapState.filters);
-            RoadmapMilestoneManager.displayMilestones(results);
-            this.updateSearchResultsCount(results.length);
+            // Make whole card clickable
+            card.addEventListener('click', () => {
+                const milestoneId = card.dataset.milestoneId;
+                this.showMilestoneDetails(milestoneId);
+            });
+        });
 
-        } catch (error) {
-            console.error('Search failed:', error);
-            RoadmapUtils.showNotification('Search failed. Please try again.', 'error');
-        } finally {
-            RoadmapMilestoneManager.hideLoading();
+        // Upcoming milestone card clicks
+        this.upcomingCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const milestoneId = card.dataset.milestoneId;
+                this.showMilestoneDetails(milestoneId);
+            });
+        });
+
+        // Show more completed milestones
+        if (this.showMoreBtn) {
+            this.showMoreBtn.addEventListener('click', () => {
+                this.loadMoreCompletedMilestones();
+            });
         }
-    },
 
-    // Apply all filters
-    async applyFilters() {
-        try {
-            RoadmapMilestoneManager.showLoading();
+        // Navbar scroll effect (following site.js pattern)
+        this.initNavbarScroll();
 
-            const filteredData = await RoadmapApiService.getMilestones(RoadmapState.filters);
-            RoadmapMilestoneManager.displayMilestones(filteredData);
-            this.updateFilterResultsCount(filteredData.length);
+        // Auto-refresh data every 5 minutes
+        this.startAutoRefresh();
+    }
 
-        } catch (error) {
-            console.error('Filter application failed:', error);
-            RoadmapUtils.showNotification('Filter application failed. Please try again.', 'error');
-        } finally {
-            RoadmapMilestoneManager.hideLoading();
-        }
-    },
+    initNavbarScroll() {
+        const navbar = document.getElementById('navbar');
+        if (!navbar) return;
 
-    // Reset all filters
-    resetAllFilters() {
-        RoadmapState.filters = {
-            search: '',
-            status: '',
-            category: '',
-            priority: '',
-            dateRange: '6M'
+        let lastScrollY = window.scrollY;
+
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+
+            if (currentScrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+
+            lastScrollY = currentScrollY;
+        });
+    }
+
+    startProgressAnimations() {
+        // Animate progress bars when they come into view
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -50px 0px'
         };
 
-        // Reset UI elements
-        const searchInput = document.getElementById('milestone-search');
-        if (searchInput) {
-            searchInput.value = '';
-        }
-
-        const clearBtn = document.getElementById('search-clear');
-        if (clearBtn) {
-            clearBtn.style.display = 'none';
-        }
-
-        const filters = ['status-filter', 'category-filter', 'priority-filter'];
-        filters.forEach(filterId => {
-            const element = document.getElementById(filterId);
-            if (element) {
-                element.value = '';
-            }
-        });
-
-        // Reset date range buttons
-        const dateRangeButtons = document.querySelectorAll('.chart-time-filter');
-        dateRangeButtons.forEach(btn => btn.classList.remove('active'));
-        const defaultBtn = document.querySelector('.chart-time-filter[data-range="6M"]');
-        if (defaultBtn) {
-            defaultBtn.classList.add('active');
-        }
-
-        // Apply reset filters
-        this.applyFilters();
-    },
-
-    // Update search results count
-    updateSearchResultsCount(count) {
-        const countElement = document.getElementById('search-results-count');
-        if (countElement) {
-            countElement.textContent = `${count} milestone${count !== 1 ? 's' : ''} found`;
-        }
-    },
-
-    // Update filter results count
-    updateFilterResultsCount(count) {
-        const visibleCountElement = document.getElementById('visible-count');
-        if (visibleCountElement) {
-            visibleCountElement.textContent = count;
-        }
-    }
-};
-
-// ================================================
-// ROADMAP MILESTONE MANAGER
-// ================================================
-const RoadmapMilestoneManager = {
-    // Initialize milestone display
-    init() {
-        this.setupMilestoneCards();
-        this.setupMilestoneModal();
-        this.setupProgressAnimations();
-    },
-
-    // Setup milestone card interactions
-    setupMilestoneCards() {
-        document.addEventListener('click', async (e) => {
-            const milestoneCard = e.target.closest('.milestone-card');
-            if (!milestoneCard) return;
-
-            e.preventDefault();
-            const milestoneId = milestoneCard.dataset.milestoneId;
-            if (milestoneId) {
-                await this.showMilestoneDetails(milestoneId);
-            }
-        });
-
-        // Setup hover animations
-        document.addEventListener('mouseenter', (e) => {
-            const milestoneCard = e.target.closest('.milestone-card');
-            if (milestoneCard) {
-                this.animateMilestoneCard(milestoneCard, 'enter');
-            }
-        }, true);
-
-        document.addEventListener('mouseleave', (e) => {
-            const milestoneCard = e.target.closest('.milestone-card');
-            if (milestoneCard) {
-                this.animateMilestoneCard(milestoneCard, 'leave');
-            }
-        }, true);
-    },
-
-    // Setup milestone detail modal
-    setupMilestoneModal() {
-        const modal = document.getElementById('milestone-modal');
-        const closeBtn = document.getElementById('close-milestone-modal');
-
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                this.closeMilestoneModal();
-            });
-        }
-
-        // Close on backdrop click
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.closeMilestoneModal();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    this.animateProgressBar(entry.target);
+                    observer.unobserve(entry.target);
                 }
             });
-        }
+        }, observerOptions);
 
-        // Close on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && RoadmapState.ui.activeModal) {
-                this.closeMilestoneModal();
-            }
+        this.progressBars.forEach(bar => {
+            observer.observe(bar);
         });
-    },
+    }
 
-    // Show milestone details
+    animateProgressBar(progressBar) {
+        const targetProgress = parseFloat(progressBar.dataset.progress);
+        let currentProgress = 0;
+        const duration = 1500; // 1.5 seconds
+        const startTime = performance.now();
+
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Easing function for smooth animation
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+            currentProgress = targetProgress * easeOutCubic;
+
+            progressBar.style.width = `${currentProgress}%`;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
     async showMilestoneDetails(milestoneId) {
+        if (!milestoneId) return;
+
+        this.currentMilestoneId = milestoneId;
+        this.openModal();
+        this.showLoadingState();
+
         try {
-            const modal = document.getElementById('milestone-modal');
-            const content = document.getElementById('milestone-details-content');
+            const response = await fetch(`/roadmap/api/milestone/${milestoneId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'max-age=180' // 3 minutes cache
+                }
+            });
 
-            if (!modal || !content) return;
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
 
-            // Show loading state
-            content.innerHTML = `
-                <div class="loading-content">
-                    <div class="loading-spinner"></div>
-                    <p>Loading milestone details...</p>
-                </div>
-            `;
+            const data = await response.json();
 
-            modal.style.display = 'flex';
-            RoadmapState.ui.activeModal = 'milestone';
-            RoadmapState.ui.selectedMilestone = milestoneId;
-
-            // Fetch milestone details
-            const details = await RoadmapApiService.getMilestoneDetails(milestoneId);
-
-            if (details) {
-                content.innerHTML = this.generateMilestoneDetailsHTML(details);
-                this.setupModalInteractions();
+            if (data.success && data.data) {
+                this.renderMilestoneDetails(data.data);
             } else {
-                throw new Error('Milestone details not found');
+                throw new Error(data.message || 'Failed to load milestone details');
             }
-
         } catch (error) {
-            console.error('Failed to load milestone details:', error);
-            const content = document.getElementById('milestone-details-content');
-            if (content) {
-                content.innerHTML = `
-                    <div class="error-content">
-                        <div class="error-icon">⚠️</div>
-                        <h4>Failed to Load Details</h4>
-                        <p>Unable to load milestone details. Please try again.</p>
-                        <button class="btn-primary" onclick="RoadmapMilestoneManager.showMilestoneDetails('${milestoneId}')">
-                            Retry
-                        </button>
+            console.error('Error loading milestone details:', error);
+            this.showErrorState(error.message);
+        }
+    }
+
+    renderMilestoneDetails(milestone) {
+        this.modalTitle.textContent = milestone.title;
+
+        const detailsHtml = `
+            <div class="milestone-details">
+                <!-- Header Section -->
+                <div class="milestone-detail-header">
+                    <div class="milestone-meta">
+                        <span class="category-badge">
+                            <span class="category-icon">${milestone.categoryIcon}</span>
+                            ${milestone.category}
+                        </span>
+                        <span class="priority-badge ${milestone.priorityClass}">${milestone.priority}</span>
+                        <span class="status-badge ${milestone.statusClass}">${milestone.status}</span>
                     </div>
-                `;
-            }
-        }
-    },
-
-    // Close milestone modal
-    closeMilestoneModal() {
-        const modal = document.getElementById('milestone-modal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-
-        RoadmapState.ui.activeModal = null;
-        RoadmapState.ui.selectedMilestone = null;
-    },
-
-    // Generate milestone details HTML
-    generateMilestoneDetailsHTML(details) {
-        return `
-            <div class="milestone-detail-header">
-                <h3 id="modal-milestone-title">${details.title}</h3>
-                <div class="milestone-detail-status">
-                    <span class="milestone-status ${details.status}">${details.status.replace('-', ' ')}</span>
-                    <span class="milestone-priority ${details.priority}">${details.priority} Priority</span>
-                </div>
-            </div>
-
-            <div class="milestone-detail-progress">
-                <div class="progress-header">
-                    <span class="progress-label">Progress</span>
-                    <span class="progress-percentage">${details.progress}%</span>
-                </div>
-                <div class="milestone-progress-bar">
-                    <div class="milestone-progress-fill" style="width: ${details.progress}%"></div>
-                </div>
-            </div>
-
-            <div class="milestone-detail-description">
-                <h4>Description</h4>
-                <p>${details.detailedDescription || details.description}</p>
-            </div>
-
-            <div class="milestone-detail-tasks">
-                <h4>Tasks (${details.tasks?.length || 0})</h4>
-                <div class="task-list">
-                    ${details.tasks?.map(task => `
-                        <div class="task-item">
-                            <span class="task-icon">${task.completed ? '✅' : '⏳'}</span>
-                            <span class="task-name">${task.name || task}</span>
+                    <div class="milestone-progress-summary">
+                        <div class="progress-circle" data-progress="${milestone.progressPercentage}">
+                            <div class="progress-text">${milestone.progressPercentage}%</div>
                         </div>
-                    `).join('') || '<p>No tasks available</p>'}
-                </div>
-            </div>
-
-            <div class="milestone-detail-meta">
-                <div class="meta-grid">
-                    <div class="meta-item">
-                        <span class="meta-label">Category</span>
-                        <span class="meta-value">${details.category}</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Start Date</span>
-                        <span class="meta-value">${RoadmapUtils.formatDate(details.startDate)}</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">End Date</span>
-                        <span class="meta-value">${RoadmapUtils.formatDate(details.endDate)}</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Assigned Team</span>
-                        <span class="meta-value">${details.assignedTeam || 'Development Team'}</span>
                     </div>
                 </div>
-            </div>
 
-            ${details.dependencies?.length ? `
-                <div class="milestone-detail-dependencies">
-                    <h4>Dependencies</h4>
-                    <div class="dependency-list">
-                        ${details.dependencies.map(dep => `
-                            <div class="dependency-item">
-                                <span class="dependency-name">${dep.title}</span>
-                                <span class="dependency-status ${dep.status}">${dep.status}</span>
+                <!-- Description -->
+                <div class="milestone-description">
+                    <h4>Description</h4>
+                    <p>${milestone.description}</p>
+                </div>
+
+                <!-- Timeline -->
+                <div class="milestone-timeline">
+                    <div class="timeline-grid">
+                        <div class="timeline-item">
+                            <span class="timeline-label">Started</span>
+                            <span class="timeline-value">${milestone.startDateFormatted}</span>
+                        </div>
+                        <div class="timeline-item">
+                            <span class="timeline-label">Target Completion</span>
+                            <span class="timeline-value">${milestone.estimatedCompletionFormatted}</span>
+                        </div>
+                        ${milestone.actualCompletionFormatted ? `
+                        <div class="timeline-item">
+                            <span class="timeline-label">Actual Completion</span>
+                            <span class="timeline-value">${milestone.actualCompletionFormatted}</span>
+                        </div>
+                        ` : ''}
+                        <div class="timeline-item">
+                            <span class="timeline-label">Duration</span>
+                            <span class="timeline-value">${milestone.durationEstimate || 'TBD'}</span>
+                        </div>
+                        <div class="timeline-item">
+                            <span class="timeline-label">Time Remaining</span>
+                            <span class="timeline-value ${milestone.isOverdue ? 'overdue' : ''}">${milestone.timeRemaining}</span>
+                        </div>
+                        <div class="timeline-item">
+                            <span class="timeline-label">Progress</span>
+                            <span class="timeline-value">${milestone.progressText}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Section -->
+                ${milestone.tasks && milestone.tasks.length > 0 ? `
+                <div class="milestone-tasks">
+                    <h4>Tasks (${milestone.tasks.length})</h4>
+                    <div class="tasks-list">
+                        ${milestone.tasks.map(task => `
+                            <div class="task-item ${task.statusClass}">
+                                <div class="task-header">
+                                    <div class="task-info">
+                                        <h5 class="task-title">${task.title}</h5>
+                                        <div class="task-meta">
+                                            <span class="task-assignee">${task.assigneeDisplay}</span>
+                                            ${task.dueDateFormatted ? `<span class="task-due">Due: ${task.dueDateFormatted}</span>` : ''}
+                                            ${task.timeTrackingText ? `<span class="task-time">${task.timeTrackingText}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="task-badges">
+                                        <span class="priority-badge ${task.priorityClass}">${task.priority}</span>
+                                        <span class="status-badge ${task.statusClass}">${task.status}</span>
+                                    </div>
+                                </div>
+                                <div class="task-progress">
+                                    <div class="progress-bar small">
+                                        <div class="progress-fill" style="width: ${task.progressPercentage}%"></div>
+                                    </div>
+                                    <span class="progress-percentage">${task.progressPercentage}%</span>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
-            ` : ''}
-        `;
-    },
+                ` : ''}
 
-    // Setup modal interactions
-    setupModalInteractions() {
-        // Add any specific modal interactions here
-        const progressBars = document.querySelectorAll('.milestone-progress-fill');
-        progressBars.forEach(bar => {
-            this.animateProgressBar(bar);
-        });
-    },
-
-    // Display milestones
-    displayMilestones(milestones) {
-        const container = document.getElementById('milestones-container');
-        const emptyState = document.getElementById('milestones-empty');
-
-        if (!container) return;
-
-        if (!milestones || milestones.length === 0) {
-            container.style.display = 'none';
-            if (emptyState) {
-                emptyState.style.display = 'block';
-            }
-            return;
-        }
-
-        if (emptyState) {
-            emptyState.style.display = 'none';
-        }
-        container.style.display = 'grid';
-
-        container.innerHTML = milestones.map(milestone => this.generateMilestoneCardHTML(milestone)).join('');
-
-        // Animate cards appearance
-        this.animateCardsEntrance(container);
-    },
-
-    // Generate milestone card HTML
-    generateMilestoneCardHTML(milestone) {
-        return `
-            <div class="milestone-card ${milestone.status}" data-milestone-id="${milestone.id}">
-                <div class="milestone-header">
-                    <div class="milestone-title-section">
-                        <h4 class="milestone-title">${milestone.title}</h4>
-                        <span class="milestone-status ${milestone.status}">${milestone.status.replace('-', ' ')}</span>
+                <!-- Updates Section -->
+                ${milestone.updates && milestone.updates.length > 0 ? `
+                <div class="milestone-updates">
+                    <h4>Recent Updates (${milestone.updates.length})</h4>
+                    <div class="updates-list">
+                        ${milestone.updates.map(update => `
+                            <div class="update-item">
+                                <div class="update-header">
+                                    <div class="update-info">
+                                        <span class="update-icon">${update.updateTypeIcon}</span>
+                                        <h5 class="update-title">${update.title}</h5>
+                                    </div>
+                                    <div class="update-meta">
+                                        <span class="update-author">${update.authorDisplay}</span>
+                                        <span class="update-date">${update.createdAtFormatted}</span>
+                                    </div>
+                                </div>
+                                <div class="update-content">
+                                    <p>${update.contentPreview}</p>
+                                    ${update.hasTags ? `
+                                    <div class="update-tags">
+                                        ${update.tags ? update.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : ''}
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
+                ` : ''}
 
-                <div class="milestone-description">
-                    ${milestone.description}
-                </div>
-
-                <div class="milestone-progress">
-                    <div class="milestone-progress-label">
-                        <span>Progress</span>
-                        <span class="milestone-progress-percentage">${milestone.progress}%</span>
+                <!-- Dependencies Section -->
+                ${milestone.dependencies && milestone.dependencies.length > 0 ? `
+                <div class="milestone-dependencies">
+                    <h4>Dependencies (${milestone.dependencies.length})</h4>
+                    <div class="dependencies-list">
+                        ${milestone.dependencies.map(dep => `
+                            <div class="dependency-item ${dep.isActive ? 'active' : 'inactive'}">
+                                <span class="dependency-icon">${dep.dependencyTypeIcon}</span>
+                                <div class="dependency-content">
+                                    <div class="dependency-text">${dep.dependencyText}</div>
+                                    ${dep.description ? `<div class="dependency-description">${dep.description}</div>` : ''}
+                                </div>
+                                <span class="dependency-type">${dep.dependencyType}</span>
+                            </div>
+                        `).join('')}
                     </div>
-                    <div class="milestone-progress-bar">
-                        <div class="milestone-progress-fill" data-percentage="${milestone.progress}"></div>
-                    </div>
                 </div>
-
-                <div class="milestone-meta">
-                    <span class="milestone-category ${milestone.priority}">${milestone.category}</span>
-                    <span class="milestone-due-date">
-                        <span class="date-icon">📅</span>
-                        ${RoadmapUtils.formatDate(milestone.endDate)}
-                    </span>
-                </div>
+                ` : ''}
             </div>
         `;
-    },
 
-    // Animate milestone card
-    animateMilestoneCard(card, type) {
-        if (type === 'enter') {
-            card.style.transform = 'translateY(-8px)';
-            card.style.transition = 'transform 0.3s ease';
-        } else {
-            card.style.transform = 'translateY(0)';
-        }
-    },
+        this.modalBody.innerHTML = detailsHtml;
 
-    // Animate cards entrance
-    animateCardsEntrance(container) {
-        const cards = container.querySelectorAll('.milestone-card');
-        cards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
+        // Animate progress circles
+        setTimeout(() => {
+            this.animateProgressCircles();
+        }, 100);
+    }
 
-            setTimeout(() => {
-                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
+    animateProgressCircles() {
+        const progressCircles = this.modalBody.querySelectorAll('.progress-circle[data-progress]');
 
-                // Animate progress bars
-                const progressBar = card.querySelector('.milestone-progress-fill');
-                if (progressBar) {
-                    setTimeout(() => this.animateProgressBar(progressBar), 200);
-                }
-            }, index * 100);
+        progressCircles.forEach(circle => {
+            const progress = parseFloat(circle.dataset.progress);
+            const circumference = 2 * Math.PI * 45; // radius = 45
+            const offset = circumference - (progress / 100) * circumference;
+
+            // Create SVG if it doesn't exist
+            if (!circle.querySelector('svg')) {
+                circle.innerHTML = `
+                    <svg width="100" height="100" class="progress-svg">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--roadmap-primary)" stroke-width="8" 
+                                stroke-linecap="round" stroke-dasharray="${circumference}" 
+                                stroke-dashoffset="${circumference}" class="progress-circle-fill"/>
+                    </svg>
+                    <div class="progress-text">${progress}%</div>
+                `;
+            }
+
+            const progressFill = circle.querySelector('.progress-circle-fill');
+            if (progressFill) {
+                setTimeout(() => {
+                    progressFill.style.strokeDashoffset = offset;
+                    progressFill.style.transition = 'stroke-dashoffset 1.5s ease-out';
+                }, 100);
+            }
         });
-    },
+    }
 
-    // Setup progress animations
-    setupProgressAnimations() {
-        // Animate progress bars when they come into view
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const progressBar = entry.target.querySelector('.milestone-progress-fill');
-                    if (progressBar && !progressBar.dataset.animated) {
-                        this.animateProgressBar(progressBar);
-                        progressBar.dataset.animated = 'true';
-                    }
+    showLoadingState() {
+        this.modalBody.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <span>Loading milestone details...</span>
+            </div>
+        `;
+    }
+
+    showErrorState(message) {
+        this.modalBody.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h4>Failed to Load Details</h4>
+                <p>${message}</p>
+                <button class="retry-btn" onclick="roadmapDashboard.showMilestoneDetails(${this.currentMilestoneId})">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+
+    openModal() {
+        if (this.modal) {
+            this.modal.classList.add('active');
+            this.isModalOpen = true;
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeModal() {
+        if (this.modal) {
+            this.modal.classList.remove('active');
+            this.isModalOpen = false;
+            document.body.style.overflow = '';
+            this.currentMilestoneId = null;
+        }
+    }
+
+    async loadMoreCompletedMilestones() {
+        if (!this.showMoreBtn) return;
+
+        const originalText = this.showMoreBtn.textContent;
+        this.showMoreBtn.textContent = 'Loading...';
+        this.showMoreBtn.disabled = true;
+
+        try {
+            const response = await fetch('/roadmap/api/milestones?status=completed&page=2', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             });
-        }, { threshold: 0.5 });
 
-        // Observe milestone cards
-        document.querySelectorAll('.milestone-card').forEach(card => {
-            observer.observe(card);
-        });
-    },
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
 
-    // Animate progress bar
-    animateProgressBar(progressBar) {
-        const targetPercentage = parseFloat(progressBar.dataset.percentage || 0);
+            const data = await response.json();
 
-        progressBar.style.width = '0%';
-        progressBar.style.transition = 'width 1.5s cubic-bezier(0.4, 0, 0.2, 1)';
-
-        setTimeout(() => {
-            progressBar.style.width = `${targetPercentage}%`;
-        }, 100);
-    },
-
-    // Show/hide loading state
-    showLoading() {
-        const loading = document.getElementById('milestones-loading');
-        const container = document.getElementById('milestones-container');
-
-        if (loading) loading.style.display = 'flex';
-        if (container) container.style.opacity = '0.5';
-
-        RoadmapState.ui.isLoading = true;
-    },
-
-    hideLoading() {
-        const loading = document.getElementById('milestones-loading');
-        const container = document.getElementById('milestones-container');
-
-        if (loading) loading.style.display = 'none';
-        if (container) container.style.opacity = '1';
-
-        RoadmapState.ui.isLoading = false;
+            if (data.success && data.data) {
+                this.renderAdditionalCompletedMilestones(data.data);
+                this.showMoreBtn.style.display = 'none';
+            } else {
+                throw new Error(data.message || 'Failed to load more milestones');
+            }
+        } catch (error) {
+            console.error('Error loading more completed milestones:', error);
+            this.showMoreBtn.textContent = 'Error - Try Again';
+            setTimeout(() => {
+                this.showMoreBtn.textContent = originalText;
+                this.showMoreBtn.disabled = false;
+            }, 3000);
+        }
     }
-};
 
-// ================================================
-// ROADMAP GITHUB INTEGRATION
-// ================================================
-const RoadmapGitHubManager = {
-    // Initialize GitHub integration
-    init() {
-        this.setupGitHubStats();
-        this.setupCommitPopover();
-        this.startPeriodicUpdates();
-    },
+    renderAdditionalCompletedMilestones(milestones) {
+        const completedList = document.querySelector('.completed-list');
+        if (!completedList) return;
 
-    // Setup GitHub stats display
-    async setupGitHubStats() {
-        try {
-            const githubData = await this.fetchGitHubStats();
-            this.displayGitHubStats(githubData);
-            this.displayRecentCommits(githubData.recentCommits);
-        } catch (error) {
-            console.error('Failed to load GitHub stats:', error);
-            this.displayFallbackGitHubStats();
-        }
-    },
-
-    // Fetch GitHub statistics
-    async fetchGitHubStats() {
-        try {
-            const response = await fetch('/Roadmap/GetGitHubStats');
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error('GitHub API failed:', error);
-            return this.getFallbackGitHubStats();
-        }
-    },
-
-    // Display GitHub stats
-    displayGitHubStats(stats) {
-        const elements = {
-            commits: document.getElementById('github-commits'),
-            contributors: document.getElementById('github-contributors'),
-            openIssues: document.getElementById('github-issues'),
-            lastCommit: document.getElementById('last-commit-time')
-        };
-
-        if (elements.commits) elements.commits.textContent = stats.totalCommits || 0;
-        if (elements.contributors) elements.contributors.textContent = stats.contributors || 0;
-        if (elements.openIssues) elements.openIssues.textContent = stats.openIssues || 0;
-        if (elements.lastCommit) elements.lastCommit.textContent = RoadmapUtils.formatRelativeTime(stats.lastCommitDate);
-    },
-
-    // Display recent commits
-    displayRecentCommits(commits) {
-        const container = document.getElementById('recent-commits-container');
-        if (!container || !commits) return;
-
-        container.innerHTML = commits.slice(0, 5).map(commit => `
-            <div class="commit-item" data-commit-hash="${commit.hash}">
-                <div class="commit-avatar">
-                    ${commit.author.charAt(0).toUpperCase()}
-                </div>
-                <div class="commit-details">
-                    <div class="commit-message">${commit.message}</div>
-                    <div class="commit-meta">
-                        <span class="commit-author">${commit.author}</span>
-                        <span class="commit-hash">${commit.hash.substring(0, 7)}</span>
-                        <span class="commit-time">${RoadmapUtils.formatRelativeTime(commit.date)}</span>
+        const newItems = milestones.map(milestone => `
+            <div class="completed-item">
+                <div class="completed-icon">✅</div>
+                <div class="completed-content">
+                    <h4 class="completed-title">${milestone.title}</h4>
+                    <div class="completed-meta">
+                        <span class="completed-category">${milestone.category}</span>
+                        <span class="completed-date">${milestone.actualCompletionFormatted}</span>
                     </div>
                 </div>
             </div>
         `).join('');
-    },
 
-    // Setup commit popover
-    setupCommitPopover() {
-        document.addEventListener('click', async (e) => {
-            const commitItem = e.target.closest('.commit-item');
-            if (!commitItem) return;
-
-            const hash = commitItem.dataset.commitHash;
-            if (hash) {
-                await this.showCommitDetails(hash);
-            }
-        });
-    },
-
-    // Show commit details
-    async showCommitDetails(hash) {
-        try {
-            const details = await this.fetchCommitDetails(hash);
-            this.displayCommitPopover(details);
-        } catch (error) {
-            console.error('Failed to load commit details:', error);
-            RoadmapUtils.showNotification('Failed to load commit details', 'error');
-        }
-    },
-
-    // Fetch commit details
-    async fetchCommitDetails(hash) {
-        const response = await fetch(`/Roadmap/GetCommitDetails/${hash}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
-    },
-
-    // Display commit popover
-    displayCommitPopover(details) {
-        const popover = document.createElement('div');
-        popover.className = 'commit-popover';
-        popover.innerHTML = `
-            <div class="popover-header">
-                <h4>Commit Details</h4>
-                <button class="popover-close">&times;</button>
-            </div>
-            <div class="popover-content">
-                <div class="commit-info">
-                    <strong>Hash:</strong> ${details.hash}
-                </div>
-                <div class="commit-info">
-                    <strong>Author:</strong> ${details.author}
-                </div>
-                <div class="commit-info">
-                    <strong>Date:</strong> ${RoadmapUtils.formatDate(details.date)}
-                </div>
-                <div class="commit-info">
-                    <strong>Message:</strong> ${details.message}
-                </div>
-                <div class="commit-changes">
-                    <strong>Changes:</strong>
-                    <div class="changes-summary">
-                        <span class="additions">+${details.additions || 0}</span>
-                        <span class="deletions">-${details.deletions || 0}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(popover);
-
-        // Position popover
-        popover.style.position = 'fixed';
-        popover.style.top = '50%';
-        popover.style.left = '50%';
-        popover.style.transform = 'translate(-50%, -50%)';
-        popover.style.zIndex = '1001';
-
-        // Close popover
-        const closeBtn = popover.querySelector('.popover-close');
-        closeBtn.addEventListener('click', () => {
-            document.body.removeChild(popover);
-        });
-
-        // Auto-close after 10 seconds
-        setTimeout(() => {
-            if (document.body.contains(popover)) {
-                document.body.removeChild(popover);
-            }
-        }, 10000);
-    },
-
-    // Start periodic updates
-    startPeriodicUpdates() {
-        setInterval(async () => {
-            await this.setupGitHubStats();
-        }, ROADMAP_CONFIG.REFRESH_INTERVAL);
-    },
-
-    // Fallback GitHub stats
-    getFallbackGitHubStats() {
-        return {
-            totalCommits: 247,
-            contributors: 5,
-            openIssues: 12,
-            lastCommitDate: new Date().toISOString(),
-            recentCommits: [
-                {
-                    hash: 'abc123f',
-                    message: 'Update roadmap dashboard styling',
-                    author: 'Dev Team',
-                    date: new Date().toISOString(),
-                    additions: 45,
-                    deletions: 12
-                },
-                {
-                    hash: 'def456g',
-                    message: 'Add milestone filtering functionality',
-                    author: 'Dev Team',
-                    date: new Date(Date.now() - 86400000).toISOString(),
-                    additions: 120,
-                    deletions: 8
-                }
-            ]
-        };
-    },
-
-    // Display fallback GitHub stats
-    displayFallbackGitHubStats() {
-        const fallbackStats = this.getFallbackGitHubStats();
-        this.displayGitHubStats(fallbackStats);
-        this.displayRecentCommits(fallbackStats.recentCommits);
-
-        RoadmapUtils.showNotification('GitHub data temporarily unavailable. Showing cached data.', 'warning');
+        completedList.insertAdjacentHTML('beforeend', newItems);
     }
-};
 
-// ================================================
-// ROADMAP EXPORT MANAGER
-// ================================================
-const RoadmapExportManager = {
-    // Initialize export functionality
-    init() {
-        this.setupExportControls();
-        this.setupKeyboardShortcuts();
-    },
+    initCharts() {
+        // Initialize Syncfusion charts for data visualization
+        this.initProgressChart();
+        this.initActivityChart();
+    }
 
-    // Setup export controls
-    setupExportControls() {
-        const exportBtn = document.getElementById('export-roadmap');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.showExportDialog();
-            });
-        }
+    initProgressChart() {
+        const progressChartElement = document.getElementById('progressChart');
+        if (!progressChartElement) return;
 
-        // Chart export buttons
-        const chartExportBtns = document.querySelectorAll('.chart-export-btn');
-        chartExportBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const chartContainer = e.target.closest('.chart-container');
-                const chartId = chartContainer?.id;
-                if (chartId) {
-                    this.exportChart(chartId);
+        // Placeholder for Syncfusion Chart
+        // Will be implemented with actual chart data
+        console.log('Progress chart placeholder initialized');
+    }
+
+    initActivityChart() {
+        const activityChartElement = document.getElementById('activityChart');
+        if (!activityChartElement) return;
+
+        // Placeholder for Syncfusion Chart
+        // Will be implemented with actual chart data
+        console.log('Activity chart placeholder initialized');
+    }
+
+    startAutoRefresh() {
+        // Refresh data every 5 minutes
+        setInterval(() => {
+            this.refreshDashboardData();
+        }, 5 * 60 * 1000);
+    }
+
+    async refreshDashboardData() {
+        try {
+            const response = await fetch('/roadmap/api/progress', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             });
-        });
-    },
 
-    // Show export dialog
-    showExportDialog() {
-        const dialog = document.createElement('div');
-        dialog.className = 'export-dialog-overlay';
-        dialog.innerHTML = `
-            <div class="export-dialog">
-                <div class="export-header">
-                    <h3>Export Roadmap Data</h3>
-                    <button class="export-close">&times;</button>
-                </div>
-                <div class="export-content">
-                    <div class="export-options">
-                        <div class="export-format">
-                            <label>Export Format:</label>
-                            <select id="export-format">
-                                <option value="pdf">PDF Report</option>
-                                <option value="csv">CSV Data</option>
-                                <option value="json">JSON Data</option>
-                                <option value="xlsx">Excel Spreadsheet</option>
-                            </select>
-                        </div>
-                        <div class="export-scope">
-                            <label>Include:</label>
-                            <div class="checkbox-group">
-                                <label><input type="checkbox" id="include-milestones" checked> Milestones</label>
-                                <label><input type="checkbox" id="include-progress" checked> Progress Data</label>
-                                <label><input type="checkbox" id="include-github" checked> GitHub Stats</label>
-                                <label><input type="checkbox" id="include-charts"> Chart Images</label>
-                            </div>
-                        </div>
-                        <div class="export-filters">
-                            <label>Apply Current Filters:</label>
-                            <label><input type="checkbox" id="apply-filters" checked> Use active filters</label>
-                        </div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn-secondary" id="cancel-export">Cancel</button>
-                        <button class="btn-primary" id="start-export">Export</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(dialog);
-
-        // Setup dialog interactions
-        this.setupExportDialogInteractions(dialog);
-    },
-
-    // Setup export dialog interactions
-    setupExportDialogInteractions(dialog) {
-        const closeBtn = dialog.querySelector('.export-close');
-        const cancelBtn = dialog.querySelector('#cancel-export');
-        const exportBtn = dialog.querySelector('#start-export');
-
-        const closeDialog = () => {
-            document.body.removeChild(dialog);
-        };
-
-        closeBtn.addEventListener('click', closeDialog);
-        cancelBtn.addEventListener('click', closeDialog);
-
-        exportBtn.addEventListener('click', async () => {
-            const format = dialog.querySelector('#export-format').value;
-            const options = {
-                includeMilestones: dialog.querySelector('#include-milestones').checked,
-                includeProgress: dialog.querySelector('#include-progress').checked,
-                includeGithub: dialog.querySelector('#include-github').checked,
-                includeCharts: dialog.querySelector('#include-charts').checked,
-                applyFilters: dialog.querySelector('#apply-filters').checked
-            };
-
-            exportBtn.disabled = true;
-            exportBtn.textContent = 'Exporting...';
-
-            try {
-                await this.performExport(format, options);
-                closeDialog();
-            } catch (error) {
-                console.error('Export failed:', error);
-                RoadmapUtils.showNotification('Export failed. Please try again.', 'error');
-            } finally {
-                exportBtn.disabled = false;
-                exportBtn.textContent = 'Export';
-            }
-        });
-
-        // Close on backdrop click
-        dialog.addEventListener('click', (e) => {
-            if (e.target === dialog) {
-                closeDialog();
-            }
-        });
-    },
-
-    // Perform export
-    async performExport(format, options) {
-        const filters = options.applyFilters ? RoadmapState.filters : {};
-
-        await RoadmapApiService.exportData(format, {
-            ...filters,
-            ...options
-        });
-    },
-
-    // Export individual chart
-    async exportChart(chartId) {
-        try {
-            const chart = RoadmapChartState.charts[chartId];
-            if (chart && typeof chart.export === 'function') {
-                chart.export('PNG', `roadmap-${chartId}-${Date.now()}`);
-                RoadmapUtils.showNotification('Chart exported successfully', 'success');
-            } else {
-                throw new Error('Chart export not available');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    this.updateProgressMetrics(data.data);
+                }
             }
         } catch (error) {
-            console.error('Chart export failed:', error);
-            RoadmapUtils.showNotification('Chart export failed', 'error');
+            console.warn('Failed to refresh dashboard data:', error);
         }
-    },
+    }
 
-    // Setup keyboard shortcuts
-    setupKeyboardShortcuts() {
-        document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + E for export
-            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-                e.preventDefault();
-                this.showExportDialog();
+    updateProgressMetrics(data) {
+        // Update progress percentages
+        const progressElements = document.querySelectorAll('[data-auto-update="progress"]');
+        progressElements.forEach(element => {
+            const metric = element.dataset.metric;
+            if (data.overall && data.overall[metric]) {
+                element.textContent = data.overall[metric];
             }
         });
-    }
-};
 
-// ================================================
-// ROADMAP UTILITIES
-// ================================================
-const RoadmapUtils = {
-    // Format date
+        // Update last updated timestamp
+        const lastUpdatedElements = document.querySelectorAll('[data-auto-update="timestamp"]');
+        lastUpdatedElements.forEach(element => {
+            element.textContent = new Date().toLocaleString();
+        });
+
+        console.log('Dashboard data refreshed');
+    }
+
+    // Utility methods
     formatDate(dateString) {
         if (!dateString) return 'N/A';
 
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return 'Invalid Date';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    }
 
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        } catch (error) {
-            return 'Invalid Date';
-        }
-    },
+    formatDateTime(dateString) {
+        if (!dateString) return 'N/A';
 
-    // Format relative time
-    formatRelativeTime(dateString) {
-        if (!dateString) return 'Unknown';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
 
-        try {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-
-            if (diffMins < 1) return 'Just now';
-            if (diffMins < 60) return `${diffMins}m ago`;
-            if (diffHours < 24) return `${diffHours}h ago`;
-            if (diffDays < 7) return `${diffDays}d ago`;
-
-            return this.formatDate(dateString);
-        } catch (error) {
-            return 'Unknown';
-        }
-    },
-
-    // Debounce function
     debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -1281,284 +572,85 @@ const RoadmapUtils = {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
-    },
-
-    // Show notification
-    showNotification(message, type = 'info', duration = 5000) {
-        const notification = document.createElement('div');
-        notification.className = `roadmap-notification notification-${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-icon">${this.getNotificationIcon(type)}</span>
-                <span class="notification-message">${message}</span>
-                <button class="notification-close">&times;</button>
-            </div>
-        `;
-
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 20px;
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-left: 4px solid ${this.getNotificationColor(type)};
-            border-radius: 8px;
-            color: var(--text-primary);
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            max-width: 400px;
-        `;
-
-        document.body.appendChild(notification);
-
-        // Animate in
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 100);
-
-        // Setup close button
-        const closeBtn = notification.querySelector('.notification-close');
-        closeBtn.addEventListener('click', () => {
-            this.removeNotification(notification);
-        });
-
-        // Auto-remove
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                this.removeNotification(notification);
-            }
-        }, duration);
-    },
-
-    // Remove notification
-    removeNotification(notification) {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    },
-
-    // Get notification icon
-    getNotificationIcon(type) {
-        const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
-        return icons[type] || icons.info;
-    },
-
-    // Get notification color
-    getNotificationColor(type) {
-        const colors = {
-            success: '#10b981',
-            error: '#ef4444',
-            warning: '#f59e0b',
-            info: '#4f46e5'
-        };
-        return colors[type] || colors.info;
-    },
-
-    // Check if element is in viewport
-    isInViewport(element, threshold = 0.1) {
-        const rect = element.getBoundingClientRect();
-        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-
-        return (
-            rect.top <= windowHeight * (1 - threshold) &&
-            rect.bottom >= windowHeight * threshold
-        );
-    },
-
-    // Smooth scroll to element
-    scrollToElement(elementId, offset = 80) {
-        const element = document.getElementById(elementId);
-        if (!element) return;
-
-        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - offset;
-
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-        });
-    },
-
-    // Copy to clipboard
-    async copyToClipboard(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            this.showNotification('Copied to clipboard', 'success', 2000);
-        } catch (error) {
-            console.error('Failed to copy to clipboard:', error);
-            this.showNotification('Failed to copy to clipboard', 'error');
-        }
     }
-};
+}
 
-// ================================================
-// ROADMAP MAIN CONTROLLER
-// ================================================
-const RoadmapMain = {
-    // Initialize roadmap application
-    async init() {
-        try {
-            console.log('Initializing Roadmap Dashboard...');
-
-            // Initialize components in order
-            await this.loadInitialData();
-            this.initializeComponents();
-            this.setupGlobalEventListeners();
-            this.startPeriodicUpdates();
-
-            console.log('Roadmap Dashboard initialized successfully');
-
-            // Show success notification
-            RoadmapUtils.showNotification('Roadmap dashboard loaded successfully', 'success', 3000);
-
-        } catch (error) {
-            console.error('Failed to initialize roadmap dashboard:', error);
-            this.handleInitializationError(error);
-        }
-    },
-
-    // Load initial data
-    async loadInitialData() {
-        try {
-            // Load milestone data
-            const milestones = await RoadmapApiService.getMilestones();
-            RoadmapState.data.milestones = milestones;
-
-            // Load progress data
-            const progressData = await RoadmapApiService.getProgressData();
-            RoadmapState.data.progressData = progressData;
-
-            // Display initial milestones
-            RoadmapMilestoneManager.displayMilestones(milestones);
-
-        } catch (error) {
-            console.error('Failed to load initial data:', error);
-            // Use fallback data
-            RoadmapState.data.milestones = RoadmapApiService.getFallbackMilestones();
-            RoadmapMilestoneManager.displayMilestones(RoadmapState.data.milestones);
-        }
-    },
-
-    // Initialize all components
-    initializeComponents() {
-        RoadmapFilterManager.init();
-        RoadmapMilestoneManager.init();
-        RoadmapGitHubManager.init();
-        RoadmapExportManager.init();
-
-        // Initialize charts if chart manager is available
-        if (window.RoadmapChartManager) {
-            window.RoadmapChartManager.initializeCharts();
-        }
-    },
-
-    // Setup global event listeners
-    setupGlobalEventListeners() {
-        // Visibility change handler
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                this.refreshData();
-            }
-        });
-
-        // Window focus handler
-        window.addEventListener('focus', () => {
-            this.refreshData();
-        });
-
-        // Global error handler
-        window.addEventListener('error', (e) => {
-            console.error('Global error:', e.error);
-            RoadmapUtils.showNotification('An unexpected error occurred', 'error');
-        });
-    },
-
-    // Start periodic updates
-    startPeriodicUpdates() {
-        setInterval(async () => {
-            await this.refreshData();
-        }, ROADMAP_CONFIG.REFRESH_INTERVAL);
-    },
-
-    // Refresh data
-    async refreshData() {
-        try {
-            const milestones = await RoadmapApiService.getMilestones(RoadmapState.filters);
-            RoadmapState.data.milestones = milestones;
-            RoadmapMilestoneManager.displayMilestones(milestones);
-
-            // Update GitHub stats
-            await RoadmapGitHubManager.setupGitHubStats();
-
-        } catch (error) {
-            console.error('Failed to refresh data:', error);
-        }
-    },
-
-    // Handle initialization error
-    handleInitializationError(error) {
-        const errorContainer = document.getElementById('roadmap-error-container');
-        if (errorContainer) {
-            errorContainer.innerHTML = `
-                <div class="initialization-error">
-                    <div class="error-icon">⚠️</div>
-                    <h3>Dashboard Unavailable</h3>
-                    <p>Failed to load the roadmap dashboard. Please check your connection and try again.</p>
-                    <button class="btn-primary" onclick="location.reload()">Reload Page</button>
-                </div>
-            `;
-            errorContainer.style.display = 'block';
-        }
-
-        RoadmapUtils.showNotification('Failed to load dashboard. Using offline mode.', 'error');
-    }
-};
-
-// ================================================
-// INITIALIZATION
-// ================================================
-document.addEventListener('DOMContentLoaded', async () => {
-    // Wait for any dependencies to load
-    await new Promise(resolve => {
-        if (typeof ej !== 'undefined') {
-            resolve();
-        } else {
-            const checkForSyncfusion = setInterval(() => {
-                if (typeof ej !== 'undefined') {
-                    clearInterval(checkForSyncfusion);
-                    resolve();
-                }
-            }, 100);
-
-            // Timeout after 5 seconds
-            setTimeout(() => {
-                clearInterval(checkForSyncfusion);
-                console.warn('Syncfusion not loaded, continuing without charts');
-                resolve();
-            }, 5000);
-        }
-    });
-
-    // Initialize roadmap application
-    await RoadmapMain.init();
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.roadmapDashboard = new RoadmapDashboard();
 });
 
-// Export for global access
-window.RoadmapMain = RoadmapMain;
-window.RoadmapState = RoadmapState;
-window.RoadmapApiService = RoadmapApiService;
-window.RoadmapFilterManager = RoadmapFilterManager;
-window.RoadmapMilestoneManager = RoadmapMilestoneManager;
-window.RoadmapGitHubManager = RoadmapGitHubManager;
-window.RoadmapExportManager = RoadmapExportManager;
-window.RoadmapUtils = RoadmapUtils;
+// Handle navigation menu toggle (following site.js pattern)
+document.addEventListener('DOMContentLoaded', () => {
+    const navToggle = document.getElementById('nav-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', () => {
+            navToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+        });
+
+        // Close menu when clicking on links
+        const navLinks = navMenu.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+    }
+});
+
+// Smooth scrolling for anchor links
+document.addEventListener('DOMContentLoaded', () => {
+    const scrollLinks = document.querySelectorAll('a[href^="#"]');
+
+    scrollLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const targetId = link.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+
+            if (targetElement) {
+                const navbarHeight = document.querySelector('.navbar')?.offsetHeight || 80;
+                const targetPosition = targetElement.offsetTop - navbarHeight;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+
+// Performance optimization: Intersection Observer for animations
+document.addEventListener('DOMContentLoaded', () => {
+    const animateOnScroll = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    };
+
+    const observer = new IntersectionObserver(animateOnScroll, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    // Observe elements with animation classes
+    const animatedElements = document.querySelectorAll('.milestone-card, .github-card, .dev-stat-card, .upcoming-card');
+    animatedElements.forEach(el => observer.observe(el));
+});

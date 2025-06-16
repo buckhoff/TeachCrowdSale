@@ -1,4 +1,5 @@
-﻿@model TeachCrowdSale.Core.Models.MilestoneDisplayModel
+﻿@using TeachCrowdSale.Core.Data.Enum
+@model TeachCrowdSale.Core.Models.MilestoneModel
 
 <!-- Views/Roadmap/_MilestoneCard.cshtml -->
 <!-- Individual milestone card component for grid display -->
@@ -63,12 +64,12 @@
             </div>
             <div class="progress-bar-container">
                 <div class="progress-bar">
-                    <div class="progress-fill @GetProgressClass(Model.ProgressPercentage, Model.Status)"
+                    <div class="progress-fill @GetProgressClass(Model.ProgressPercentage, Model.Status.ToString())"
                          style="width: @Model.ProgressPercentage%">
                         <div class="progress-shimmer"></div>
                     </div>
                 </div>
-                @if (Model.Status == "In Progress")
+                @if (Model.Status.Equals(MilestoneStatus.InProgress))
                 {
                     <div class="progress-pulse"></div>
                 }
@@ -147,7 +148,7 @@
                 </div>
             }
 
-            @if (!string.IsNullOrEmpty(Model.TimeRemaining) && Model.Status != "Completed")
+            @if (!string.IsNullOrEmpty(Model.TimeRemaining) && Model.Status. != "Completed")
             {
                 <div class="estimate-item @(Model.IsOverdue ? "overdue" : "")">
                     <span class="estimate-icon">@(Model.IsOverdue ? "⚠️" : "⏳")</span>

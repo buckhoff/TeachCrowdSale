@@ -1,136 +1,141 @@
-﻿/* TeachCrowdSale.Web/wwwroot/css/roadmap.css */
-/* Phase 4: Roadmap Dashboard Styling - Following established design system */
-
-/* ================================================
-   ROADMAP LAYOUT & STRUCTURE
-================================================ */
-
-.roadmap-main-container {
-    min-height: 100vh;
-    background: var(--bg-primary);
-    padding-top: 80px; /* Account for fixed nav */
+﻿.stat-label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
 }
 
-.roadmap-hero-section {
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
-    padding: 4rem 0;
-    margin-bottom: 3rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.roadmap-hero-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 3rem;
-}
-
-.roadmap-hero-content h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
+.stat-value {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 600;
     color: var(--text-primary);
 }
 
-.roadmap-hero-content .highlight {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.progress-metrics {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
-.roadmap-hero-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-width: 600px;
-}
-
-/* ================================================
-   PROGRESS OVERVIEW SECTION
-================================================ */
-
-.progress-overview-section {
-    margin-bottom: 3rem;
-}
-
-.progress-overview-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.progress-summary-card {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.metric {
     text-align: center;
-    transition: var(--transition-smooth);
-    position: relative;
-    overflow: hidden;
+    flex: 1;
 }
 
-    .progress-summary-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--gradient-primary);
-        opacity: 0;
-        transition: var(--transition-smooth);
-    }
-
-    .progress-summary-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(79, 70, 229, 0.3);
-    }
-
-        .progress-summary-card:hover::before {
-            opacity: 1;
-        }
-
-.progress-summary-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+.metric-number {
     display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--roadmap-primary);
+    line-height: 1;
 }
 
-.progress-summary-label {
-    font-size: 0.9rem;
+.metric-label {
+    display: block;
+    font-size: 0.875rem;
     color: var(--text-secondary);
-    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.progress-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* ================================================
-   MILESTONE GRID SECTION
-================================================ */
+    .progress-badge.healthy {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--roadmap-success);
+    }
 
-.milestone-grid-section {
-    margin-bottom: 3rem;
+    .progress-badge.caution {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--roadmap-warning);
+    }
+
+    .progress-badge.warning {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--roadmap-error);
+    }
+
+    .progress-badge.success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--roadmap-success);
+    }
+
+.progress-meta {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
 }
 
-.milestone-grid {
+.timeline-info {
+    space-y: 1rem;
+}
+
+.timeline-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .timeline-item:last-child {
+        border-bottom: none;
+    }
+
+.timeline-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.timeline-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ================================================
+   MILESTONES SECTIONS
+================================================ */
+.active-milestones,
+.upcoming-milestones,
+.completed-milestones {
+    padding: var(--roadmap-section-padding);
+}
+
+.active-milestones {
+    background: var(--primary-bg);
+}
+
+.upcoming-milestones {
+    background: var(--secondary-bg);
+}
+
+.completed-milestones {
+    background: var(--accent-bg);
+}
+
+.milestones-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--roadmap-grid-gap);
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .milestone-card {
-    background: var(--card-bg);
+    background: var(--roadmap-card-bg);
+    border: 1px solid var(--roadmap-card-border);
     border-radius: 16px;
     padding: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: var(--transition-smooth);
+    backdrop-filter: blur(20px);
+    transition: var(--roadmap-transition);
+    cursor: pointer;
     position: relative;
     overflow: hidden;
 }
@@ -140,23 +145,33 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 4px;
-        background: var(--gradient-primary);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: var(--transition-smooth);
+        width: 4px;
+        height: 100%;
+        background: var(--roadmap-info);
+        transition: var(--roadmap-transition);
+    }
+
+    .milestone-card.completed::before {
+        background: var(--status-completed);
+    }
+
+    .milestone-card.in-progress::before {
+        background: var(--status-in-progress);
+    }
+
+    .milestone-card.planning::before {
+        background: var(--status-planning);
+    }
+
+    .milestone-card.on-hold::before {
+        background: var(--status-on-hold);
     }
 
     .milestone-card:hover {
-        transform: translateY(-8px);
-        border-color: rgba(79, 70, 229, 0.4);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        background: var(--roadmap-card-hover);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
-
-        .milestone-card:hover::before {
-            transform: scaleX(1);
-        }
 
 .milestone-header {
     display: flex;
@@ -165,527 +180,894 @@
     margin-bottom: 1.5rem;
 }
 
-.milestone-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
+.milestone-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.milestone-status {
-    padding: 4px 12px;
-    border-radius: 12px;
+.category-icon {
+    font-size: 1.25rem;
+}
+
+.category-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.milestone-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.priority-badge,
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-    .milestone-status.completed {
-        background: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .milestone-status.in-progress {
-        background: rgba(79, 70, 229, 0.2);
-        color: #4f46e5;
-        border: 1px solid rgba(79, 70, 229, 0.3);
-    }
-
-    .milestone-status.planned {
-        background: rgba(245, 158, 11, 0.2);
-        color: #f59e0b;
-        border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-
-    .milestone-status.blocked {
+    .priority-badge.critical {
         background: rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--priority-critical);
     }
+
+    .priority-badge.high {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--priority-high);
+    }
+
+    .priority-badge.medium {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--priority-medium);
+    }
+
+    .priority-badge.low {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--priority-low);
+    }
+
+    .status-badge.completed {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--status-completed);
+    }
+
+    .status-badge.in-progress {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--status-in-progress);
+    }
+
+    .status-badge.planning {
+        background: rgba(139, 92, 246, 0.2);
+        color: var(--status-planning);
+    }
+
+    .status-badge.on-hold {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--status-on-hold);
+    }
+
+    .status-badge.cancelled {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--status-cancelled);
+    }
+
+.milestone-content {
+    margin-bottom: 2rem;
+}
+
+.milestone-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
 
 .milestone-description {
     color: var(--text-secondary);
     line-height: 1.6;
     margin-bottom: 1.5rem;
-    font-size: 0.9rem;
 }
 
 .milestone-progress {
     margin-bottom: 1.5rem;
 }
 
-.milestone-progress-label {
+.progress-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
-    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
 }
 
-.milestone-progress-percentage {
+.progress-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
     font-weight: 600;
-    color: var(--primary-color);
 }
 
-.milestone-progress-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
+.progress-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--roadmap-primary);
 }
 
-.milestone-progress-fill {
-    height: 100%;
-    background: var(--gradient-primary);
-    border-radius: 4px;
-    transition: width 1s ease-out;
-    position: relative;
-}
-
-    .milestone-progress-fill::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        animation: shimmer 2s infinite;
-    }
-
-@keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
-
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-.milestone-meta {
+.progress-details {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.8rem;
+    margin-top: 0.75rem;
+}
+
+.task-count {
+    font-size: 0.875rem;
     color: var(--text-secondary);
 }
 
-.milestone-category {
-    background: rgba(139, 92, 246, 0.2);
-    color: #8b5cf6;
-    padding: 2px 8px;
-    border-radius: 8px;
-    font-weight: 500;
+.time-remaining {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--roadmap-info);
 }
 
-.milestone-due-date {
+    .time-remaining.overdue {
+        color: var(--roadmap-error);
+    }
+
+.milestone-footer {
     display: flex;
+    justify-content: space-between;
     align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.milestone-dates {
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
 }
 
+.date-item {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.date-label {
+    color: var(--text-muted);
+}
+
+.date-value {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.milestone-details-btn {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--roadmap-transition);
+}
+
+    .milestone-details-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
+    }
+
 /* ================================================
-   CHART CONTAINERS
+   GITHUB ACTIVITY SECTION
 ================================================ */
-
-.roadmap-charts-section {
-    margin-bottom: 3rem;
+.github-activity {
+    padding: var(--roadmap-section-padding);
+    background: var(--secondary-bg);
 }
 
-.charts-grid {
+.github-grid {
     display: grid;
-    gap: 2rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--roadmap-grid-gap);
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-    .charts-grid.two-column {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .charts-grid.three-column {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .charts-grid.full-width {
-        grid-template-columns: 1fr;
-    }
-
-.chart-container {
-    background: var(--card-bg);
+.github-card {
+    background: var(--roadmap-card-bg);
+    border: 1px solid var(--roadmap-card-border);
     border-radius: 16px;
-    padding: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
-    min-height: 400px;
+    padding: 1.5rem;
+    backdrop-filter: blur(20px);
+    transition: var(--roadmap-transition);
 }
 
-    .chart-container.large {
-        min-height: 500px;
+    .github-card:hover {
+        background: var(--roadmap-card-hover);
+        transform: translateY(-2px);
     }
 
-    .chart-container.gantt {
-        min-height: 600px;
-        padding: 1.5rem;
+    .github-card.latest-commit {
+        grid-column: span 2;
     }
 
-.chart-header {
+.github-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
 }
 
-.chart-title {
-    font-size: 1.3rem;
+.github-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
 }
 
-.chart-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
+.github-icon {
+    font-size: 1.25rem;
 }
 
-.chart-controls {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
+.activity-level {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.chart-time-filter {
-    padding: 6px 16px;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-    .chart-time-filter:hover,
-    .chart-time-filter.active {
-        background: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
+    .activity-level.high {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--roadmap-success);
     }
 
-.chart-export-btn {
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: var(--transition-smooth);
+    .activity-level.medium {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--roadmap-warning);
+    }
+
+    .activity-level.low {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--roadmap-error);
+    }
+
+.contributor-count,
+.pr-status,
+.issue-status,
+.repo-branch {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
-    .chart-export-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
+.github-stats {
+    space-y: 0.75rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+    .stat-row:not(:last-child) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+.github-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.github-meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.github-link {
+    color: var(--roadmap-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--roadmap-transition);
+}
+
+    .github-link:hover {
+        color: var(--roadmap-secondary);
+    }
+
+.commit-details {
+    margin-bottom: 1rem;
+}
+
+.commit-message {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.commit-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.commit-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+    .commit-status.recent {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--roadmap-success);
+    }
+
+    .commit-status.older {
+        background: rgba(156, 163, 175, 0.2);
+        color: var(--text-muted);
     }
 
 /* ================================================
-   GITHUB INTEGRATION SECTION
+   DEVELOPMENT STATS SECTION
 ================================================ */
-
-.github-stats-section {
-    margin-bottom: 3rem;
+.development-stats {
+    padding: var(--roadmap-section-padding);
+    background: var(--primary-bg);
 }
 
-.github-stats-grid {
+.dev-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--roadmap-grid-gap);
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-.github-stat-card {
-    background: var(--card-bg);
-    padding: 2rem;
+.dev-stat-card {
+    background: var(--roadmap-card-bg);
+    border: 1px solid var(--roadmap-card-border);
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-    transition: var(--transition-smooth);
+    padding: 1.5rem;
+    backdrop-filter: blur(20px);
+    transition: var(--roadmap-transition);
+}
+
+    .dev-stat-card:hover {
+        background: var(--roadmap-card-hover);
+        transform: translateY(-2px);
+    }
+
+.dev-stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.dev-stat-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.build-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+    .build-badge.success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--roadmap-success);
+    }
+
+    .build-badge.danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--roadmap-error);
+    }
+
+    .build-badge.warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--roadmap-warning);
+    }
+
+    .build-badge.info {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--roadmap-info);
+    }
+
+.coverage-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+    .coverage-badge.excellent {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--roadmap-success);
+    }
+
+    .coverage-badge.good {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--roadmap-warning);
+    }
+
+    .coverage-badge.needs-improvement {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--roadmap-error);
+    }
+
+.activity-badge,
+.debt-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--roadmap-info);
+}
+
+.coverage-progress {
+    margin-bottom: 1rem;
+}
+
+.coverage-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--progress-bg);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.coverage-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease-out;
+}
+
+    .coverage-fill.excellent {
+        background: var(--roadmap-success);
+    }
+
+    .coverage-fill.good {
+        background: var(--roadmap-warning);
+    }
+
+    .coverage-fill.needs-improvement {
+        background: var(--roadmap-error);
+    }
+
+.dev-stat-content {
+    space-y: 0.75rem;
+}
+
+.stat-item.warning {
+    color: var(--roadmap-warning);
+}
+
+/* ================================================
+   RECENT RELEASES SECTION
+================================================ */
+.recent-releases {
+    padding: var(--roadmap-section-padding);
+    background: var(--secondary-bg);
+}
+
+.releases-timeline {
+    max-width: 800px;
+    margin: 0 auto;
     position: relative;
 }
 
-    .github-stat-card::before {
+    .releases-timeline::before {
         content: '';
         position: absolute;
+        left: 2rem;
         top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--gradient-primary);
-        opacity: 0;
-        transition: var(--transition-smooth);
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--roadmap-primary), var(--roadmap-secondary));
     }
 
-    .github-stat-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(79, 70, 229, 0.3);
-    }
+.release-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    position: relative;
+}
 
-        .github-stat-card:hover::before {
-            opacity: 1;
-        }
-
-.github-stat-icon {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 1rem;
-    background: var(--gradient-primary);
-    border-radius: 12px;
+.release-marker {
+    position: relative;
+    z-index: 2;
+    width: 4rem;
+    height: 4rem;
+    background: var(--roadmap-card-bg);
+    border: 3px solid var(--roadmap-primary);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    flex-shrink: 0;
+}
+
+.release-icon {
     font-size: 1.5rem;
 }
 
-.github-stat-value {
-    font-size: 2rem;
+.release-content {
+    flex: 1;
+    background: var(--roadmap-card-bg);
+    border: 1px solid var(--roadmap-card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(20px);
+}
+
+.release-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.release-title {
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
-.github-stat-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.github-recent-commits {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 2rem;
-}
-
-.commit-item {
+.release-badges {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 12px;
-    transition: var(--transition-smooth);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
-    .commit-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-
-    .commit-item:last-child {
-        border-bottom: none;
-    }
-
-.commit-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+.version-badge {
     background: var(--gradient-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: white;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.commit-details {
-    flex: 1;
-}
-
-.commit-message {
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-    font-weight: 500;
-}
-
-.commit-meta {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.commit-hash {
-    font-family: 'Courier New', monospace;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
     font-size: 0.75rem;
+    font-weight: 600;
 }
+
+.release-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.release-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+}
+
+.release-date,
+.release-type {
+    color: var(--text-muted);
+}
+
+.release-link {
+    color: var(--roadmap-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--roadmap-transition);
+}
+
+    .release-link:hover {
+        color: var(--roadmap-secondary);
+    }
+
+    .release-link.download {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+    }
+
+        .release-link.download:hover {
+            color: white;
+            transform: translateY(-1px);
+        }
 
 /* ================================================
-   FILTER & SEARCH CONTROLS
+   UPCOMING MILESTONES SECTION
 ================================================ */
+.upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--roadmap-grid-gap);
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-.roadmap-filters {
+.upcoming-card {
+    background: var(--roadmap-card-bg);
+    border: 1px solid var(--roadmap-card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(20px);
+    transition: var(--roadmap-transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+    .upcoming-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--roadmap-info);
+        opacity: 0.5;
+    }
+
+    .upcoming-card:hover {
+        background: var(--roadmap-card-hover);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+        .upcoming-card:hover::before {
+            opacity: 1;
+        }
+
+.upcoming-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: var(--card-bg);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    gap: 2rem;
+    margin-bottom: 1rem;
 }
 
-.filter-group {
+.upcoming-category {
     display: flex;
-    gap: 1rem;
     align-items: center;
+    gap: 0.5rem;
 }
 
-.filter-label {
-    font-size: 0.9rem;
+.upcoming-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.upcoming-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.upcoming-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.875rem;
+}
+
+.upcoming-date {
     color: var(--text-secondary);
     font-weight: 500;
-    white-space: nowrap;
 }
 
-.filter-select {
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.upcoming-duration {
+    color: var(--text-muted);
+}
+
+/* ================================================
+   COMPLETED MILESTONES SECTION
+================================================ */
+.completed-list {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
+.completed-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--roadmap-card-bg);
+    border: 1px solid var(--roadmap-card-border);
+    border-radius: 12px;
+    padding: 1rem;
+    backdrop-filter: blur(20px);
+    transition: var(--roadmap-transition);
+}
+
+    .completed-item:hover {
+        background: var(--roadmap-card-hover);
+    }
+
+.completed-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.completed-content {
+    flex: 1;
+}
+
+.completed-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.completed-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.completed-category {
+    font-weight: 500;
+}
+
+.show-more-container {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.show-more-btn {
+    background: transparent;
+    border: 2px solid var(--roadmap-primary);
+    color: var(--roadmap-primary);
+    padding: 0.75rem 2rem;
     border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    min-width: 120px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--roadmap-transition);
 }
 
-    .filter-select:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-    }
-
-.search-input {
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 25px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    width: 300px;
-    transition: var(--transition-smooth);
-}
-
-    .search-input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-        width: 350px;
-    }
-
-    .search-input::placeholder {
-        color: var(--text-secondary);
+    .show-more-btn:hover {
+        background: var(--roadmap-primary);
+        color: white;
+        transform: translateY(-2px);
     }
 
 /* ================================================
-   MODAL & DETAIL PANELS
+   MODAL STYLES
 ================================================ */
-
-.milestone-modal {
+.modal {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
+    width: 100%;
+    height: 100%;
     z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: var(--transition-smooth);
 }
 
-    .milestone-modal.active {
-        opacity: 1;
-        visibility: visible;
+    .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-.milestone-modal-content {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-    transform: scale(0.9);
-    transition: var(--transition-smooth);
-}
-
-.milestone-modal.active .milestone-modal-content {
-    transform: scale(1);
-}
-
-.modal-close-btn {
+.modal-backdrop {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(255, 255, 255, 0.1);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid var(--roadmap-card-border);
+    border-radius: 16px;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: 2rem;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
     border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+    transition: var(--roadmap-transition);
+    width: 2rem;
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: var(--transition-smooth);
 }
 
-    .modal-close-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
+    .modal-close:hover {
         color: var(--text-primary);
     }
 
-/* ================================================
-   LOADING STATES
-================================================ */
-
-.chart-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-    color: var(--text-secondary);
+.modal-body {
+    padding: 2rem;
 }
 
 .loading-spinner {
-    width: 40px;
-    height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
     border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top: 3px solid var(--primary-color);
+    border-top: 3px solid var(--roadmap-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -698,132 +1080,303 @@
     }
 }
 
-.skeleton-loader {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-loading 2s infinite;
-    border-radius: 8px;
-    height: 20px;
-    margin-bottom: 10px;
+/* ================================================
+   EMPTY STATES
+================================================ */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
 }
 
-@keyframes skeleton-loading {
-    0% {
-        background-position: 200% 0;
-    }
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
 
-    100% {
-        background-position: -200% 0;
-    }
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.empty-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
 /* ================================================
    RESPONSIVE DESIGN
 ================================================ */
-
 @media (max-width: 1200px) {
-    .charts-grid.three-column {
-        grid-template-columns: 1fr 1fr;
+    .progress-card.main-progress {
+        grid-column: span 1;
     }
 
-    .roadmap-hero-container {
-        flex-direction: column;
-        text-align: center;
+    .github-card.latest-commit {
+        grid-column: span 1;
     }
 }
 
 @media (max-width: 768px) {
-    .roadmap-hero-content h1 {
+    .roadmap-title {
         font-size: 2.5rem;
     }
 
-    .charts-grid.two-column,
-    .charts-grid.three-column {
+    .roadmap-subtitle {
+        font-size: 1.125rem;
+    }
+
+    .progress-grid,
+    .milestones-grid,
+    .github-grid,
+    .dev-stats-grid,
+    .upcoming-grid {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 
-    .milestone-grid {
+    .progress-stats {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
-    .github-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .roadmap-filters {
+    .progress-metrics {
         flex-direction: column;
         gap: 1rem;
     }
 
-    .search-input {
-        width: 100%;
+    .milestone-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    /* TeachToken Roadmap Page Styles */
+    /* Extends existing CSS variables from site.css */
+
+    :root {
+        /* Roadmap-specific color extensions */
+        --roadmap-primary: var(--primary-color, #4f46e5);
+        --roadmap-secondary: var(--secondary-color, #06b6d4);
+        --roadmap-success: #10b981;
+        --roadmap-warning: #f59e0b;
+        --roadmap-error: #ef4444;
+        --roadmap-info: #3b82f6;
+        /* Status colors */
+        --status-completed: #10b981;
+        --status-in-progress: #3b82f6;
+        --status-planning: #8b5cf6;
+        --status-on-hold: #f59e0b;
+        --status-cancelled: #ef4444;
+        /* Priority colors */
+        --priority-critical: #ef4444;
+        --priority-high: #f59e0b;
+        --priority-medium: #3b82f6;
+        --priority-low: #10b981;
+        /* Card and component styling */
+        --roadmap-card-bg: var(--card-bg, rgba(255, 255, 255, 0.05));
+        --roadmap-card-border: var(--glass-border, rgba(255, 255, 255, 0.1));
+        --roadmap-card-hover: rgba(255, 255, 255, 0.08);
+        /* Progress bar colors */
+        --progress-bg: rgba(255, 255, 255, 0.1);
+        --progress-success: var(--roadmap-success);
+        --progress-warning: var(--roadmap-warning);
+        --progress-info: var(--roadmap-info);
+        /* Animation and transitions */
+        --roadmap-transition: var(--transition-smooth, 0.3s ease);
+        --roadmap-bounce: var(--transition-bounce, 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55));
+        /* Spacing and layout */
+        --roadmap-section-padding: var(--section-padding, 100px 0);
+        --roadmap-grid-gap: 2rem;
     }
 
-        .search-input:focus {
-            width: 100%;
+    /* ================================================
+   ROADMAP HERO SECTION
+================================================ */
+    .roadmap-hero {
+        background: var(--primary-bg);
+        position: relative;
+        padding: 120px 0 80px;
+        overflow: hidden;
+    }
+
+        .roadmap-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            opacity: 0.1;
+            z-index: 1;
         }
 
-    .chart-container {
-        padding: 1.5rem;
+    .roadmap-hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
     }
 
-    .chart-header {
-        flex-direction: column;
-        align-items: flex-start;
+    .roadmap-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    .roadmap-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .error-banner {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-top: 2rem;
+        display: inline-block;
+    }
+
+    .error-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--roadmap-error);
+    }
+
+    .error-icon {
+        font-size: 1.25rem;
+    }
+
+    /* ================================================
+   PROGRESS OVERVIEW SECTION
+================================================ */
+    .progress-overview {
+        padding: var(--roadmap-section-padding);
+        background: var(--secondary-bg);
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .progress-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--roadmap-grid-gap);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .progress-card {
+        background: var(--roadmap-card-bg);
+        border: 1px solid var(--roadmap-card-border);
+        border-radius: 16px;
+        padding: 2rem;
+        backdrop-filter: blur(20px);
+        transition: var(--roadmap-transition);
+    }
+
+        .progress-card:hover {
+            background: var(--roadmap-card-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-card.main-progress {
+            grid-column: span 2;
+        }
+
+    .progress-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .progress-percentage {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--roadmap-primary);
+    }
+
+    .progress-bar-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--progress-bg);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--progress-info);
+        border-radius: 4px;
+        transition: width 1s ease-out;
+        position: relative;
+    }
+
+        .progress-fill.success {
+            background: var(--progress-success);
+        }
+
+        .progress-fill.warning {
+            background: var(--progress-warning);
+        }
+
+        .progress-fill.info {
+            background: var(--progress-info);
+        }
+
+    .progress-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 1rem;
     }
 
-    .chart-controls {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-}
-
-@media (max-width: 480px) {
-    .roadmap-hero-content h1 {
-        font-size: 2rem;
+    .stat-item {
+        text-align: center;
     }
 
-    .progress-overview-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .github-stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .milestone-modal-content {
-        width: 95%;
-        padding: 1.5rem;
-    }
-}
-
-/* ================================================
-   ACCESSIBILITY IMPROVEMENTS
-================================================ */
-
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-.focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-}
-
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
+    .stat-label {

@@ -1,4 +1,5 @@
-﻿@model TeachCrowdSale.Web.Models.RoadmapPageModel
+﻿@using TeachCrowdSale.Core.Data.Enum
+@model TeachCrowdSale.Core.Models.RoadmapPageModel
 
 <!-- Views/Roadmap/_RecentUpdates.cshtml -->
 <!-- Recent development updates and activity feed component -->
@@ -83,7 +84,7 @@
             <div class="stat-item">
                 <div class="stat-icon">🎯</div>
                 <div class="stat-content">
-                    <span class="stat-value">@Model.RecentUpdates.Count(u => u.Type == "Feature")</span>
+                    <span class="stat-value">@Model.RecentUpdates.Count(u => u.Type.Equals(UpdateType.Feature))</span>
                     <span class="stat-label">Features</span>
                 </div>
             </div>
@@ -97,7 +98,7 @@
                     <div class="update-card @update.TypeClass" data-update-id="@update.Id" data-type="@update.Type">
                         <div class="update-header">
                             <div class="update-type @update.TypeClass">
-                                <span class="type-icon">@GetUpdateTypeIcon(update.Type)</span>
+                                <span class="type-icon">@GetUpdateTypeIcon(update.Type.ToString())</span>
                                 <span class="type-text">@update.Type</span>
                             </div>
 
@@ -193,7 +194,7 @@
                             {
                                 <div class="timeline-update @update.TypeClass">
                                     <div class="timeline-marker">
-                                        <span class="marker-icon">@GetUpdateTypeIcon(update.Type)</span>
+                                        <span class="marker-icon">@GetUpdateTypeIcon(update.Type.ToString())</span>
                                     </div>
 
                                     <div class="timeline-content">
@@ -245,7 +246,7 @@
                         <div class="feed-content">
                             <div class="feed-header">
                                 <span class="feed-author">@update.AuthorName</span>
-                                <span class="feed-action">published a @update.Type.ToLower()</span>
+                                <span class="feed-action">published a @update.Type.ToString()</span>
                                 <span class="feed-time">@update.TimeAgo</span>
                             </div>
 
@@ -332,8 +333,8 @@
 
                 @foreach (var category in categoryGroups)
                 {
-                    <div class="category-card @GetTypeClass(category.Key)">
-                        <div class="category-icon">@GetUpdateTypeIcon(category.Key)</div>
+                    <div class="category-card @GetTypeClass(category.Key.ToString())">
+                        <div class="category-icon">@GetUpdateTypeIcon(category.Key.ToString())</div>
                         <div class="category-content">
                             <div class="category-name">@category.Key</div>
                             <div class="category-count">@category.Count() updates</div>
@@ -391,7 +392,7 @@
                                 var recentActivity = contributor.OrderByDescending(u => u.CreatedAt).First();
                             }
                             <span class="activity-last">@GetTimeAgo(recentActivity.CreatedAt)</span>
-                            <span class="activity-type @GetTypeClass(recentActivity.Type)">@recentActivity.Type</span>
+                            <span class="activity-type @GetTypeClass(recentActivity.Type.ToString())">@recentActivity.Type</span>
                         </div>
                     </div>
                 }
@@ -568,10 +569,10 @@
         return "Just now";
     }
 
-    bool IsHighImpactUpdate(TeachCrowdSale.Core.Models.UpdateDisplayModel update)
+    bool IsHighImpactUpdate(TeachCrowdSale.Core.Models.UpdateModel update)
     {
-        return update.Type == "Security" ||
-               update.Type == "Feature" && update.ProgressChange.HasValue && update.ProgressChange > 20 ||
+        return update.Type == UpdateType.Security ||
+               update.Type == UpdateType.Feature && update.ProgressChange.HasValue && update.ProgressChange > 20 ||
                update.Title.Contains("release", StringComparison.OrdinalIgnoreCase) ||
                update.Title.Contains("launch", StringComparison.OrdinalIgnoreCase);
     }

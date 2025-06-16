@@ -1,714 +1,665 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TeachCrowdSale.Core.Interfaces.Services;
+using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Core.Models;
 
-namespace TeachCrowdSale.Infrastructure.Services
+public class RoadmapDashboardService : IRoadmapDashboardService
 {
-    public class RoadmapDashboardService : IRoadmapDashboardService
+    private readonly HttpClient _httpClient;
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<RoadmapDashboardService> _logger;
+
+    // Cache keys - following existing pattern from home page
+    private const string ROADMAP_DATA_CACHE_KEY = "roadmap_data";
+    private const string MILESTONE_CACHE_KEY_PREFIX = "milestone_";
+    private const string PROGRESS_SUMMARY_CACHE_KEY = "progress_summary";
+    private const string GITHUB_STATS_CACHE_KEY = "github_stats";
+    private const string RECENT_RELEASES_CACHE_KEY = "recent_releases";
+    private const string DEV_STATS_CACHE_KEY = "development_stats";
+
+    // Cache durations - following existing pattern
+    private readonly TimeSpan _shortCacheDuration = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _mediumCacheDuration = TimeSpan.FromMinutes(15);
+    private readonly TimeSpan _longCacheDuration = TimeSpan.FromHours(1);
+
+    public RoadmapDashboardService(
+        HttpClient httpClient,
+        IMemoryCache cache,
+        ILogger<RoadmapDashboardService> logger)
     {
-        private readonly HttpClient _httpClient;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<RoadmapDashboardService> _logger;
-        private readonly JsonSerializerOptions _jsonOptions;
-
-        // Cache keys and durations following established patterns
-        private const string CACHE_KEY_ROADMAP_DATA = "web_roadmap_data";
-        private const string CACHE_KEY_MILESTONES = "web_milestones";
-        private const string CACHE_KEY_DEV_STATS = "web_dev_stats";
-        private const string CACHE_KEY_GITHUB_STATS = "web_github_stats";
-        private const string CACHE_KEY_RECENT_UPDATES = "web_recent_updates";
-        private const string CACHE_KEY_RELEASES = "web_releases";
-        private const string CACHE_KEY_FILTER_OPTIONS = "web_filter_options";
-
-        private readonly TimeSpan _shortCacheDuration = TimeSpan.FromMinutes(5);
-        private readonly TimeSpan _mediumCacheDuration = TimeSpan.FromMinutes(15);
-        private readonly TimeSpan _longCacheDuration = TimeSpan.FromHours(1);
-
-        public RoadmapDashboardService(
-            HttpClient httpClient,
-            IMemoryCache cache,
-            ILogger<RoadmapDashboardService> logger)
-        {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-        }
-
-        /// <summary>
-        /// Get comprehensive roadmap page data
-        /// </summary>
-        public async Task<RoadmapDataModel> GetRoadmapPageDataAsync()
-        {
-            var cacheKey = CACHE_KEY_ROADMAP_DATA;
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out RoadmapDataModel? cachedData) && cachedData != null)
-                {
-                    _logger.LogDebug("Returning cached roadmap data");
-                    return cachedData;
-                }
-
-                _logger.LogInformation("Fetching roadmap data from API");
-
-                var response = await _httpClient.GetAsync("/api/roadmap/data");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var data = JsonSerializer.Deserialize<RoadmapDataModel>(jsonContent, _jsonOptions);
-
-                    if (data != null)
-                    {
-                        _cache.Set(cacheKey, data, _mediumCacheDuration);
-                        return data;
-                    }
-                }
-
-                _logger.LogWarning("API call failed, returning fallback roadmap data");
-                return GetFallbackRoadmapData();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching roadmap data, returning fallback");
-                return GetFallbackRoadmapData();
-            }
-        }
-
-        /// <summary>
-        /// Get milestones with optional filtering
-        /// </summary>
-        public async Task<List<MilestoneDisplayModel>> GetMilestonesAsync(string? status = null, string? category = null)
-        {
-            var cacheKey = $"{CACHE_KEY_MILESTONES}_{status}_{category}";
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out List<MilestoneDisplayModel>? cachedMilestones) && cachedMilestones != null)
-                {
-                    return cachedMilestones;
-                }
-
-                var queryParams = new List<string>();
-                if (!string.IsNullOrWhiteSpace(status)) queryParams.Add($"status={Uri.EscapeDataString(status)}");
-                if (!string.IsNullOrWhiteSpace(category)) queryParams.Add($"category={Uri.EscapeDataString(category)}");
-
-                var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                var response = await _httpClient.GetAsync($"/api/roadmap/milestones{queryString}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var milestones = JsonSerializer.Deserialize<List<MilestoneDisplayModel>>(jsonContent, _jsonOptions);
-
-                    if (milestones != null)
-                    {
-                        _cache.Set(cacheKey, milestones, _shortCacheDuration);
-                        return milestones;
-                    }
-                }
-
-                return GetFallbackMilestones();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching milestones with status: {Status}, category: {Category}", status, category);
-                return GetFallbackMilestones();
-            }
-        }
-
-        /// <summary>
-        /// Get milestone details by ID
-        /// </summary>
-        public async Task<MilestoneDisplayModel?> GetMilestoneDetailsAsync(int id)
-        {
-            var cacheKey = $"web_milestone_details_{id}";
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out MilestoneDisplayModel? cachedMilestone) && cachedMilestone != null)
-                {
-                    return cachedMilestone;
-                }
-
-                var response = await _httpClient.GetAsync($"/api/roadmap/milestones/{id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var milestone = JsonSerializer.Deserialize<MilestoneDisplayModel>(jsonContent, _jsonOptions);
-
-                    if (milestone != null)
-                    {
-                        _cache.Set(cacheKey, milestone, _shortCacheDuration);
-                        return milestone;
-                    }
-                }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching milestone details for ID: {MilestoneId}", id);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Get development statistics
-        /// </summary>
-        public async Task<DevelopmentStatsModel> GetDevelopmentStatsAsync()
-        {
-            var cacheKey = CACHE_KEY_DEV_STATS;
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out DevelopmentStatsModel? cachedStats) && cachedStats != null)
-                {
-                    return cachedStats;
-                }
-
-                var response = await _httpClient.GetAsync("/api/roadmap/statistics");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var stats = JsonSerializer.Deserialize<DevelopmentStatsModel>(jsonContent, _jsonOptions);
-
-                    if (stats != null)
-                    {
-                        _cache.Set(cacheKey, stats, _mediumCacheDuration);
-                        return stats;
-                    }
-                }
-
-                return GetFallbackDevelopmentStats();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching development statistics");
-                return GetFallbackDevelopmentStats();
-            }
-        }
-
-        /// <summary>
-        /// Get recent development updates
-        /// </summary>
-        public async Task<List<UpdateDisplayModel>> GetRecentUpdatesAsync(int count = 10)
-        {
-            var cacheKey = $"{CACHE_KEY_RECENT_UPDATES}_{count}";
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out List<UpdateDisplayModel>? cachedUpdates) && cachedUpdates != null)
-                {
-                    return cachedUpdates;
-                }
-
-                var response = await _httpClient.GetAsync($"/api/roadmap/updates?count={count}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var updates = JsonSerializer.Deserialize<List<UpdateDisplayModel>>(jsonContent, _jsonOptions);
-
-                    if (updates != null)
-                    {
-                        _cache.Set(cacheKey, updates, _shortCacheDuration);
-                        return updates;
-                    }
-                }
-
-                return GetFallbackRecentUpdates();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching recent updates");
-                return GetFallbackRecentUpdates();
-            }
-        }
-
-        /// <summary>
-        /// Get releases information
-        /// </summary>
-        public async Task<List<ReleaseDisplayModel>> GetReleasesAsync()
-        {
-            var cacheKey = CACHE_KEY_RELEASES;
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out List<ReleaseDisplayModel>? cachedReleases) && cachedReleases != null)
-                {
-                    return cachedReleases;
-                }
-
-                var response = await _httpClient.GetAsync("/api/roadmap/releases");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var releases = JsonSerializer.Deserialize<List<ReleaseDisplayModel>>(jsonContent, _jsonOptions);
-
-                    if (releases != null)
-                    {
-                        _cache.Set(cacheKey, releases, _longCacheDuration);
-                        return releases;
-                    }
-                }
-
-                return GetFallbackReleases();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching releases");
-                return GetFallbackReleases();
-            }
-        }
-
-        /// <summary>
-        /// Get GitHub statistics
-        /// </summary>
-        public async Task<GitHubStats> GetGitHubStatsAsync()
-        {
-            var cacheKey = CACHE_KEY_GITHUB_STATS;
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out GitHubStats? cachedStats) && cachedStats != null)
-                {
-                    return cachedStats;
-                }
-
-                var response = await _httpClient.GetAsync("/api/roadmap/github-stats");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var stats = JsonSerializer.Deserialize<GitHubStats>(jsonContent, _jsonOptions);
-
-                    if (stats != null)
-                    {
-                        _cache.Set(cacheKey, stats, _mediumCacheDuration);
-                        return stats;
-                    }
-                }
-
-                return GetFallbackGitHubStats();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching GitHub statistics");
-                return GetFallbackGitHubStats();
-            }
-        }
-
-        /// <summary>
-        /// Get roadmap filter options
-        /// </summary>
-        public async Task<RoadmapFilterModel> GetFilterOptionsAsync()
-        {
-            var cacheKey = CACHE_KEY_FILTER_OPTIONS;
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out RoadmapFilterModel? cachedOptions) && cachedOptions != null)
-                {
-                    return cachedOptions;
-                }
-
-                var response = await _httpClient.GetAsync("/api/roadmap/filter-options");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var options = JsonSerializer.Deserialize<RoadmapFilterModel>(jsonContent, _jsonOptions);
-
-                    if (options != null)
-                    {
-                        _cache.Set(cacheKey, options, _longCacheDuration);
-                        return options;
-                    }
-                }
-
-                return GetFallbackFilterOptions();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching filter options");
-                return GetFallbackFilterOptions();
-            }
-        }
-
-        /// <summary>
-        /// Get tasks for a specific milestone
-        /// </summary>
-        public async Task<List<TaskDisplayModel>> GetMilestoneTasksAsync(int milestoneId)
-        {
-            var cacheKey = $"web_milestone_tasks_{milestoneId}";
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out List<TaskDisplayModel>? cachedTasks) && cachedTasks != null)
-                {
-                    return cachedTasks;
-                }
-
-                var response = await _httpClient.GetAsync($"/api/roadmap/milestones/{milestoneId}/tasks");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var tasks = JsonSerializer.Deserialize<List<TaskDisplayModel>>(jsonContent, _jsonOptions);
-
-                    if (tasks != null)
-                    {
-                        _cache.Set(cacheKey, tasks, _shortCacheDuration);
-                        return tasks;
-                    }
-                }
-
-                return new List<TaskDisplayModel>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching tasks for milestone {MilestoneId}", milestoneId);
-                return new List<TaskDisplayModel>();
-            }
-        }
-
-        /// <summary>
-        /// Search milestones by term
-        /// </summary>
-        public async Task<List<MilestoneDisplayModel>> SearchMilestonesAsync(string searchTerm)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(searchTerm))
-                {
-                    return await GetMilestonesAsync();
-                }
-
-                var response = await _httpClient.GetAsync($"/api/roadmap/search?term={Uri.EscapeDataString(searchTerm)}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var milestones = JsonSerializer.Deserialize<List<MilestoneDisplayModel>>(jsonContent, _jsonOptions);
-
-                    return milestones ?? new List<MilestoneDisplayModel>();
-                }
-
-                return new List<MilestoneDisplayModel>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching milestones for term: {SearchTerm}", searchTerm);
-                return new List<MilestoneDisplayModel>();
-            }
-        }
-
-        /// <summary>
-        /// Get milestone dependencies
-        /// </summary>
-        public async Task<List<DependencyDisplayModel>> GetMilestoneDependenciesAsync(int milestoneId)
-        {
-            var cacheKey = $"web_milestone_dependencies_{milestoneId}";
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out List<DependencyDisplayModel>? cachedDeps) && cachedDeps != null)
-                {
-                    return cachedDeps;
-                }
-
-                var response = await _httpClient.GetAsync($"/api/roadmap/milestones/{milestoneId}/dependencies");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var dependencies = JsonSerializer.Deserialize<List<DependencyDisplayModel>>(jsonContent, _jsonOptions);
-
-                    if (dependencies != null)
-                    {
-                        _cache.Set(cacheKey, dependencies, _mediumCacheDuration);
-                        return dependencies;
-                    }
-                }
-
-                return new List<DependencyDisplayModel>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching dependencies for milestone {MilestoneId}", milestoneId);
-                return new List<DependencyDisplayModel>();
-            }
-        }
-
-        /// <summary>
-        /// Get development timeline data for charts
-        /// </summary>
-        public async Task<object> GetTimelineDataAsync()
-        {
-            var cacheKey = "web_timeline_data";
-
-            try
-            {
-                if (_cache.TryGetValue(cacheKey, out object? cachedData) && cachedData != null)
-                {
-                    return cachedData;
-                }
-
-                var response = await _httpClient.GetAsync("/api/roadmap/timeline-data");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var timelineData = JsonSerializer.Deserialize<object>(jsonContent, _jsonOptions);
-
-                    if (timelineData != null)
-                    {
-                        _cache.Set(cacheKey, timelineData, _mediumCacheDuration);
-                        return timelineData;
-                    }
-                }
-
-                return new { };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching timeline data");
-                return new { };
-            }
-        }
-
-        /// <summary>
-        /// Get milestone progress over time
-        /// </summary>
-        public async Task<object> GetProgressHistoryAsync(int milestoneId)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"/api/roadmap/milestones/{milestoneId}/progress-history");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = await response.Content.ReadAsStringAsync();
-                    var progressData = JsonSerializer.Deserialize<object>(jsonContent, _jsonOptions);
-
-                    return progressData ?? new { };
-                }
-
-                return new { };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching progress history for milestone {MilestoneId}", milestoneId);
-                return new { };
-            }
-        }
-
-        /// <summary>
-        /// Check service health
-        /// </summary>
-        public async Task<bool> CheckServiceHealthAsync()
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync("/api/roadmap/health", new CancellationToken());
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking roadmap service health");
-                return false;
-            }
-        }
-
-        #region Fallback Data Methods
-
-        private RoadmapDataModel GetFallbackRoadmapData()
-        {
-            return new RoadmapDataModel
-            {
-                Overview = new RoadmapOverviewModel
-                {
-                    TotalMilestones = 8,
-                    CompletedMilestones = 3,
-                    InProgressMilestones = 2,
-                    UpcomingMilestones = 3,
-                    OverallProgress = 65.5m,
-                    EstimatedCompletionDate = DateTime.UtcNow.AddMonths(18),
-                    LastUpdateDate = DateTime.UtcNow.AddDays(-2)
-                },
-                CurrentMilestones = GetFallbackMilestones().Take(3).ToList(),
-                UpcomingMilestones = GetFallbackMilestones().Skip(3).Take(3).ToList(),
-                DevelopmentStats = GetFallbackDevelopmentStats(),
-                RecentUpdates = GetFallbackRecentUpdates().Take(5).ToList(),
-                GitHubStats = GetFallbackGitHubStats()
-            };
-        }
-
-        private List<MilestoneDisplayModel> GetFallbackMilestones()
-        {
-            return new List<MilestoneDisplayModel>
-            {
-                new MilestoneDisplayModel
-                {
-                    Id = 1,
-                    Title = "Token Smart Contract Deployment",
-                    Description = "Deploy and verify TEACH token smart contract on mainnet",
-                    Category = "Blockchain",
-                    Status = "Completed",
-                    StatusClass = "completed",
-                    Priority = "Critical",
-                    PriorityClass = "critical",
-                    ProgressPercentage = 100,
-                    StartDate = DateTime.UtcNow.AddDays(-90),
-                    EstimatedCompletionDate = DateTime.UtcNow.AddDays(-60),
-                    ActualCompletionDate = DateTime.UtcNow.AddDays(-58),
-                    DurationEstimate = "4 weeks",
-                    TimeRemaining = "Completed",
-                    CompletedTasksCount = 8,
-                    TotalTasksCount = 8
-                },
-                new MilestoneDisplayModel
-                {
-                    Id = 2,
-                    Title = "Staking Platform Development",
-                    Description = "Build comprehensive staking platform with education funding integration",
-                    Category = "Platform",
-                    Status = "In Progress",
-                    StatusClass = "in-progress",
-                    Priority = "High",
-                    PriorityClass = "high",
-                    ProgressPercentage = 75,
-                    StartDate = DateTime.UtcNow.AddDays(-45),
-                    EstimatedCompletionDate = DateTime.UtcNow.AddDays(15),
-                    DurationEstimate = "8 weeks",
-                    TimeRemaining = "2 weeks",
-                    CompletedTasksCount = 12,
-                    TotalTasksCount = 16
-                },
-                new MilestoneDisplayModel
-                {
-                    Id = 3,
-                    Title = "Mobile Application Launch",
-                    Description = "Native mobile apps for iOS and Android platforms",
-                    Category = "Mobile",
-                    Status = "Planning",
-                    StatusClass = "planning",
-                    Priority = "Medium",
-                    PriorityClass = "medium",
-                    ProgressPercentage = 15,
-                    StartDate = DateTime.UtcNow.AddDays(30),
-                    EstimatedCompletionDate = DateTime.UtcNow.AddDays(120),
-                    DurationEstimate = "12 weeks",
-                    TimeRemaining = "4 months",
-                    CompletedTasksCount = 3,
-                    TotalTasksCount = 20
-                }
-            };
-        }
-
-        private DevelopmentStatsModel GetFallbackDevelopmentStats()
-        {
-            return new DevelopmentStatsModel
-            {
-                TotalCommits = 247,
-                ActiveBranches = 5,
-                OpenIssues = 12,
-                ClosedIssues = 89,
-                PullRequests = 23,
-                CodeCoverage = 82.5m,
-                TechnicalDebt = "2.1 days",
-                LastDeployment = DateTime.UtcNow.AddDays(-3),
-                Contributors = 6,
-                LinesOfCode = 45678
-            };
-        }
-
-        private List<UpdateDisplayModel> GetFallbackRecentUpdates()
-        {
-            return new List<UpdateDisplayModel>
-            {
-                new UpdateDisplayModel
-                {
-                    Id = 1,
-                    Title = "Staking Rewards Module Completed",
-                    Description = "Implemented automatic reward distribution system with 50/50 split",
-                    Type = "Feature",
-                    UpdateDate = DateTime.UtcNow.AddDays(-2),
-                    Author = "Development Team",
-                    Category = "Platform"
-                },
-                new UpdateDisplayModel
-                {
-                    Id = 2,
-                    Title = "Security Audit Results",
-                    Description = "Completed third-party security audit with all critical issues resolved",
-                    Type = "Security",
-                    UpdateDate = DateTime.UtcNow.AddDays(-5),
-                    Author = "Security Team",
-                    Category = "Security"
-                }
-            };
-        }
-
-        private List<ReleaseDisplayModel> GetFallbackReleases()
-        {
-            return new List<ReleaseDisplayModel>
-            {
-                new ReleaseDisplayModel
-                {
-                    Id = 1,
-                    Version = "v1.2.0",
-                    Title = "Enhanced Staking Platform",
-                    Description = "Major platform update with improved staking mechanisms",
-                    ReleaseDate = DateTime.UtcNow.AddDays(-14),
-                    IsPreRelease = false,
-                    DownloadUrl = "https://github.com/buckhoff/TeachCrowdSale/releases/tag/v1.2.0"
-                }
-            };
-        }
-
-        private GitHubStats GetFallbackGitHubStats()
-        {
-            return new GitHubStats
-            {
-                Stars = 156,
-                Forks = 23,
-                Contributors = 6,
-                RecentCommits = 15,
-                OpenIssues = 12,
-                LastCommitDate = DateTime.UtcNow.AddHours(-6),
-                Repository = "buckhoff/TeachCrowdSale",
-                MainBranch = "main"
-            };
-        }
-
-        private RoadmapFilterModel GetFallbackFilterOptions()
-        {
-            return new RoadmapFilterModel
-            {
-                Statuses = new List<string> { "Planning", "In Progress", "Testing", "Completed", "On Hold" },
-                Categories = new List<string> { "Blockchain", "Platform", "Mobile", "Security", "Integration" },
-                Priorities = new List<string> { "Critical", "High", "Medium", "Low" }
-            };
-        }
-
-        #endregion
+        _httpClient = httpClient;
+        _cache = cache;
+        _logger = logger;
     }
+
+    public async Task<RoadmapPageModel> GetRoadmapPageDataAsync()
+    {
+        try
+        {
+            // Check cache first
+            if (_cache.TryGetValue(ROADMAP_DATA_CACHE_KEY, out RoadmapPageModel? cachedData) && cachedData != null)
+            {
+                _logger.LogDebug("Returning cached roadmap page data");
+                return cachedData;
+            }
+
+            _logger.LogInformation("Fetching roadmap page data from API");
+
+            // Fetch data from API
+            var response = await _httpClient.GetAsync("/api/roadmap/data");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<RoadmapResponse>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (apiResponse == null)
+            {
+                _logger.LogWarning("API returned null response for roadmap data");
+                return GetFallbackRoadmapData();
+            }
+
+            // Transform API response to web display model
+            var pageModel = new RoadmapPageModel
+            {
+                ProgressSummary = TransformProgressSummary(apiResponse.ProgressSummary),
+                ActiveMilestones = apiResponse.ActiveMilestones?.Select(TransformMilestone).ToList() ?? new List<MilestoneModel>(),
+                UpcomingMilestones = apiResponse.UpcomingMilestones?.Select(TransformMilestone).ToList() ?? new List<MilestoneModel>(),
+                CompletedMilestones = apiResponse.CompletedMilestones?.Select(TransformMilestone).ToList() ?? new List<MilestoneModel>(),
+                RecentReleases = apiResponse.RecentReleases?.Select(TransformRelease).ToList() ?? new List<ReleaseModel>(),
+                GitHubStats = TransformGitHubStats(apiResponse.GitHubStats),
+                DevelopmentStats = TransformDevelopmentStats(apiResponse.DevelopmentStats),
+                LastUpdated = DateTime.UtcNow
+            };
+
+            // Cache with medium duration
+            _cache.Set(ROADMAP_DATA_CACHE_KEY, pageModel, _mediumCacheDuration);
+
+            _logger.LogInformation("Successfully fetched and cached roadmap page data");
+            return pageModel;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error fetching roadmap data from API");
+            return GetFallbackRoadmapData();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching roadmap data");
+            return GetFallbackRoadmapData();
+        }
+    }
+
+    public async Task<MilestoneModel?> GetMilestoneDetailsAsync(int milestoneId)
+    {
+        var cacheKey = $"{MILESTONE_CACHE_KEY_PREFIX}{milestoneId}";
+
+        try
+        {
+            // Check cache first
+            if (_cache.TryGetValue(cacheKey, out MilestoneModel? cachedMilestone) && cachedMilestone != null)
+            {
+                return cachedMilestone;
+            }
+
+            _logger.LogInformation("Fetching milestone {MilestoneId} from API", milestoneId);
+
+            var response = await _httpClient.GetAsync($"/api/roadmap/milestones/{milestoneId}");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<MilestoneResponse>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (apiResponse == null)
+            {
+                _logger.LogWarning("API returned null response for milestone {MilestoneId}", milestoneId);
+                return null;
+            }
+
+            var milestoneModel = TransformMilestone(apiResponse);
+
+            // Cache with short duration
+            _cache.Set(cacheKey, milestoneModel, _shortCacheDuration);
+
+            return milestoneModel;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error fetching milestone {MilestoneId} from API", milestoneId);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching milestone {MilestoneId}", milestoneId);
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<MilestoneModel>> GetFilteredMilestonesAsync(string? status, string? category)
+    {
+        try
+        {
+            var queryParams = new List<string>();
+            if (!string.IsNullOrEmpty(status))
+                queryParams.Add($"status={Uri.EscapeDataString(status)}");
+            if (!string.IsNullOrEmpty(category))
+                queryParams.Add($"category={Uri.EscapeDataString(category)}");
+
+            var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+            var response = await _httpClient.GetAsync($"/api/roadmap/milestones{queryString}");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<IEnumerable<MilestoneResponse>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return apiResponse?.Select(TransformMilestone) ?? Enumerable.Empty<MilestoneModel>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching filtered milestones");
+            return Enumerable.Empty<MilestoneModel>();
+        }
+    }
+
+    public async Task<ProgressSummaryModel> GetProgressSummaryAsync()
+    {
+        try
+        {
+            if (_cache.TryGetValue(PROGRESS_SUMMARY_CACHE_KEY, out ProgressSummaryModel? cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var response = await _httpClient.GetAsync("/api/roadmap/progress");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<ProgressSummaryResponse>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            var progressSummary = TransformProgressSummary(apiResponse);
+            _cache.Set(PROGRESS_SUMMARY_CACHE_KEY, progressSummary, _mediumCacheDuration);
+
+            return progressSummary;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching progress summary");
+            return GetFallbackProgressSummary();
+        }
+    }
+
+    public async Task<GitHubStatsModel> GetGitHubStatsAsync()
+    {
+        try
+        {
+            if (_cache.TryGetValue(GITHUB_STATS_CACHE_KEY, out GitHubStatsModel? cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var response = await _httpClient.GetAsync("/api/roadmap/github-stats");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<GitHubStatsResponse>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            var githubStats = TransformGitHubStats(apiResponse);
+            _cache.Set(GITHUB_STATS_CACHE_KEY, githubStats, _longCacheDuration);
+
+            return githubStats;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching GitHub stats");
+            return GetFallbackGitHubStats();
+        }
+    }
+
+    public async Task<IEnumerable<ReleaseModel>> GetRecentReleasesAsync(int count = 5)
+    {
+        try
+        {
+            if (_cache.TryGetValue(RECENT_RELEASES_CACHE_KEY, out IEnumerable<ReleaseModel>? cached) && cached != null)
+            {
+                return cached.Take(count);
+            }
+
+            var response = await _httpClient.GetAsync($"/api/roadmap/releases?limit={count}");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<IEnumerable<ReleaseResponse>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            var releases = apiResponse?.Select(TransformRelease) ?? Enumerable.Empty<ReleaseModel>();
+            _cache.Set(RECENT_RELEASES_CACHE_KEY, releases, _mediumCacheDuration);
+
+            return releases.Take(count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching recent releases");
+            return GetFallbackReleases();
+        }
+    }
+
+    public async Task<DevelopmentStatsModel> GetDevelopmentStatsAsync()
+    {
+        try
+        {
+            if (_cache.TryGetValue(DEV_STATS_CACHE_KEY, out DevelopmentStatsModel? cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var response = await _httpClient.GetAsync("/api/roadmap/development-stats");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<DevelopmentStatsResponse>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            var devStats = TransformDevelopmentStats(apiResponse);
+            _cache.Set(DEV_STATS_CACHE_KEY, devStats, _longCacheDuration);
+
+            return devStats;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching development stats");
+            return GetFallbackDevelopmentStats();
+        }
+    }
+
+    #region Transformation Methods
+
+    private MilestoneModel TransformMilestone(MilestoneResponse response)
+    {
+        var statusString = response.Status.ToString();
+        var priorityString = response.Priority.ToString();
+
+        return new MilestoneModel
+        {
+            Id = response.Id,
+            Title = response.Title,
+            Description = response.Description,
+            Category = response.Category,
+            Status = statusString,
+            StatusClass = GetStatusClass(statusString),
+            Priority = priorityString,
+            PriorityClass = GetPriorityClass(priorityString),
+            ProgressPercentage = response.ProgressPercentage,
+            StartDate = response.StartDate,
+            EstimatedCompletionDate = response.EstimatedCompletionDate,
+            ActualCompletionDate = response.ActualCompletionDate,
+            DurationEstimate = response.DurationEstimate,
+            TimeRemaining = CalculateTimeRemaining(response.EstimatedCompletionDate, statusString),
+            CompletedTasksCount = response.CompletedTasksCount,
+            TotalTasksCount = response.TotalTasksCount,
+            CreatedAt = response.CreatedAt,
+            UpdatedAt = response.UpdatedAt,
+            Tasks = response.Tasks?.Select(TransformTask).ToList(),
+            Dependencies = response.Dependencies?.Select(TransformDependency).ToList(),
+            Updates = response.Updates?.Select(TransformUpdate).ToList()
+        };
+    }
+
+    private TaskModel TransformTask(TaskResponse response)
+    {
+        var statusString = response.Status.ToString();
+        var priorityString = response.Priority.ToString();
+
+        return new TaskModel
+        {
+            Id = response.Id,
+            Title = response.Title,
+            Description = response.Description,
+            Status = statusString,
+            StatusClass = GetStatusClass(statusString),
+            Priority = priorityString,
+            PriorityClass = GetPriorityClass(priorityString),
+            ProgressPercentage = response.ProgressPercentage,
+            StartDate = response.StartDate,
+            DueDate = response.DueDate,
+            CompletionDate = response.CompletionDate,
+            MilestoneId = response.MilestoneId,
+            MilestoneTitle = response.MilestoneTitle,
+            Assignee = response.Assignee,
+            EstimatedHours = response.EstimatedHours,
+            ActualHours = response.ActualHours,
+            CreatedAt = response.CreatedAt,
+            UpdatedAt = response.UpdatedAt
+        };
+    }
+
+    private UpdateModel TransformUpdate(UpdateResponse response)
+    {
+        var updateTypeString = response.UpdateType.ToString();
+
+        return new UpdateModel
+        {
+            Id = response.Id,
+            Title = response.Title,
+            Content = response.Content,
+            UpdateType = updateTypeString,
+            UpdateTypeClass = GetUpdateTypeClass(updateTypeString),
+            MilestoneId = response.MilestoneId,
+            MilestoneTitle = response.MilestoneTitle,
+            Author = response.Author,
+            Tags = response.Tags,
+            Attachments = response.Attachments,
+            CreatedAt = response.CreatedAt,
+            UpdatedAt = response.UpdatedAt
+        };
+    }
+
+    private DependencyModel TransformDependency(DependencyResponse response)
+    {
+        var dependencyTypeString = response.DependencyType.ToString();
+
+        return new DependencyModel
+        {
+            Id = response.Id,
+            MilestoneId = response.MilestoneId,
+            DependentMilestoneId = response.DependentMilestoneId,
+            DependencyType = dependencyTypeString,
+            DependencyTypeClass = GetDependencyTypeClass(dependencyTypeString),
+            Description = response.Description,
+            IsActive = response.IsActive,
+            CreatedAt = response.CreatedAt,
+            MilestoneTitle = response.MilestoneTitle,
+            DependentMilestoneTitle = response.DependentMilestoneTitle
+        };
+    }
+
+    private ProgressSummaryModel TransformProgressSummary(ProgressSummaryResponse? response)
+    {
+        if (response == null) return GetFallbackProgressSummary();
+
+        return new ProgressSummaryModel
+        {
+            OverallProgress = response.OverallProgress,
+            TotalMilestones = response.TotalMilestones,
+            CompletedMilestones = response.CompletedMilestones,
+            InProgressMilestones = response.InProgressMilestones,
+            UpcomingMilestones = response.UpcomingMilestones,
+            TotalTasks = response.TotalTasks,
+            CompletedTasks = response.CompletedTasks,
+            ActiveTasks = response.ActiveTasks,
+            OverdueTasks = response.OverdueTasks,
+            AverageCompletionTime = response.AverageCompletionTime,
+            CurrentPhase = response.CurrentPhase,
+            NextMilestone = response.NextMilestone,
+            EstimatedProjectCompletion = response.EstimatedProjectCompletion
+        };
+    }
+
+    private GitHubStatsModel TransformGitHubStats(GitHubStatsResponse? response)
+    {
+        if (response == null) return GetFallbackGitHubStats();
+
+        return new GitHubStatsModel
+        {
+            TotalCommits = response.TotalCommits,
+            CommitsThisMonth = response.CommitsThisMonth,
+            CommitsThisWeek = response.CommitsThisWeek,
+            TotalContributors = response.TotalContributors,
+            ActiveContributors = response.ActiveContributors,
+            TotalPullRequests = response.TotalPullRequests,
+            OpenPullRequests = response.OpenPullRequests,
+            MergedPullRequests = response.MergedPullRequests,
+            TotalIssues = response.TotalIssues,
+            OpenIssues = response.OpenIssues,
+            ClosedIssues = response.ClosedIssues,
+            CodeFrequency = response.CodeFrequency,
+            LastCommitDate = response.LastCommitDate,
+            LastCommitMessage = response.LastCommitMessage,
+            LastCommitAuthor = response.LastCommitAuthor,
+            RepositoryUrl = response.RepositoryUrl,
+            DefaultBranch = response.DefaultBranch,
+            LinesOfCode = response.LinesOfCode,
+            StarCount = response.StarCount,
+            ForkCount = response.ForkCount,
+            WatcherCount = response.WatcherCount
+        };
+    }
+
+    private ReleaseModel TransformRelease(ReleaseResponse response)
+    {
+        return new ReleaseModel
+        {
+            Id = response.Id,
+            Version = response.Version,
+            Title = response.Title,
+            Description = response.Description,
+            ReleaseDate = response.ReleaseDate,
+            ReleaseType = response.ReleaseType,
+            ReleaseTypeClass = GetReleaseTypeClass(response.ReleaseType),
+            IsPreRelease = response.IsPreRelease,
+            IsDraft = response.IsDraft,
+            TagName = response.TagName,
+            GitHubUrl = response.GitHubUrl,
+            DownloadUrl = response.DownloadUrl,
+            ReleaseNotes = response.ReleaseNotes,
+            Assets = response.Assets,
+            CreatedAt = response.CreatedAt
+        };
+    }
+
+    private DevelopmentStatsModel TransformDevelopmentStats(DevelopmentStatsResponse? response)
+    {
+        if (response == null) return GetFallbackDevelopmentStats();
+
+        return new DevelopmentStatsModel
+        {
+            TotalLinesOfCode = response.TotalLinesOfCode,
+            FilesChanged = response.FilesChanged,
+            CommitsThisWeek = response.CommitsThisWeek,
+            CommitsThisMonth = response.CommitsThisMonth,
+            ActiveBranches = response.ActiveBranches,
+            CodeCoverage = response.CodeCoverage,
+            TestsCount = response.TestsCount,
+            PassingTests = response.PassingTests,
+            FailingTests = response.FailingTests,
+            BuildStatus = response.BuildStatus,
+            LastBuildDate = response.LastBuildDate,
+            AverageCommitSize = response.AverageCommitSize,
+            TopContributors = response.TopContributors,
+            MostActiveRepository = response.MostActiveRepository,
+            TotalRepositories = response.TotalRepositories,
+            OpenPullRequests = response.OpenPullRequests,
+            CodeReviewsCompleted = response.CodeReviewsCompleted,
+            DeploymentFrequency = response.DeploymentFrequency,
+            LastDeploymentDate = response.LastDeploymentDate,
+            TechnicalDebtRatio = response.TechnicalDebtRatio
+        };
+    }
+
+    #endregion
+
+    private string CalculateTimeRemaining(DateTime? estimatedCompletion, string status)
+    {
+        if (status.ToLower() == "completed")
+            return "Completed";
+
+        if (estimatedCompletion == null)
+            return "TBD";
+
+        var timeRemaining = estimatedCompletion.Value - DateTime.UtcNow;
+
+        if (timeRemaining.TotalDays < 0)
+            return "Overdue";
+
+        if (timeRemaining.TotalDays < 1)
+            return "Due today";
+
+        if (timeRemaining.TotalDays < 7)
+            return $"{(int)timeRemaining.TotalDays} days";
+
+        if (timeRemaining.TotalDays < 30)
+            return $"{(int)(timeRemaining.TotalDays / 7)} weeks";
+
+        return $"{(int)(timeRemaining.TotalDays / 30)} months";
+    }
+
+    #region Fallback Data Methods
+
+    private RoadmapPageModel GetFallbackRoadmapData()
+    {
+        return new RoadmapPageModel
+        {
+            ProgressSummary = GetFallbackProgressSummary(),
+            ActiveMilestones = GetFallbackMilestones(),
+            UpcomingMilestones = new List<MilestoneModel>(),
+            CompletedMilestones = new List<MilestoneModel>(),
+            RecentReleases = GetFallbackReleases(),
+            GitHubStats = GetFallbackGitHubStats(),
+            DevelopmentStats = GetFallbackDevelopmentStats(),
+            LastUpdated = DateTime.UtcNow
+        };
+    }
+
+    private ProgressSummaryModel GetFallbackProgressSummary()
+    {
+        return new ProgressSummaryModel
+        {
+            OverallProgress = 45.0m,
+            TotalMilestones = 12,
+            CompletedMilestones = 4,
+            InProgressMilestones = 3,
+            UpcomingMilestones = 5,
+            TotalTasks = 84,
+            CompletedTasks = 32,
+            ActiveTasks = 15,
+            OverdueTasks = 2,
+            AverageCompletionTime = "3.2 weeks",
+            CurrentPhase = "Development Phase 2",
+            NextMilestone = "Staking Platform Launch",
+            EstimatedProjectCompletion = DateTime.UtcNow.AddMonths(8)
+        };
+    }
+
+    private List<MilestoneModel> GetFallbackMilestones()
+    {
+        return new List<MilestoneModel>
+                {
+                    new MilestoneModel
+                    {
+                        Id = 1,
+                        Title = "Staking Platform Development",
+                        Description = "Build comprehensive staking platform with education funding integration",
+                        Category = "Platform",
+                        Status = "In Progress",
+                        StatusClass = "in-progress",
+                        Priority = "High",
+                        PriorityClass = "high",
+                        ProgressPercentage = 75,
+                        StartDate = DateTime.UtcNow.AddDays(-45),
+                        EstimatedCompletionDate = DateTime.UtcNow.AddDays(15),
+                        DurationEstimate = "8 weeks",
+                        TimeRemaining = "2 weeks",
+                        CompletedTasksCount = 12,
+                        TotalTasksCount = 16,
+                        CreatedAt = DateTime.UtcNow.AddDays(-45),
+                        UpdatedAt = DateTime.UtcNow.AddDays(-1)
+                    }
+                };
+    }
+
+    private GitHubStatsModel GetFallbackGitHubStats()
+    {
+        return new GitHubStatsModel
+        {
+            TotalCommits = 1247,
+            CommitsThisMonth = 89,
+            CommitsThisWeek = 23,
+            TotalContributors = 8,
+            ActiveContributors = 4,
+            TotalPullRequests = 156,
+            OpenPullRequests = 7,
+            MergedPullRequests = 142,
+            TotalIssues = 89,
+            OpenIssues = 12,
+            ClosedIssues = 77,
+            CodeFrequency = 2840,
+            LastCommitDate = DateTime.UtcNow.AddHours(-3),
+            LastCommitMessage = "feat: Add roadmap dashboard components",
+            LastCommitAuthor = "TeachToken Dev Team",
+            RepositoryUrl = "https://github.com/buckhoff/TeachCrowdSale",
+            DefaultBranch = "main",
+            LinesOfCode = 47500,
+            StarCount = 23,
+            ForkCount = 8,
+            WatcherCount = 15
+        };
+    }
+
+    private List<ReleaseModel> GetFallbackReleases()
+    {
+        return new List<ReleaseModel>
+                {
+                    new ReleaseModel
+                    {
+                        Id = 1,
+                        Version = "v1.2.0",
+                        Title = "Staking Platform Beta",
+                        Description = "Initial release of the staking platform with basic functionality",
+                        ReleaseDate = DateTime.UtcNow.AddDays(-7),
+                        ReleaseType = "Beta",
+                        IsPreRelease = true,
+                        IsDraft = false,
+                        TagName = "v1.2.0-beta",
+                        GitHubUrl = "https://github.com/buckhoff/TeachCrowdSale/releases/tag/v1.2.0-beta",
+                        CreatedAt = DateTime.UtcNow.AddDays(-7)
+                    }
+                };
+    }
+
+    private DevelopmentStatsModel GetFallbackDevelopmentStats()
+    {
+        return new DevelopmentStatsModel
+        {
+            TotalLinesOfCode = 47500,
+            FilesChanged = 234,
+            CommitsThisWeek = 23,
+            CommitsThisMonth = 89,
+            ActiveBranches = 8,
+            CodeCoverage = 78.5m,
+            TestsCount = 312,
+            PassingTests = 298,
+            FailingTests = 3,
+            BuildStatus = "Passing",
+            LastBuildDate = DateTime.UtcNow.AddHours(-2),
+            AverageCommitSize = 127,
+            TopContributors = new List<string> { "buckhoff", "dev-team-lead", "frontend-dev" },
+            MostActiveRepository = "TeachCrowdSale",
+            TotalRepositories = 4,
+            OpenPullRequests = 7,
+            CodeReviewsCompleted = 45,
+            DeploymentFrequency = "Daily",
+            LastDeploymentDate = DateTime.UtcNow.AddHours(-6),
+            TechnicalDebtRatio = 12.3m
+        };
+    }
+    #endregion
 }

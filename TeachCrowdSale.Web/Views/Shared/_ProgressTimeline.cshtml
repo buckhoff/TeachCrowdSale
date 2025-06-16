@@ -1,4 +1,4 @@
-﻿@model TeachCrowdSale.Web.Models.RoadmapPageModel
+﻿@model TeachCrowdSale.Core.Models.RoadmapPageModel
 
 <!-- Views/Roadmap/_ProgressTimeline.cshtml -->
 <!-- Interactive timeline chart for milestone progress visualization -->
@@ -343,7 +343,7 @@
         return text.Substring(0, maxLength - 3) + "...";
     }
 
-    int CalculateCriticalPathDuration(List<TeachCrowdSale.Core.Models.MilestoneDisplayModel> milestones)
+    int CalculateCriticalPathDuration(List<TeachCrowdSale.Core.Models.MilestoneModel> milestones)
     {
         // Simple critical path calculation based on longest sequence
         if (!milestones.Any() || !milestones.Any(m => m.StartDate.HasValue && m.EstimatedCompletionDate.HasValue))
