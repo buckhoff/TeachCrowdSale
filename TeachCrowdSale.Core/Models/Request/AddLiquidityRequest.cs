@@ -40,6 +40,8 @@ namespace TeachCrowdSale.Core.Models.Request
         [Range(0.1, 100)]
         public decimal SlippageTolerance { get; set; } = 0.5m;
 
+        public bool ConfirmRisks { get; set; } = false;
+
         [Range(1, 60)]
         public int DeadlineMinutes { get; set; } = 20;
     }

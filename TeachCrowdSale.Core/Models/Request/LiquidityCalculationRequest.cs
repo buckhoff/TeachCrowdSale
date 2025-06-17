@@ -25,10 +25,10 @@ namespace TeachCrowdSale.Core.Models.Request
         [Range(0.000001, double.MaxValue)]
         public decimal Token0Amount { get; set; }
 
-        [Range(0.000001, double.MaxValue)]
+        [Range(0, double.MaxValue)]
         public decimal? Token1Amount { get; set; }
 
-        [Range(0.1, 100)]
+        [Range(0.1, 50)]
         public decimal SlippageTolerance { get; set; } = 0.5m;
 
         public bool AutoCalculateToken1 { get; set; } = true;

@@ -47,16 +47,16 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region Pool Management
 
-        public async Task<List<LiquidityPoolDisplayModel>> GetActiveLiquidityPoolsAsync()
+        public async Task<List<LiquidityPoolResponse>> GetActiveLiquidityPoolsAsync()
         {
             try
             {
-                return await _cache.GetOrCreateAsync($"{CACHE_KEY_POOLS}_active", async entry =>
+                return await _cache.GetOrCreateAsync(CACHE_KEY_POOLS, async entry =>
                 {
                     entry.SetAbsoluteExpiration(MediumCacheDuration);
 
                     var pools = await _liquidityRepository.GetActiveLiquidityPoolsAsync();
-                    return pools.Select(MapToLiquidityPoolDisplayModel).ToList();
+                    return pools.Select(MapToLiquidityPoolResponse).ToList();
                 });
             }
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<LiquidityPool?> GetLiquidityPoolAsync(int poolId)
+        public async Task<LiquidityPoolResponse?> GetLiquidityPoolAsync(int poolId)
         {
             try
             {
@@ -83,7 +83,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<LiquidityStatsOverviewModel> GetLiquidityStatsAsync()
+        public async Task<LiquidityStatsResponse> GetLiquidityStatsAsync()
         {
             try
             {
@@ -92,40 +92,25 @@ namespace TeachCrowdSale.Infrastructure.Services
                     entry.SetAbsoluteExpiration(ShortCacheDuration);
 
                     var totalTvl = await _liquidityRepository.GetTotalValueLockedAsync();
-                    var totalVolume24h = await _liquidityRepository.GetTotal24hVolumeAsync();
-                    var totalVolume7d = totalVolume24h * 7; // Approximation
-                    var totalFees = await _liquidityRepository.GetTotalFeesGeneratedAsync();
-                    var activePools = (await _liquidityRepository.GetActiveLiquidityPoolsAsync()).Count;
-                    var activeProviders = await _liquidityRepository.GetActiveLiquidityProvidersCountAsync();
+                    var totalVolume = await _liquidityRepository.GetTotal24hVolumeAsync();
+                    var totalFees = await _liquidityRepository.GetTotalFeesEarnedAsync();
+                    var activePools = await _liquidityRepository.GetActivePoolsCountAsync();
+                    var totalProviders = await _liquidityRepository.GetTotalLiquidityProvidersAsync();
+                    var avgApy = await _liquidityRepository.GetAverageAPYAsync();
+                    var teachPrice = await _blockchainService.GetTeachTokenPriceAsync();
 
-                    // Calculate average APY
-                    var pools = await _liquidityRepository.GetActiveLiquidityPoolsAsync();
-                    var avgApy = pools.Where(p => p.TotalValueLocked > 0)
-                                     .Average(p => p.APY);
-
-                    // Get TEACH price
-                    var teachPrice = await GetTeachTokenPriceAsync();
-
-                    return new LiquidityStatsOverviewModel
+                    return new LiquidityStatsResponse
                     {
                         TotalValueLocked = totalTvl,
-                        TotalVolume24h = totalVolume24h,
-                        TotalVolume7d = totalVolume7d,
-                        TotalFeesGenerated = totalFees,
+                        TotalVolume24h = totalVolume,
+                        TotalFeesEarned = totalFees,
                         ActivePools = activePools,
-                        ActiveProviders = activeProviders,
+                        TotalLiquidityProviders = totalProviders,
                         AverageAPY = avgApy,
-                        TeachPriceUsd = teachPrice,
-                        PriceChange24h = 0, // Would need historical data
-                        VolumeChange24h = 0,
-                        TvlChange24h = 0,
-                        TvlDisplay = FormatCurrency(totalTvl),
-                        Volume24hDisplay = FormatCurrency(totalVolume24h),
-                        FeesDisplay = FormatCurrency(totalFees),
-                        ApyDisplay = $"{avgApy:F2}%",
-                        PriceDisplay = FormatCurrency(teachPrice, 4),
-                        PriceChangeDisplay = "0%",
-                        PriceChangeClass = "neutral"
+                        TeachPrice = teachPrice,
+                        PriceChangeDisplay = "0%", // Calculate actual change
+                        PriceChangeClass = "neutral",
+                        LastUpdated = DateTime.UtcNow
                     };
                 });
             }
@@ -136,7 +121,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<List<DexConfigurationModel>> GetDexConfigurationsAsync()
+        public async Task<List<DexConfigurationResponse>> GetDexConfigurationsAsync()
         {
             try
             {
@@ -145,7 +130,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     entry.SetAbsoluteExpiration(LongCacheDuration);
 
                     var dexConfigs = await _liquidityRepository.GetActiveDexConfigurationsAsync();
-                    return dexConfigs.Select(MapToDexConfigurationModel).ToList();
+                    return dexConfigs.Select(MapToDexConfigurationResponse).ToList();
                 });
             }
             catch (Exception ex)
@@ -159,7 +144,7 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region User Position Management
 
-        public async Task<List<UserLiquidityPositionModel>> GetUserLiquidityPositionsAsync(string walletAddress)
+        public async Task<List<UserLiquidityPositionResponse>> GetUserLiquidityPositionsAsync(string walletAddress)
         {
             try
             {
@@ -169,15 +154,15 @@ namespace TeachCrowdSale.Infrastructure.Services
                 }
 
                 var positions = await _liquidityRepository.GetUserLiquidityPositionsAsync(walletAddress);
-                var positionModels = new List<UserLiquidityPositionModel>();
+                var positionResponses = new List<UserLiquidityPositionResponse>();
 
                 foreach (var position in positions)
                 {
-                    var model = await MapToUserLiquidityPositionModelAsync(position);
-                    positionModels.Add(model);
+                    var response = await MapToUserLiquidityPositionResponseAsync(position);
+                    positionResponses.Add(response);
                 }
 
-                return positionModels;
+                return positionResponses;
             }
             catch (Exception ex)
             {
@@ -186,14 +171,14 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<UserLiquidityPositionModel?> GetUserLiquidityPositionAsync(int positionId)
+        public async Task<UserLiquidityPositionResponse?> GetUserLiquidityPositionAsync(int positionId)
         {
             try
             {
                 var position = await _liquidityRepository.GetUserLiquidityPositionByIdAsync(positionId);
                 if (position == null) return null;
 
-                return await MapToUserLiquidityPositionModelAsync(position);
+                return await MapToUserLiquidityPositionResponseAsync(position);
             }
             catch (Exception ex)
             {
@@ -224,7 +209,7 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region Liquidity Calculations
 
-        public async Task<LiquidityCalculationModel> CalculateLiquidityPreviewAsync(string walletAddress, int poolId, decimal token0Amount, decimal? token1Amount = null, decimal slippageTolerance = 0.5m)
+        public async Task<LiquidityCalculationResponse> CalculateLiquidityPreviewAsync(string walletAddress, int poolId, decimal token0Amount, decimal? token1Amount = null, decimal slippageTolerance = 0.5m)
         {
             try
             {
@@ -234,7 +219,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     throw new InvalidOperationException($"Liquidity pool {poolId} not found");
                 }
 
-                var calculation = new LiquidityCalculationModel
+                var calculation = new LiquidityCalculationResponse
                 {
                     PoolId = poolId,
                     TokenPair = pool.TokenPair,
@@ -325,7 +310,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<LiquidityCalculationModel> CalculateRemoveLiquidityPreviewAsync(string walletAddress, int positionId, decimal percentageToRemove)
+        public async Task<LiquidityCalculationResponse> CalculateRemoveLiquidityPreviewAsync(string walletAddress, int positionId, decimal percentageToRemove)
         {
             try
             {
@@ -339,7 +324,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 var (token0Amount, token1Amount) = await _dexIntegrationService.EstimateAmountsForLpTokensAsync(
                     position.LiquidityPool.PoolAddress, lpTokensToRemove);
 
-                var calculation = new LiquidityCalculationModel
+                var calculation = new LiquidityCalculationResponse
                 {
                     PoolId = position.LiquidityPoolId,
                     TokenPair = position.LiquidityPool.TokenPair,
@@ -434,6 +419,28 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
+        public async Task<LiquidityPageDataResponse> GetLiquidityPageDataAsync()
+        {
+            try
+            {
+                var data = new LiquidityPageDataResponse
+                {
+                    LiquidityPools = await GetActiveLiquidityPoolsAsync(),
+                    DexOptions = await GetDexConfigurationsAsync(),
+                    Stats = await GetLiquidityStatsAsync(),
+                    Analytics = await GetLiquidityAnalyticsAsync(),
+                    GuideSteps = await GetLiquidityGuideStepsAsync(),
+                    LoadedAt = DateTime.UtcNow
+                };
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving liquidity page data");
+                throw;
+            }
+        }
         public async Task<bool> RemoveLiquidityAsync(string walletAddress, int positionId, decimal percentageToRemove)
         {
             try
@@ -620,7 +627,7 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region Analytics
 
-        public async Task<LiquidityAnalyticsModel> GetLiquidityAnalyticsAsync()
+        public async Task<LiquidityAnalyticsResponse> GetLiquidityAnalyticsAsync()
         {
             try
             {
@@ -628,7 +635,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 {
                     entry.SetAbsoluteExpiration(MediumCacheDuration);
 
-                    var analytics = new LiquidityAnalyticsModel
+                    var analytics = new LiquidityAnalyticsResponse
                     {
                         TvlTrends = await _liquidityRepository.GetTvlTrendsAsync(30),
                         VolumeTrends = await _liquidityRepository.GetVolumeTrendsAsync(30),
@@ -648,7 +655,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<List<UserLiquidityStatsModel>> GetTopLiquidityProvidersAsync(int limit = 10)
+        public async Task<List<UserLiquidityStatsResponse>> GetTopLiquidityProvidersAsync(int limit = 10)
         {
             try
             {
@@ -661,7 +668,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<List<PoolPerformanceDataModel>> GetPoolPerformanceAsync()
+        public async Task<List<Core.Models.Liquidity.PoolPerformanceModel>> GetPoolPerformanceAsync()
         {
             try
             {
@@ -751,11 +758,11 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region Guidance and Education
 
-        public async Task<List<LiquidityGuideStepModel>> GetLiquidityGuideStepsAsync(string? walletAddress = null)
+        public async Task<List<LiquidityGuideStepResponse>> GetLiquidityGuideStepsAsync(string? walletAddress = null)
         {
             try
             {
-                var steps = new List<LiquidityGuideStepModel>
+                var steps = new List<LiquidityGuideStepResponse>
                 {
                     new()
                     {
@@ -846,59 +853,53 @@ namespace TeachCrowdSale.Infrastructure.Services
 
         #region Private Helper Methods
 
-        private LiquidityPoolDisplayModel MapToLiquidityPoolDisplayModel(LiquidityPool pool)
+        /// <summary>
+        /// Map LiquidityPool entity to Response model
+        /// ARCHITECTURE FIX: Was mapping to web DisplayModel, now maps to Response
+        /// </summary>
+        private LiquidityPoolResponse MapToLiquidityPoolResponse(LiquidityPool pool)
         {
-            var isRecommended = pool.APY >= 10m && pool.TotalValueLocked >= 100000m;
-
-            return new LiquidityPoolDisplayModel
+            return new LiquidityPoolResponse
             {
                 Id = pool.Id,
                 Name = pool.Name,
-                DexName = pool.DexName,
                 TokenPair = pool.TokenPair,
                 Token0Symbol = pool.Token0Symbol,
                 Token1Symbol = pool.Token1Symbol,
+                DexName = pool.DexName,
+                PoolAddress = pool.PoolAddress,
+                CurrentAPY = pool.CurrentAPY,
                 TotalValueLocked = pool.TotalValueLocked,
                 Volume24h = pool.Volume24h,
-                Volume7d = pool.Volume7d,
                 FeePercentage = pool.FeePercentage,
-                APY = pool.APY,
-                APR = pool.APR,
-                CurrentPrice = pool.CurrentPrice,
                 IsActive = pool.IsActive,
-                IsFeatured = pool.IsFeatured,
-                IsRecommended = isRecommended,
-                DexUrl = pool.DexUrl ?? "",
-                AnalyticsUrl = pool.AnalyticsUrl ?? "",
-                LogoUrl = GetDexLogoUrl(pool.DexName),
-                TvlDisplay = FormatCurrency(pool.TotalValueLocked),
-                Volume24hDisplay = FormatCurrency(pool.Volume24h),
-                ApyDisplay = $"{pool.APY:F2}%",
-                FeeDisplay = $"{pool.FeePercentage:F2}%",
-                PriceDisplay = FormatCurrency(pool.CurrentPrice, 6),
-                StatusClass = pool.IsActive ? "active" : "inactive",
-                RecommendationReason = isRecommended ? "High APY & Deep Liquidity" : ""
+                IsRecommended = pool.IsRecommended,
+                CreatedAt = pool.CreatedAt,
+                UpdatedAt = pool.UpdatedAt
             };
         }
 
-        private async Task<UserLiquidityPositionModel> MapToUserLiquidityPositionModelAsync(UserLiquidityPosition position)
+        /// <summary>
+        /// Map UserLiquidityPosition entity to Response model
+        /// ARCHITECTURE FIX: Was mapping to web Model, now maps to Response
+        /// </summary>
+        private async Task<UserLiquidityPositionResponse> MapToUserLiquidityPositionResponseAsync(UserLiquidityPosition position)
         {
-            // Calculate current value and P&L
-            var token0Price = await _dexIntegrationService.GetTokenPriceAsync(position.LiquidityPool.Token0Address);
-            var token1Price = await _dexIntegrationService.GetTokenPriceAsync(position.LiquidityPool.Token1Address);
-            var currentValue = (position.Token0Amount * token0Price) + (position.Token1Amount * token1Price);
-            var pnl = currentValue - position.InitialValueUsd + position.FeesEarnedUsd;
+            // Calculate current values (existing logic)
+            var currentValue = await CalculateCurrentPositionValueAsync(position);
+            var pnl = currentValue - position.InitialValueUsd;
             var pnlPercentage = position.InitialValueUsd > 0 ? (pnl / position.InitialValueUsd) * 100 : 0;
 
-            var daysActive = (DateTime.UtcNow - position.AddedAt).Days;
-
-            return new UserLiquidityPositionModel
+            return new UserLiquidityPositionResponse
             {
                 Id = position.Id,
                 PoolId = position.LiquidityPoolId,
                 PoolName = position.LiquidityPool.Name,
                 TokenPair = position.LiquidityPool.TokenPair,
+                Token0Symbol = position.LiquidityPool.Token0Symbol,
+                Token1Symbol = position.LiquidityPool.Token1Symbol,
                 DexName = position.LiquidityPool.DexName,
+                WalletAddress = position.WalletAddress,
                 LpTokenAmount = position.LpTokenAmount,
                 Token0Amount = position.Token0Amount,
                 Token1Amount = position.Token1Amount,
@@ -908,37 +909,35 @@ namespace TeachCrowdSale.Infrastructure.Services
                 ImpermanentLoss = position.ImpermanentLoss,
                 NetPnL = pnl,
                 PnLPercentage = pnlPercentage,
-                AddedAt = position.AddedAt,
-                LastUpdatedAt = position.LastUpdatedAt,
                 IsActive = position.IsActive,
-                CanRemove = position.IsActive,
-                CanClaimFees = position.IsActive && position.FeesEarnedUsd > 0,
-                InitialValueDisplay = FormatCurrency(position.InitialValueUsd),
-                CurrentValueDisplay = FormatCurrency(currentValue),
-                FeesEarnedDisplay = FormatCurrency(position.FeesEarnedUsd),
-                PnLDisplay = FormatCurrency(pnl, 2, true),
-                PnLClass = pnl >= 0 ? "positive" : "negative",
-                DaysActive = daysActive == 1 ? "1 day" : $"{daysActive} days",
-                Token0AmountDisplay = FormatTokenAmount(position.Token0Amount),
-                Token1AmountDisplay = FormatTokenAmount(position.Token1Amount),
-                Token0Symbol = position.LiquidityPool.Token0Symbol,
-                Token1Symbol = position.LiquidityPool.Token1Symbol
+                AddedAt = position.AddedAt,
+                LastUpdatedAt = position.LastUpdatedAt
             };
         }
 
-        private DexConfigurationModel MapToDexConfigurationModel(DexConfiguration dex)
+
+        /// <summary>
+        /// Map DexConfiguration entity to Response model
+        /// ARCHITECTURE FIX: Was mapping to web Model, now maps to Response
+        /// </summary>
+        private DexConfigurationResponse MapToDexConfigurationResponse(DexConfiguration dex)
         {
-            return new DexConfigurationModel
+            return new DexConfigurationResponse
             {
                 Id = dex.Id,
                 Name = dex.Name,
                 DisplayName = dex.DisplayName,
-                Description = dex.Description ?? "",
+                Description = dex.Description ?? string.Empty,
                 LogoUrl = dex.LogoUrl,
                 BaseUrl = dex.BaseUrl,
+                ApiUrl = dex.ApiUrl,
                 IsRecommended = dex.IsRecommended,
+                IsActive = dex.IsActive,
                 DefaultFeePercentage = dex.DefaultFeePercentage,
-                Network = dex.Network
+                Network = dex.Network,
+                RouterAddress = dex.RouterAddress ?? string.Empty,
+                FactoryAddress = dex.FactoryAddress ?? string.Empty,
+                SortOrder = dex.SortOrder
             };
         }
 
@@ -962,12 +961,12 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        private async Task<List<DexComparisonModel>> GetDexComparisonDataAsync()
+        private async Task<List<DexPerformanceModel>> GetDexComparisonDataAsync()
         {
             try
             {
                 var dexes = await _liquidityRepository.GetActiveDexConfigurationsAsync();
-                var comparisons = new List<DexComparisonModel>();
+                var comparisons = new List<DexPerformanceModel>();
 
                 foreach (var dex in dexes)
                 {
@@ -976,7 +975,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     var volume = pools.Sum(p => p.Volume24h);
                     var avgApy = pools.Any() ? pools.Average(p => p.APY) : 0;
 
-                    comparisons.Add(new DexComparisonModel
+                    comparisons.Add(new DexPerformanceModel
                     {
                         DexName = dex.DisplayName,
                         TotalValueLocked = tvl,
@@ -991,7 +990,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting DEX comparison data");
-                return new List<DexComparisonModel>();
+                return new List<DexPerformanceModel>();
             }
         }
 
@@ -1026,7 +1025,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 _ => "/images/dex/default.png"
             };
         }
-        public async Task<UserLiquidityInfoModel> GetUserLiquidityInfoAsync(string walletAddress)
+        public async Task<UserLiquidityInfoResponse> GetUserLiquidityInfoAsync(string walletAddress)
         {
             try
             {
@@ -1046,7 +1045,7 @@ namespace TeachCrowdSale.Infrastructure.Services
 
                 var firstPosition = positions.OrderBy(p => p.AddedAt).FirstOrDefault();
 
-                return new UserLiquidityInfoModel
+                return new UserLiquidityInfoResponse
                 {
                     WalletAddress = walletAddress,
                     TotalLiquidityValue = totalValue,
@@ -1058,7 +1057,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     FirstPositionDate = firstPosition?.AddedAt ?? DateTime.UtcNow,
                     Positions = positions,
                     RecentTransactions = transactions,
-                    Stats = new UserLiquidityStatsModel
+                    Stats = new UserLiquidityStatsResponse
                     {
                         WalletAddress = walletAddress,
                         DisplayAddress = $"{walletAddress[..6]}...{walletAddress[^4..]}",
@@ -1225,7 +1224,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<List<LiquidityTransactionHistoryModel>> GetUserTransactionHistoryAsync(string walletAddress, int pageNumber = 1, int pageSize = 50)
+        public async Task<List<LiquidityTransactionHistoryResponse>> GetUserTransactionHistoryAsync(string walletAddress, int pageNumber = 1, int pageSize = 50)
         {
             try
             {
@@ -1234,7 +1233,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                 return transactions
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(t => new LiquidityTransactionHistoryModel
+                    .Select(t => new LiquidityTransactionHistoryResponse
                     {
                         Id = t.Id,
                         TransactionType = t.TransactionType,

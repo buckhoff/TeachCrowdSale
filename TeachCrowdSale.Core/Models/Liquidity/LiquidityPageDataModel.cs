@@ -11,9 +11,9 @@ namespace TeachCrowdSale.Core.Models.Liquidity
     /// </summary>
     public class LiquidityPageDataModel
     {
-        public List<LiquidityPoolDisplayModel> LiquidityPools { get; set; } = new();
+        public List<LiquidityPoolModel> LiquidityPools { get; set; } = new();
         public List<DexConfigurationModel> DexOptions { get; set; } = new();
-        public LiquidityStatsOverviewModel Stats { get; set; } = new();
+        public LiquidityStatsModel Stats { get; set; } = new();
         public LiquidityAnalyticsModel Analytics { get; set; } = new();
         public List<LiquidityGuideStepModel> GuideSteps { get; set; } = new();
         public DateTime LoadedAt { get; set; } = DateTime.UtcNow;

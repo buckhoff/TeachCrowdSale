@@ -314,11 +314,11 @@ namespace TeachCrowdSale.Infrastructure.Repositories.Liquidity
                 .ToListAsync();
         }
 
-        public async Task<List<PoolPerformanceDataModel>> GetPoolPerformanceDataAsync()
+        public async Task<List<PoolPerformanceModel>> GetPoolPerformanceDataAsync()
         {
             return await _context.LiquidityPools
                 .Where(p => p.IsActive)
-                .Select(p => new PoolPerformanceDataModel
+                .Select(p => new PoolPerformanceModel
                 {
                     PoolId = p.Id,
                     PoolName = p.Name,

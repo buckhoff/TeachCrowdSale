@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using System.ComponentModel.DataAnnotations;
 using TeachCrowdSale.Core.Attributes;
 using TeachCrowdSale.Core.Interfaces.Services;
-using TeachCrowdSale.Core.Models.Liquidity;
 using TeachCrowdSale.Core.Models.Request;
 using TeachCrowdSale.Core.Models.Response;
 
@@ -35,20 +34,11 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("data")]
         [ResponseCache(Duration = 60)]
-        public async Task<ActionResult<LiquidityPageDataModel>> GetLiquidityPageData()
+        public async Task<ActionResult<LiquidityPageDataResponse>> GetLiquidityPageData()
         {
             try
             {
-                var data = new LiquidityPageDataModel
-                {
-                    LiquidityPools = await _liquidityService.GetActiveLiquidityPoolsAsync(),
-                    DexOptions = await _liquidityService.GetDexConfigurationsAsync(),
-                    Stats = await _liquidityService.GetLiquidityStatsAsync(),
-                    Analytics = await _liquidityService.GetLiquidityAnalyticsAsync(),
-                    GuideSteps = await _liquidityService.GetLiquidityGuideStepsAsync(),
-                    LoadedAt = DateTime.UtcNow
-                };
-
+                var data = await _liquidityService.GetLiquidityPageDataAsync();
                 return Ok(data);
             }
             catch (Exception ex)
@@ -67,7 +57,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// </summary>
         [HttpGet("pools")]
         [ResponseCache(Duration = 300)]
-        public async Task<ActionResult<List<LiquidityPoolDisplayModel>>> GetLiquidityPools([FromQuery] string? dexName = null)
+        public async Task<ActionResult<List<LiquidityPoolResponse>>> GetLiquidityPools([FromQuery] string? dexName = null)
         {
             try
             {
@@ -92,11 +82,59 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         /// <summary>
+        /// Get specific liquidity pool
+        /// </summary>
+        [HttpGet("pools/{poolId}")]
+        [ResponseCache(Duration = 180)]
+        public async Task<ActionResult<LiquidityPoolResponse>> GetLiquidityPool([FromRoute] int poolId)
+        {
+            try
+            {
+                var pool = await _liquidityService.GetLiquidityPoolAsync(poolId);
+                if (pool == null)
+                {
+                    return NotFound(new ErrorResponse { Message = $"Liquidity pool {poolId} not found" });
+                }
+
+                // Convert entity to response model
+                var response = new LiquidityPoolResponse
+                {
+                    Id = pool.Id,
+                    Name = pool.Name,
+                    TokenPair = pool.TokenPair,
+                    Token0Symbol = pool.Token0Symbol,
+                    Token1Symbol = pool.Token1Symbol,
+                    DexName = pool.DexName,
+                    PoolAddress = pool.PoolAddress,
+                    CurrentAPY = pool.CurrentAPY,
+                    TotalValueLocked = pool.TotalValueLocked,
+                    Volume24h = pool.Volume24h,
+                    FeePercentage = pool.FeePercentage,
+                    IsActive = pool.IsActive,
+                    IsRecommended = pool.IsRecommended,
+                    CreatedAt = pool.CreatedAt,
+                    UpdatedAt = pool.UpdatedAt
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving liquidity pool {PoolId}", poolId);
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving liquidity pool",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
         /// Get liquidity statistics
         /// </summary>
         [HttpGet("stats")]
         [ResponseCache(Duration = 120)]
-        public async Task<ActionResult<LiquidityStatsOverviewModel>> GetLiquidityStats()
+        public async Task<ActionResult<LiquidityStatsResponse>> GetLiquidityStats()
         {
             try
             {
@@ -115,11 +153,57 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         /// <summary>
+        /// Get DEX configuration options
+        /// </summary>
+        [HttpGet("dex-options")]
+        [ResponseCache(Duration = 600)]
+        public async Task<ActionResult<List<DexConfigurationResponse>>> GetDexOptions()
+        {
+            try
+            {
+                var dexOptions = await _liquidityService.GetDexConfigurationsAsync();
+                return Ok(dexOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving DEX options");
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving DEX options",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get liquidity analytics
+        /// </summary>
+        [HttpGet("analytics")]
+        [ResponseCache(Duration = 300)]
+        public async Task<ActionResult<LiquidityAnalyticsResponse>> GetLiquidityAnalytics()
+        {
+            try
+            {
+                var analytics = await _liquidityService.GetLiquidityAnalyticsAsync();
+                return Ok(analytics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving liquidity analytics");
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving liquidity analytics",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
         /// Get user's liquidity positions
         /// </summary>
         [HttpGet("user/{address}/positions")]
         [Authorize]
-        public async Task<ActionResult<List<UserLiquidityPositionModel>>> GetUserLiquidityPositions([FromRoute] string address)
+        public async Task<ActionResult<List<UserLiquidityPositionResponse>>> GetUserLiquidityPositions([FromRoute] string address)
         {
             try
             {
@@ -137,6 +221,34 @@ namespace TeachCrowdSale.Api.Controllers
                 return StatusCode(500, new ErrorResponse
                 {
                     Message = "Error retrieving user liquidity positions",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get user's comprehensive liquidity information
+        /// </summary>
+        [HttpGet("user/{address}")]
+        [Authorize]
+        public async Task<ActionResult<UserLiquidityInfoResponse>> GetUserLiquidityInfo([FromRoute] string address)
+        {
+            try
+            {
+                if (!_blockchainService.IsValidAddress(address))
+                {
+                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
+                }
+
+                var userInfo = await _liquidityService.GetUserLiquidityInfoAsync(address);
+                return Ok(userInfo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user liquidity info for {Address}", address);
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving user liquidity information",
                     TraceId = HttpContext.TraceIdentifier
                 });
             }
@@ -174,7 +286,7 @@ namespace TeachCrowdSale.Api.Controllers
         /// Calculate liquidity preview
         /// </summary>
         [HttpPost("calculate")]
-        public async Task<ActionResult<LiquidityCalculationModel>> CalculateLiquidity([FromBody] LiquidityCalculationRequest request)
+        public async Task<ActionResult<LiquidityCalculationResponse>> CalculateLiquidity([FromBody] LiquidityCalculationRequest request)
         {
             try
             {
@@ -210,9 +322,8 @@ namespace TeachCrowdSale.Api.Controllers
         /// <summary>
         /// Calculate remove liquidity preview
         /// </summary>
-        [HttpPost("calculate-remove")]
-        [Authorize]
-        public async Task<ActionResult<LiquidityCalculationModel>> CalculateRemoveLiquidity([FromBody] RemoveLiquidityCalculationRequest request)
+        [HttpPost("calculate/remove")]
+        public async Task<ActionResult<LiquidityCalculationResponse>> CalculateRemoveLiquidity([FromBody] RemoveLiquidityCalculationRequest request)
         {
             try
             {
@@ -244,12 +355,10 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         /// <summary>
-        /// Add liquidity to a pool
+        /// Validate liquidity parameters
         /// </summary>
-        [EnableRateLimiting("LiquidityTransaction")]
-        [HttpPost("add")]
-        [Authorize]
-        public async Task<ActionResult> AddLiquidity([FromBody] AddLiquidityRequest request)
+        [HttpPost("validate")]
+        public async Task<ActionResult<LiquidityValidationResponse>> ValidateLiquidityParameters([FromBody] LiquidityValidationRequest request)
         {
             try
             {
@@ -258,265 +367,20 @@ namespace TeachCrowdSale.Api.Controllers
                     return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
                 }
 
-                var success = await _liquidityService.AddLiquidityAsync(
+                var validation = await _liquidityService.ValidateLiquidityParametersAsync(
                     request.WalletAddress,
                     request.PoolId,
                     request.Token0Amount,
-                    request.Token1Amount,
-                    request.Token0AmountMin,
-                    request.Token1AmountMin);
+                    request.Token1Amount);
 
-                if (!success)
-                {
-                    return StatusCode(500, new ErrorResponse { Message = "Failed to add liquidity" });
-                }
-
-                return Ok(new { message = "Liquidity added successfully" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new ErrorResponse { Message = ex.Message });
+                return Ok(validation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error adding liquidity for {WalletAddress}", request.WalletAddress);
+                _logger.LogError(ex, "Error validating liquidity parameters");
                 return StatusCode(500, new ErrorResponse
                 {
-                    Message = "An error occurred while adding liquidity",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Remove liquidity from a position
-        /// </summary>
-        [EnableRateLimiting("LiquidityTransaction")]
-        [HttpPost("remove")]
-        [Authorize]
-        public async Task<ActionResult> RemoveLiquidity([FromBody] RemoveLiquidityRequest request)
-        {
-            try
-            {
-                if (!_blockchainService.IsValidAddress(request.WalletAddress))
-                {
-                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
-                }
-
-                var success = await _liquidityService.RemoveLiquidityAsync(
-                    request.WalletAddress,
-                    request.PositionId,
-                    request.PercentageToRemove);
-
-                if (!success)
-                {
-                    return StatusCode(500, new ErrorResponse { Message = "Failed to remove liquidity" });
-                }
-
-                return Ok(new { message = "Liquidity removed successfully" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new ErrorResponse { Message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing liquidity for {WalletAddress}", request.WalletAddress);
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "An error occurred while removing liquidity",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Claim fees from a liquidity position
-        /// </summary>
-        [EnableRateLimiting("LiquidityTransaction")]
-        [HttpPost("claim-fees")]
-        [Authorize]
-        public async Task<ActionResult> ClaimFees([FromBody] ClaimFeesRequest request)
-        {
-            try
-            {
-                if (!_blockchainService.IsValidAddress(request.WalletAddress))
-                {
-                    return BadRequest(new ErrorResponse { Message = "Invalid Ethereum address" });
-                }
-
-                var success = await _liquidityService.ClaimFeesAsync(request.WalletAddress, request.PositionId);
-
-                if (!success)
-                {
-                    return StatusCode(500, new ErrorResponse { Message = "Failed to claim fees" });
-                }
-
-                return Ok(new { message = "Fees claimed successfully" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new ErrorResponse { Message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error claiming fees for {WalletAddress}", request.WalletAddress);
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "An error occurred while claiming fees",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get DEX configurations
-        /// </summary>
-        [HttpGet("dexes")]
-        [ResponseCache(Duration = 3600)]
-        public async Task<ActionResult<List<DexConfigurationModel>>> GetDexConfigurations()
-        {
-            try
-            {
-                var dexes = await _liquidityService.GetDexConfigurationsAsync();
-                return Ok(dexes);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving DEX configurations");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error retrieving DEX configurations",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get liquidity analytics
-        /// </summary>
-        [HttpGet("analytics")]
-        [ResponseCache(Duration = 300)]
-        public async Task<ActionResult<LiquidityAnalyticsModel>> GetLiquidityAnalytics()
-        {
-            try
-            {
-                var analytics = await _liquidityService.GetLiquidityAnalyticsAsync();
-                return Ok(analytics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving liquidity analytics");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error retrieving liquidity analytics",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get top liquidity providers leaderboard
-        /// </summary>
-        [HttpGet("leaderboard")]
-        [ResponseCache(Duration = 600)]
-        public async Task<ActionResult<List<UserLiquidityStatsModel>>> GetTopLiquidityProviders([FromQuery] int limit = 10)
-        {
-            try
-            {
-                if (limit <= 0 || limit > 100)
-                {
-                    return BadRequest(new ErrorResponse { Message = "Limit must be between 1 and 100" });
-                }
-
-                var topProviders = await _liquidityService.GetTopLiquidityProvidersAsync(limit);
-                return Ok(topProviders);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving top liquidity providers");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error retrieving top liquidity providers",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get pool performance data
-        /// </summary>
-        [HttpGet("pool-performance")]
-        [ResponseCache(Duration = 300)]
-        public async Task<ActionResult<List<PoolPerformanceDataModel>>> GetPoolPerformance()
-        {
-            try
-            {
-                var performance = await _liquidityService.GetPoolPerformanceAsync();
-                return Ok(performance);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving pool performance data");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error retrieving pool performance data",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get TVL trends
-        /// </summary>
-        [HttpGet("trends/tvl")]
-        [ResponseCache(Duration = 600)]
-        public async Task<ActionResult<List<LiquidityTrendDataModel>>> GetTvlTrends([FromQuery] int days = 30)
-        {
-            try
-            {
-                if (days <= 0 || days > 365)
-                {
-                    return BadRequest(new ErrorResponse { Message = "Days must be between 1 and 365" });
-                }
-
-                var trends = await _liquidityService.GetTvlTrendsAsync(days);
-                return Ok(trends);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving TVL trends");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error retrieving TVL trends",
-                    TraceId = HttpContext.TraceIdentifier
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get volume trends
-        /// </summary>
-        [HttpGet("trends/volume")]
-        [ResponseCache(Duration = 600)]
-        public async Task<ActionResult<List<VolumeTrendDataModel>>> GetVolumeTrends([FromQuery] int days = 30)
-        {
-            try
-            {
-                if (days <= 0 || days > 365)
-                {
-                    return BadRequest(new ErrorResponse { Message = "Days must be between 1 and 365" });
-                }
-
-                var trends = await _liquidityService.GetVolumeTrendsAsync(days);
-                return Ok(trends);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving volume trends");
-                return StatusCode(500, new ErrorResponse
-                {
-                    Message = "Error retrieving volume trends",
+                    Message = "Error validating liquidity parameters",
                     TraceId = HttpContext.TraceIdentifier
                 });
             }
@@ -526,7 +390,8 @@ namespace TeachCrowdSale.Api.Controllers
         /// Get liquidity guide steps
         /// </summary>
         [HttpGet("guide")]
-        public async Task<ActionResult<List<LiquidityGuideStepModel>>> GetLiquidityGuide([FromQuery] string? walletAddress = null)
+        [ResponseCache(Duration = 1800)]
+        public async Task<ActionResult<List<LiquidityGuideStepResponse>>> GetLiquidityGuide([FromQuery] string? walletAddress = null)
         {
             try
             {
@@ -550,6 +415,98 @@ namespace TeachCrowdSale.Api.Controllers
         }
 
         /// <summary>
+        /// Get pool performance data
+        /// </summary>
+        [HttpGet("analytics/pools")]
+        [ResponseCache(Duration = 600)]
+        public async Task<ActionResult<List<PoolPerformanceDataResponse>>> GetPoolPerformance()
+        {
+            try
+            {
+                var performance = await _liquidityService.GetPoolPerformanceAsync();
+                return Ok(performance);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving pool performance data");
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving pool performance data",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get TVL trends
+        /// </summary>
+        [HttpGet("analytics/tvl-trends")]
+        [ResponseCache(Duration = 300)]
+        public async Task<ActionResult<List<LiquidityTrendDataResponse>>> GetTvlTrends([FromQuery] int days = 30)
+        {
+            try
+            {
+                var trends = await _liquidityService.GetTvlTrendsAsync(days);
+                return Ok(trends);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving TVL trends");
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving TVL trends",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get volume trends
+        /// </summary>
+        [HttpGet("analytics/volume-trends")]
+        [ResponseCache(Duration = 300)]
+        public async Task<ActionResult<List<VolumeTrendDataResponse>>> GetVolumeTrends([FromQuery] int days = 30)
+        {
+            try
+            {
+                var trends = await _liquidityService.GetVolumeTrendsAsync(days);
+                return Ok(trends);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving volume trends");
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving volume trends",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get top liquidity providers
+        /// </summary>
+        [HttpGet("analytics/top-providers")]
+        [ResponseCache(Duration = 600)]
+        public async Task<ActionResult<List<UserLiquidityStatsResponse>>> GetTopLiquidityProviders([FromQuery] int limit = 10)
+        {
+            try
+            {
+                var topProviders = await _liquidityService.GetTopLiquidityProvidersAsync(limit);
+                return Ok(topProviders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving top liquidity providers");
+                return StatusCode(500, new ErrorResponse
+                {
+                    Message = "Error retrieving top liquidity providers",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+        }
+
+        /// <summary>
         /// Sync pool data from DEX APIs
         /// </summary>
         [HttpPost("sync/pools")]
@@ -561,13 +518,13 @@ namespace TeachCrowdSale.Api.Controllers
                 if (poolId.HasValue)
                 {
                     await _liquidityService.SyncPoolDataAsync(poolId.Value);
+                    return Ok(new { message = $"Pool {poolId} data synced successfully" });
                 }
                 else
                 {
                     await _liquidityService.SyncAllPoolsDataAsync();
+                    return Ok(new { message = "All pools data synced successfully" });
                 }
-
-                return Ok(new { message = "Pool data synced successfully" });
             }
             catch (Exception ex)
             {
@@ -590,13 +547,18 @@ namespace TeachCrowdSale.Api.Controllers
             try
             {
                 var success = await _liquidityService.RefreshPoolPricesAsync();
-
-                if (!success)
+                if (success)
                 {
-                    return StatusCode(500, new ErrorResponse { Message = "Failed to refresh pool prices" });
+                    return Ok(new { message = "Pool prices refreshed successfully" });
                 }
-
-                return Ok(new { message = "Pool prices refreshed successfully" });
+                else
+                {
+                    return StatusCode(500, new ErrorResponse
+                    {
+                        Message = "Failed to refresh some pool prices",
+                        TraceId = HttpContext.TraceIdentifier
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -608,50 +570,5 @@ namespace TeachCrowdSale.Api.Controllers
                 });
             }
         }
-    }
-}
-
-// Additional Request Models
-namespace TeachCrowdSale.Core.Models.Request
-{
-    public class RemoveLiquidityCalculationRequest
-    {
-        [Required]
-        [EthereumAddress]
-        public string WalletAddress { get; set; } = string.Empty;
-
-        [Required]
-        [Range(1, int.MaxValue)]
-        public int PositionId { get; set; }
-
-        [Required]
-        [Range(0.1, 100)]
-        public decimal PercentageToRemove { get; set; }
-    }
-
-    public class RemoveLiquidityRequest
-    {
-        [Required]
-        [EthereumAddress]
-        public string WalletAddress { get; set; } = string.Empty;
-
-        [Required]
-        [Range(1, int.MaxValue)]
-        public int PositionId { get; set; }
-
-        [Required]
-        [Range(0.1, 100)]
-        public decimal PercentageToRemove { get; set; }
-    }
-
-    public class ClaimFeesRequest
-    {
-        [Required]
-        [EthereumAddress]
-        public string WalletAddress { get; set; } = string.Empty;
-
-        [Required]
-        [Range(1, int.MaxValue)]
-        public int PositionId { get; set; }
     }
 }

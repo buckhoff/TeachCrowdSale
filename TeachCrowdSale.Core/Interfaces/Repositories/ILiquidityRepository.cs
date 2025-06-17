@@ -49,7 +49,7 @@ namespace TeachCrowdSale.Core.Interfaces.Repositories
         Task<decimal> GetTotalFeesGeneratedAsync();
         Task<int> GetActiveLiquidityProvidersCountAsync();
         Task<List<UserLiquidityStatsModel>> GetTopLiquidityProvidersAsync(int limit);
-        Task<List<PoolPerformanceDataModel>> GetPoolPerformanceDataAsync();
+        Task<List<PoolPerformanceModel>> GetPoolPerformanceDataAsync();
         Task<List<LiquidityTrendDataModel>> GetTvlTrendsAsync(int days);
         Task<List<VolumeTrendDataModel>> GetVolumeTrendsAsync(int days);
     }

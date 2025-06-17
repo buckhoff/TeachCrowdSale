@@ -1,7 +1,5 @@
 ﻿// TeachCrowdSale.Core/Interfaces/Services/ILiquidityService.cs
 using TeachCrowdSale.Core.Data.Entities;
-using TeachCrowdSale.Core.Models;
-using TeachCrowdSale.Core.Models.Liquidity;
 using TeachCrowdSale.Core.Models.Response;
 using Task = System.Threading.Tasks.Task;
 
@@ -9,54 +7,200 @@ namespace TeachCrowdSale.Core.Interfaces.Services
 {
     /// <summary>
     /// Interface for liquidity service operations
+    /// ARCHITECTURE FIX: Now returns only Response models (not web Models)
     /// </summary>
     public interface ILiquidityService
     {
-        // Pool Management
-        Task<List<LiquidityPoolDisplayModel>> GetActiveLiquidityPoolsAsync();
-        Task<LiquidityPool?> GetLiquidityPoolAsync(int poolId);
-        Task<LiquidityStatsOverviewModel> GetLiquidityStatsAsync();
-        Task<List<DexConfigurationModel>> GetDexConfigurationsAsync();
+        #region Pool Management
 
-        // User Position Management
-        Task<List<UserLiquidityPositionModel>> GetUserLiquidityPositionsAsync(string walletAddress);
-        Task<UserLiquidityPositionModel?> GetUserLiquidityPositionAsync(int positionId);
+        /// <summary>
+        /// Get active liquidity pools
+        /// </summary>
+        Task<List<LiquidityPoolResponse>> GetActiveLiquidityPoolsAsync();
+
+        /// <summary>
+        /// Get specific liquidity pool by ID
+        /// </summary>
+        Task<LiquidityPoolResponse?> GetLiquidityPoolAsync(int poolId);
+
+        /// <summary>
+        /// Get liquidity statistics overview
+        /// </summary>
+        Task<LiquidityStatsResponse> GetLiquidityStatsAsync();
+
+        /// <summary>
+        /// Get DEX configuration options
+        /// </summary>
+        Task<List<DexConfigurationResponse>> GetDexConfigurationsAsync();
+
+        #endregion
+
+        #region User Position Management
+
+        /// <summary>
+        /// Get user's liquidity positions
+        /// </summary>
+        Task<List<UserLiquidityPositionResponse>> GetUserLiquidityPositionsAsync(string walletAddress);
+
+        /// <summary>
+        /// Get specific user liquidity position
+        /// </summary>
+        Task<UserLiquidityPositionResponse?> GetUserLiquidityPositionAsync(int positionId);
+
+        /// <summary>
+        /// Get user's total liquidity value
+        /// </summary>
         Task<decimal> GetUserTotalLiquidityValueAsync(string walletAddress);
 
-        // Liquidity Calculations
-        Task<LiquidityCalculationModel> CalculateLiquidityPreviewAsync(string walletAddress, int poolId, decimal token0Amount, decimal? token1Amount = null, decimal slippageTolerance = 0.5m);
-        Task<LiquidityCalculationModel> CalculateRemoveLiquidityPreviewAsync(string walletAddress, int positionId, decimal percentageToRemove);
+        /// <summary>
+        /// Get comprehensive user liquidity information
+        /// </summary>
+        Task<UserLiquidityInfoResponse> GetUserLiquidityInfoAsync(string walletAddress);
 
-        // Liquidity Operations
-        Task<bool> AddLiquidityAsync(string walletAddress, int poolId, decimal token0Amount, decimal token1Amount, decimal token0AmountMin, decimal token1AmountMin);
-        Task<bool> RemoveLiquidityAsync(string walletAddress, int positionId, decimal percentageToRemove);
+        #endregion
+
+        #region Liquidity Calculations
+
+        /// <summary>
+        /// Calculate liquidity addition preview
+        /// </summary>
+        Task<LiquidityCalculationResponse> CalculateLiquidityPreviewAsync(
+            string walletAddress,
+            int poolId,
+            decimal token0Amount,
+            decimal? token1Amount = null,
+            decimal slippageTolerance = 0.5m);
+
+        /// <summary>
+        /// Calculate liquidity removal preview
+        /// </summary>
+        Task<LiquidityCalculationResponse> CalculateRemoveLiquidityPreviewAsync(
+            string walletAddress,
+            int positionId,
+            decimal percentageToRemove);
+
+        #endregion
+
+        #region Liquidity Operations
+
+        /// <summary>
+        /// Add liquidity to pool
+        /// </summary>
+        Task<bool> AddLiquidityAsync(
+            string walletAddress,
+            int poolId,
+            decimal token0Amount,
+            decimal token1Amount,
+            decimal token0AmountMin,
+            decimal token1AmountMin);
+
+        /// <summary>
+        /// Remove liquidity from position
+        /// </summary>
+        Task<bool> RemoveLiquidityAsync(
+            string walletAddress,
+            int positionId,
+            decimal percentageToRemove);
+
+        /// <summary>
+        /// Claim accumulated fees from position
+        /// </summary>
         Task<bool> ClaimFeesAsync(string walletAddress, int positionId);
 
-        // Pool Data Synchronization
+        #endregion
+
+        #region Pool Data Synchronization
+
+        /// <summary>
+        /// Sync specific pool data from DEX
+        /// </summary>
         Task SyncPoolDataAsync(int poolId);
+
+        /// <summary>
+        /// Sync all pools data from DEX
+        /// </summary>
         Task SyncAllPoolsDataAsync();
+
+        /// <summary>
+        /// Refresh pool prices from DEX APIs
+        /// </summary>
         Task<bool> RefreshPoolPricesAsync();
 
-        // Analytics
-        Task<LiquidityAnalyticsModel> GetLiquidityAnalyticsAsync();
-        Task<List<UserLiquidityStatsModel>> GetTopLiquidityProvidersAsync(int limit = 10);
-        Task<List<PoolPerformanceDataModel>> GetPoolPerformanceAsync();
-        Task<List<LiquidityTrendDataModel>> GetTvlTrendsAsync(int days = 30);
-        Task<List<VolumeTrendDataModel>> GetVolumeTrendsAsync(int days = 30);
+        #endregion
 
-        // DEX Integration
+        #region Analytics
+
+        /// <summary>
+        /// Get liquidity analytics data
+        /// </summary>
+        Task<LiquidityAnalyticsResponse> GetLiquidityAnalyticsAsync();
+
+        /// <summary>
+        /// Get top liquidity providers
+        /// </summary>
+        Task<List<UserLiquidityStatsResponse>> GetTopLiquidityProvidersAsync(int limit = 10);
+
+        /// <summary>
+        /// Get pool performance data
+        /// </summary>
+        Task<List<PoolPerformanceDataResponse>> GetPoolPerformanceAsync();
+
+        /// <summary>
+        /// Get TVL trends over time
+        /// </summary>
+        Task<List<LiquidityTrendDataResponse>> GetTvlTrendsAsync(int days = 30);
+
+        /// <summary>
+        /// Get volume trends over time
+        /// </summary>
+        Task<List<VolumeTrendDataResponse>> GetVolumeTrendsAsync(int days = 30);
+
+        #endregion
+
+        #region DEX Integration
+
+        /// <summary>
+        /// Get token price from DEX
+        /// </summary>
         Task<decimal> GetTokenPriceFromDexAsync(string tokenAddress, string dexName);
+
+        /// <summary>
+        /// Get pool reserves from DEX
+        /// </summary>
         Task<(decimal token0Reserve, decimal token1Reserve)> GetPoolReservesAsync(string poolAddress, string dexName);
+
+        /// <summary>
+        /// Get pool APY from DEX
+        /// </summary>
         Task<decimal> GetPoolAPYAsync(int poolId);
 
-        // Guidance and Education
-        Task<List<LiquidityGuideStepModel>> GetLiquidityGuideStepsAsync(string? walletAddress = null);
-        Task<bool> MarkGuideStepCompletedAsync(string walletAddress, int stepNumber);
-        Task<UserLiquidityInfoModel> GetUserLiquidityInfoAsync(string walletAddress);
-        Task<LiquidityValidationResponse> ValidateTransactionAsync(string walletAddress, string transactionType, int? poolId = null, int? positionId = null, decimal? token0Amount = null, decimal? token1Amount = null, decimal? percentageToRemove = null);
-        Task<List<RewardProjectionModel>> GetLiquidityRewardProjectionsAsync(string walletAddress, int poolId, decimal token0Amount, decimal token1Amount, int days = 365);
-        Task<List<LiquidityTransactionHistoryModel>> GetUserTransactionHistoryAsync(string walletAddress, int pageNumber = 1, int pageSize = 50);
-        Task<bool> UpdateUserPositionValuesAsync(string walletAddress);
-        Task<decimal> EstimateTransactionGasAsync(string walletAddress, string transactionType, int? poolId = null, int? positionId = null);
+        #endregion
+
+        #region Guidance and Education
+
+        /// <summary>
+        /// Get liquidity guide steps for user
+        /// </summary>
+        Task<List<LiquidityGuideStepResponse>> GetLiquidityGuideStepsAsync(string? walletAddress = null);
+
+        /// <summary>
+        /// Get comprehensive liquidity page data
+        /// </summary>
+        Task<LiquidityPageDataResponse> GetLiquidityPageDataAsync();
+
+        #endregion
+
+        #region Validation
+
+        /// <summary>
+        /// Validate liquidity parameters
+        /// </summary>
+        Task<LiquidityValidationResponse> ValidateLiquidityParametersAsync(
+            string walletAddress,
+            int poolId,
+            decimal token0Amount,
+            decimal token1Amount);
+
+        #endregion
     }
 }
