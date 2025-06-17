@@ -79,14 +79,12 @@ namespace TeachCrowdSale.Api.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IBlockchainService, BlockchainService>();
             services.AddScoped<IDexIntegrationService,DexIntegrationService>();
-            services.AddScoped<IGitHubService, GitHubService>();
             services.AddScoped<ILiquidityService,LiquidityService>();
             services.AddScoped<IPresaleService, PresaleService>();
             services.AddScoped<ITokenContractService, TokenContractService>();
 
             services.AddScoped<IAnalyticsRepository,AnalyticsRepository>();
             services.AddScoped<ILiquidityRepository,LiquidityRepository>();
-            services.AddScoped<IRoadmapRepository, RoadmapRepository>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();
 
             services.AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();

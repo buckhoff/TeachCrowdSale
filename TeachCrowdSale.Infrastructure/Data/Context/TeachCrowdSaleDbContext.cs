@@ -60,15 +60,6 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
         public DbSet<UserStakingBeneficiary> UserStakingBeneficiaries { get; set; }
         public DbSet<SchoolRewardDistribution> SchoolRewardDistributions { get; set; }
 
-
-        //Roadmap entities
-
-        public DbSet<Milestone> Milestones { get; set; }
-        public DbSet<Core.Data.Entities.Task> DevelopmentTasks { get; set; }
-        public DbSet<Dependency> Dependencies { get; set; }
-        public DbSet<Update> Updates { get; set; }
-        public DbSet<Release> Releases { get; set; }
-
         // Liquidity entities
         public DbSet<LiquidityPool> LiquidityPools { get; set; }
         public DbSet<UserLiquidityPosition> UserLiquidityPositions { get; set; }
@@ -87,7 +78,6 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
             ConfigureUtilityGovernanceEntities(modelBuilder);
             ConfigureAnalyticsEntities(modelBuilder);
             ConfigureStakingEntities(modelBuilder);
-            ConfigureRoadmapEntities(modelBuilder);
             ConfigureLiquidityEntities(modelBuilder);
         }
 
@@ -235,117 +225,6 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.HasIndex(e => e.Network);
                 entity.HasIndex(e => e.SortOrder);
                 entity.HasIndex(e => e.IsRecommended);
-            });
-        }
-
-        private void ConfigureRoadmapEntities(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Milestone>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(2000).IsRequired();
-                entity.Property(e => e.Category).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.ProgressPercentage).HasPrecision(5, 2);
-                entity.Property(e => e.TechnicalDetails).HasMaxLength(500);
-                entity.Property(e => e.GitHubIssueUrl).HasMaxLength(200);
-                entity.Property(e => e.DocumentationUrl).HasMaxLength(200);
-
-                entity.HasIndex(e => e.Status);
-                entity.HasIndex(e => e.Category);
-                entity.HasIndex(e => e.SortOrder);
-                entity.HasIndex(e => e.EstimatedCompletionDate);
-
-                entity.HasMany(e => e.Tasks)
-                    .WithOne(t => t.Milestone)
-                    .HasForeignKey(t => t.MilestoneId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasMany(e => e.Updates)
-                    .WithOne(u => u.Milestone)
-                    .HasForeignKey(u => u.MilestoneId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // Task configuration
-            modelBuilder.Entity<Core.Data.Entities.Task>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(1000);
-                entity.Property(e => e.ProgressPercentage).HasPrecision(5, 2);
-                entity.Property(e => e.AssignedDeveloper).HasMaxLength(100);
-                entity.Property(e => e.GitHubIssueUrl).HasMaxLength(200);
-                entity.Property(e => e.PullRequestUrl).HasMaxLength(200);
-
-                entity.HasIndex(e => e.MilestoneId);
-                entity.HasIndex(e => e.Status);
-                entity.HasIndex(e => e.Type);
-                entity.HasIndex(e => e.AssignedDeveloper);
-                entity.HasIndex(e => e.SortOrder);
-            });
-
-            // Dependency configuration
-            modelBuilder.Entity<Dependency>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Description).HasMaxLength(500);
-
-                entity.HasOne(e => e.Milestone)
-                    .WithMany(m => m.Dependencies)
-                    .HasForeignKey(e => e.MilestoneId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.DependsOnMilestone)
-                    .WithMany()
-                    .HasForeignKey(e => e.DependsOnMilestoneId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasIndex(e => e.MilestoneId);
-                entity.HasIndex(e => e.DependsOnMilestoneId);
-                entity.HasIndex(e => e.Type);
-            });
-
-            // Update configuration
-            modelBuilder.Entity<Update>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Title).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Content).HasMaxLength(2000).IsRequired();
-                entity.Property(e => e.ProgressChange).HasPrecision(5, 2);
-                entity.Property(e => e.AuthorName).HasMaxLength(100);
-
-                entity.HasIndex(e => e.MilestoneId);
-                entity.HasIndex(e => e.Type);
-                entity.HasIndex(e => e.CreatedAt);
-                entity.HasIndex(e => e.IsPublic);
-            });
-
-            // Release configuration
-            modelBuilder.Entity<Release>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Version).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(1000);
-                entity.Property(e => e.ReleaseNotes).HasMaxLength(2000);
-                entity.Property(e => e.GitHubReleaseUrl).HasMaxLength(200);
-                entity.Property(e => e.DocumentationUrl).HasMaxLength(200);
-
-                entity.HasIndex(e => e.Version).IsUnique();
-                entity.HasIndex(e => e.Type);
-                entity.HasIndex(e => e.Status);
-                entity.HasIndex(e => e.PlannedReleaseDate);
-                entity.HasIndex(e => e.ActualReleaseDate);
-                entity.HasIndex(e => e.IsPublic);
-
-                // Many-to-many relationship with Milestones
-                entity.HasMany(e => e.Milestones)
-                    .WithMany()
-                    .UsingEntity<Dictionary<string, object>>(
-                        "ReleaseMilestones",
-                        j => j.HasOne<Milestone>().WithMany().HasForeignKey("MilestoneId"),
-                        j => j.HasOne<Release>().WithMany().HasForeignKey("ReleaseId"));
             });
         }
 

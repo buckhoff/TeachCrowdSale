@@ -54,7 +54,7 @@ namespace TeachCrowdSale.Api.Middleware
             if (_environment.IsDevelopment())
             {
                 errorResponse.Message = exception.Message;
-                errorResponse.DeveloperDetails = new
+                errorResponse.Details = new
                 {
                     ExceptionType = exception.GetType().Name,
                     StackTrace = exception.StackTrace

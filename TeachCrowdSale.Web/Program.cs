@@ -63,18 +63,7 @@ builder.Services.AddHttpClient<IStakingDashboardService, StakingDashboardService
     client.DefaultRequestHeaders.Add("User-Agent", "TeachCrowdSale-Web/1.0");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
-builder.Services.AddHttpClient<IRoadmapDashboardService, RoadmapDashboardService>(client =>
-{
-    var apiBaseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl") ?? "https://localhost:7001";
-    client.BaseAddress = new Uri(apiBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
 
-    // Add default headers
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-    client.DefaultRequestHeaders.Add("User-Agent", "TeachCrowdSale-Web/1.0");
-})
-           .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
-           .SetHandlerLifetime(TimeSpan.FromMinutes(5));
 
 builder.Services.AddHttpClient("GitHubApi", client =>
 {
@@ -94,12 +83,8 @@ builder.Services.AddHttpClient("GitHubApi", client =>
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IBuyTradeService, BuyTradeService>();
 builder.Services.AddScoped<ITokenomicsService, TokenomicsService>();
-builder.Services.AddScoped<IRoadmapService, RoadmapService>();
 builder.Services.AddScoped<IAnalyticsDashboardService, AnalyticsDashboardService>();
 builder.Services.AddScoped<IStakingDashboardService, StakingDashboardService>();
-builder.Services.AddScoped<IRoadmapDashboardService, RoadmapDashboardService>();
-builder.Services.AddScoped<IRoadmapRepository, RoadmapRepository>();
-builder.Services.AddSingleton<IRoadmapCacheService, RoadmapCacheService>();
 
 
 // Add services to the container.

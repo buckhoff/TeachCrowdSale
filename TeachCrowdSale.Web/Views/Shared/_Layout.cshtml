@@ -1,52 +1,95 @@
-﻿<!DOCTYPE html>
+﻿<!-- TeachCrowdSale.Web/Views/Shared/_Layout.cshtml -->
+<!-- Updated main layout to use the navigation partial -->
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TeachCrowdSale.Web</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - TeachToken</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TeachCrowdSale.Web.styles.css" asp-append-version="true" />
+
+    <!-- Page-specific CSS -->
+    @await RenderSectionAsync("Styles", required: false)
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Home/Index">TeachCrowdSale.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Home/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
+    <!-- Navigation using the updated partial -->
+    @await Html.PartialAsync("_NavigationPartial")
+
+    <!-- Main content -->
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeachToken</h4>
+                    <p>Revolutionary education funding through blockchain technology</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/tokenomics">Tokenomics</a></li>
+                        <li><a href="/analytics">Analytics</a></li>
+                        <li><a href="/staking">Staking</a></li>
+                        <li><a href="/buy">Buy TEACH</a></li>
+                    </ul>
+                </div>
+
+                <!-- NEW: Development Footer Section -->
+                <div class="footer-section">
+                    <h4>Development</h4>
+                    <ul>
+                        <li><a href="/roadmap">Development Roadmap</a></li>
+                        <li><a href="/roadmap#milestones">Current Milestones</a></li>
+                        <li><a href="/roadmap#timeline">Timeline</a></li>
+                        <li><a href="https://github.com/buckhoff/TeachCrowdSale" target="_blank">GitHub Repository</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Blog</a></li>
                     </ul>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - TeachCrowdSale.Web - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TeachToken. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/legal">Legal</a>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core JavaScript -->
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <!-- Syncfusion JS -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Page-specific JavaScript -->
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
