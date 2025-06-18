@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using TeachCrowdSale.Core.Data.Entities;
 using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Core.Models.Liquidity;
+using TeachCrowdSale.Core.Models.Response;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using Task = System.Threading.Tasks.Task;
 
@@ -295,77 +296,138 @@ namespace TeachCrowdSale.Infrastructure.Repositories.Liquidity
                 .CountAsync();
         }
 
-        public async Task<List<UserLiquidityStatsModel>> GetTopLiquidityProvidersAsync(int limit)
+        public async Task<List<UserLiquidityStatsResponse>> GetTopLiquidityProvidersAsync(int limit)
         {
-            return await _context.UserLiquidityPositions
+            var userStats = await _context.UserLiquidityPositions
                 .Where(p => p.IsActive)
                 .GroupBy(p => p.WalletAddress)
-                .Select(g => new UserLiquidityStatsModel
+                .Select(g => new UserLiquidityStatsResponse
                 {
                     WalletAddress = g.Key,
                     DisplayAddress = g.Key.Substring(0, 6) + "..." + g.Key.Substring(g.Key.Length - 4),
-                    TotalValueProvided = g.Sum(p => p.CurrentValueUsd),
+                    TotalLiquidityValue = g.Sum(p => p.CurrentValueUsd),
+                    TotalValueProvided = g.Sum(p => p.InitialValueUsd),  // FIXED: Added missing property
                     TotalFeesEarned = g.Sum(p => p.FeesEarnedUsd),
+                    TotalPnL = g.Sum(p => p.NetPnL),
+                    PnLPercentage = g.Sum(p => p.InitialValueUsd) > 0 ?
+                        (g.Sum(p => p.NetPnL) / g.Sum(p => p.InitialValueUsd)) * 100 : 0,
                     ActivePositions = g.Count(),
-                    FirstProvisionDate = g.Min(p => p.AddedAt)
+                    FirstPositionDate = g.Min(p => p.AddedAt),
+                    TimeActive = DateTime.UtcNow - g.Min(p => p.AddedAt)
                 })
-                .OrderByDescending(u => u.TotalValueProvided)
+                .OrderByDescending(u => u.TotalLiquidityValue)
                 .Take(limit)
                 .ToListAsync();
+
+            // Add ranking
+            for (int i = 0; i < userStats.Count; i++)
+            {
+                userStats[i].Rank = i + 1;
+            }
+
+            return userStats;
         }
 
-        public async Task<List<PoolPerformanceModel>> GetPoolPerformanceDataAsync()
+        public async Task<List<PoolPerformanceDataResponse>> GetPoolPerformanceDataAsync()
         {
             return await _context.LiquidityPools
                 .Where(p => p.IsActive)
-                .Select(p => new PoolPerformanceModel
+                .Select(p => new PoolPerformanceDataResponse
                 {
                     PoolId = p.Id,
                     PoolName = p.Name,
+                    TokenPair = p.TokenPair,
+                    DexName = p.DexName,
+                    APY = p.APY,
                     TotalValueLocked = p.TotalValueLocked,
                     Volume24h = p.Volume24h,
-                    APY = p.APY,
-                    FeesGenerated = p.UserPositions.Where(up => up.IsActive).Sum(up => up.FeesEarnedUsd),
-                    ProvidersCount = p.UserPositions.Where(up => up.IsActive).Select(up => up.WalletAddress).Distinct().Count()
+                    FeesGenerated24h = p.Volume24h * (p.FeePercentage / 100),  // Calculate fees
+                    PriceChange24h = 0, // Would need historical data to calculate
+                    ProvidersCount = p.UserPositions.Where(up => up.IsActive).Select(up => up.WalletAddress).Distinct().Count(),
+                    LastUpdated = p.UpdatedAt
                 })
                 .OrderByDescending(p => p.TotalValueLocked)
                 .ToListAsync();
         }
 
-        public async Task<List<LiquidityTrendDataModel>> GetTvlTrendsAsync(int days)
+        public async Task<List<LiquidityTrendDataResponse>> GetTvlTrendsAsync(int days)
         {
-            var fromDate = DateTime.UtcNow.AddDays(-days);
+            var startDate = DateTime.UtcNow.AddDays(-days);
 
             return await _context.LiquidityPoolSnapshots
-                .Where(s => s.Timestamp >= fromDate)
+                .Where(s => s.Timestamp >= startDate)
                 .GroupBy(s => s.Timestamp.Date)
-                .Select(g => new LiquidityTrendDataModel
+                .Select(g => new LiquidityTrendDataResponse
                 {
                     Date = g.Key,
                     TotalValueLocked = g.Sum(s => s.TotalValueLocked),
-                    Volume = g.Sum(s => s.Volume24h),
-                    APY = g.Average(s => s.APY)
+                    Change24h = 0, // Would need previous day's data to calculate
+                    ChangePercentage = 0
                 })
                 .OrderBy(t => t.Date)
                 .ToListAsync();
         }
 
-        public async Task<List<VolumeTrendDataModel>> GetVolumeTrendsAsync(int days)
+        public async Task<List<VolumeTrendDataResponse>> GetVolumeTrendsAsync(int days)
         {
-            var fromDate = DateTime.UtcNow.AddDays(-days);
+            var startDate = DateTime.UtcNow.AddDays(-days);
 
             return await _context.LiquidityPoolSnapshots
-                .Where(s => s.Timestamp >= fromDate)
+                .Where(s => s.Timestamp >= startDate)
                 .GroupBy(s => s.Timestamp.Date)
-                .Select(g => new VolumeTrendDataModel
+                .Select(g => new VolumeTrendDataResponse
                 {
                     Date = g.Key,
-                    Volume24h = g.Sum(s => s.Volume24h),
-                    FeesGenerated = g.Sum(s => s.Volume24h * 0.003m), // Estimate 0.3% fee
-                    TransactionCount = 0 // Would need separate transaction tracking
+                    Volume = g.Sum(s => s.Volume24h),
+                    Change24h = 0, // Would need previous day's data to calculate
+                    ChangePercentage = 0,
+                    TransactionCount = 0 // Would need transaction data to calculate
                 })
                 .OrderBy(t => t.Date)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// Get count of active liquidity pools
+        /// </summary>
+        public async Task<int> GetActivePoolsCountAsync()
+        {
+            return await _context.LiquidityPools
+                .Where(p => p.IsActive)
+                .CountAsync();
+        }
+
+        /// <summary>
+        /// Get total count of unique liquidity providers
+        /// </summary>
+        public async Task<int> GetTotalLiquidityProvidersAsync()
+        {
+            return await _context.UserLiquidityPositions
+                .Where(p => p.IsActive)
+                .Select(p => p.WalletAddress)
+                .Distinct()
+                .CountAsync();
+        }
+
+        /// <summary>
+        /// Get average APY across all active pools
+        /// </summary>
+        public async Task<decimal> GetAverageAPYAsync()
+        {
+            var activePools = await _context.LiquidityPools
+                .Where(p => p.IsActive)
+                .Select(p => p.APY)
+                .ToListAsync();
+
+            return activePools.Any() ? activePools.Average() : 0;
+        }
+
+        /// <summary>
+        /// Get total fees earned by all users (alias for GetTotalFeesGeneratedAsync)
+        /// </summary>
+        public async Task<decimal> GetTotalFeesEarnedAsync()
+        {
+            return await GetTotalFeesGeneratedAsync();
         }
 
         #endregion

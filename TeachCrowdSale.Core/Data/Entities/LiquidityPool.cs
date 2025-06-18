@@ -74,6 +74,7 @@ namespace TeachCrowdSale.Core.Data.Entities
 
         public bool IsActive { get; set; } = true;
         public bool IsFeatured { get; set; }
+        public bool IsRecommended { get; set; }
 
         [StringLength(500)]
         public string? Description { get; set; }

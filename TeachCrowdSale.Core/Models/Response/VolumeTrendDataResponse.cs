@@ -13,6 +13,8 @@ namespace TeachCrowdSale.Core.Models.Response
     {
         public DateTime Date { get; set; }
         public decimal Volume { get; set; }
+        public decimal Change24h { get; set; }
         public decimal ChangePercentage { get; set; }
+        public int TransactionCount { get; set; }
     }
 }

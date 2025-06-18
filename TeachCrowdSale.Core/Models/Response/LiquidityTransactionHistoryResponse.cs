@@ -13,16 +13,16 @@ namespace TeachCrowdSale.Core.Models.Response
     public class LiquidityTransactionHistoryResponse
     {
         public int Id { get; set; }
-        public string Type { get; set; } = string.Empty; // "Add", "Remove", "Claim"
-        public int PoolId { get; set; }
+        public string TransactionType { get; set; } = string.Empty;
+        public string TransactionHash { get; set; } = string.Empty;
         public string PoolName { get; set; } = string.Empty;
         public string TokenPair { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
+        public decimal Token0Amount { get; set; }
+        public decimal Token1Amount { get; set; }
         public decimal ValueUsd { get; set; }
-
-        [TransactionHash]
-        public string TransactionHash { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
+        public decimal GasFeesUsd { get; set; }
         public string Status { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public string DexName { get; set; } = string.Empty;
     }
 }

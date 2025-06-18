@@ -1,12 +1,12 @@
-﻿// TeachCrowdSale.Core/Interfaces/Repositories/ILiquidityRepository.cs
-using TeachCrowdSale.Core.Data.Entities;
-using TeachCrowdSale.Core.Models.Liquidity;
+﻿using TeachCrowdSale.Core.Data.Entities;
+using TeachCrowdSale.Core.Models.Response;  // ADDED: For Response models
 using Task = System.Threading.Tasks.Task;
 
 namespace TeachCrowdSale.Core.Interfaces.Repositories
 {
     /// <summary>
     /// Interface for liquidity repository operations
+    /// FIXED: Updated to use Response models and added missing methods
     /// </summary>
     public interface ILiquidityRepository
     {
@@ -43,14 +43,18 @@ namespace TeachCrowdSale.Core.Interfaces.Repositories
         Task<DexConfiguration?> GetDexConfigurationByNameAsync(string dexName);
         Task<DexConfiguration> UpdateDexConfigurationAsync(DexConfiguration dexConfig);
 
-        // Analytics
+        // Analytics - FIXED: All methods now exist and return Response models
         Task<decimal> GetTotalValueLockedAsync();
         Task<decimal> GetTotal24hVolumeAsync();
         Task<decimal> GetTotalFeesGeneratedAsync();
+        Task<decimal> GetTotalFeesEarnedAsync();  // ADDED: Alias for consistency
         Task<int> GetActiveLiquidityProvidersCountAsync();
-        Task<List<UserLiquidityStatsModel>> GetTopLiquidityProvidersAsync(int limit);
-        Task<List<PoolPerformanceModel>> GetPoolPerformanceDataAsync();
-        Task<List<LiquidityTrendDataModel>> GetTvlTrendsAsync(int days);
-        Task<List<VolumeTrendDataModel>> GetVolumeTrendsAsync(int days);
+        Task<int> GetActivePoolsCountAsync();  // ADDED: Missing method
+        Task<int> GetTotalLiquidityProvidersAsync();  // ADDED: Missing method
+        Task<decimal> GetAverageAPYAsync();  // ADDED: Missing method
+        Task<List<UserLiquidityStatsResponse>> GetTopLiquidityProvidersAsync(int limit);  // FIXED: Response model
+        Task<List<PoolPerformanceDataResponse>> GetPoolPerformanceDataAsync();  // FIXED: Response model
+        Task<List<LiquidityTrendDataResponse>> GetTvlTrendsAsync(int days);  // FIXED: Response model
+        Task<List<VolumeTrendDataResponse>> GetVolumeTrendsAsync(int days);  // FIXED: Response model
     }
 }
