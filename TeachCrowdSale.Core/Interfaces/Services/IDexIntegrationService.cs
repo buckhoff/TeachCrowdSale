@@ -34,6 +34,8 @@ namespace TeachCrowdSale.Core.Interfaces.Services
         Task<string?> FindPoolAddressAsync(string token0Address, string token1Address, string dexName);
         Task<List<string>> GetAllPoolsForTokenAsync(string tokenAddress, string dexName);
 
+        Task<decimal> GetTotalLpTokenSupplyAsync(string poolAddress);
+
         // Transaction Simulation
         Task<bool> SimulateAddLiquidityAsync(string walletAddress, string poolAddress, decimal token0Amount, decimal token1Amount);
         Task<bool> SimulateRemoveLiquidityAsync(string walletAddress, string poolAddress, decimal lpTokenAmount);

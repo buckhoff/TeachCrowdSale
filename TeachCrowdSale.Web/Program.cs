@@ -8,6 +8,7 @@ using TeachCrowdSale.Infrastructure.Configuration;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using TeachCrowdSale.Infrastructure.Repositories;
 using TeachCrowdSale.Infrastructure.Services;
+using TeachCrowdSale.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,27 +65,23 @@ builder.Services.AddHttpClient<IStakingDashboardService, StakingDashboardService
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-
-builder.Services.AddHttpClient("GitHubApi", client =>
+builder.Services.AddHttpClient<ILiquidityDashboardService, LiquidityDashboardService>("LiquidityApi", client =>
 {
-    client.BaseAddress = new Uri("https://api.github.com/");
-    client.Timeout = TimeSpan.FromSeconds(15);
-    client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
-    client.DefaultRequestHeaders.Add("User-Agent", "TeachCrowdSale-Web");
-
-    // Add GitHub token if configured
-    var githubToken = builder.Configuration.GetValue<string>("GitHub:AccessToken");
-    if (!string.IsNullOrEmpty(githubToken))
-    {
-        client.DefaultRequestHeaders.Add("Authorization", $"token {githubToken}");
-    }
+    var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7054";
+    client.BaseAddress = new Uri($"{apiBaseUrl}/api/liquidity/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "TeachCrowdSale-Web/1.0");
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
+
+
 
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IBuyTradeService, BuyTradeService>();
 builder.Services.AddScoped<ITokenomicsService, TokenomicsService>();
 builder.Services.AddScoped<IAnalyticsDashboardService, AnalyticsDashboardService>();
 builder.Services.AddScoped<IStakingDashboardService, StakingDashboardService>();
+builder.Services.AddScoped<ILiquidityDashboardService, LiquidityDashboardService>();
 
 
 // Add services to the container.
@@ -121,6 +118,20 @@ app.MapControllerRoute(
     name: "staking",
     pattern: "staking/{action=Index}/{id?}",
     defaults: new { controller = "Staking" });
+app.MapControllerRoute(
+    name: "liquidity",
+    pattern: "liquidity/{action=Index}/{id?}",
+    defaults: new { controller = "Liquidity" });
+
+app.MapControllerRoute(
+    name: "liquidity_add",
+    pattern: "liquidity/add/{step?}",
+    defaults: new { controller = "Liquidity", action = "Add" });
+
+app.MapControllerRoute(
+    name: "liquidity_manage",
+    pattern: "liquidity/manage/{action=Index}/{id?}",
+    defaults: new { controller = "Liquidity", action = "Manage" });
 
 app.MapStaticAssets();
 app.MapRazorPages()

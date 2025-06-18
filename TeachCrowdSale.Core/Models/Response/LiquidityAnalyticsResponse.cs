@@ -17,5 +17,8 @@ namespace TeachCrowdSale.Core.Models.Response
         public List<PoolPerformanceDataResponse> PoolPerformance { get; set; } = new();
         public List<UserLiquidityStatsResponse> TopProviders { get; set; } = new();
         public DateTime GeneratedAt { get; set; }
+
+        public List<DexPerformanceResponse> DexComparison { get; set; } = new();
+        public LiquidityStatsResponse Overview { get; set; } = new();
     }
 }

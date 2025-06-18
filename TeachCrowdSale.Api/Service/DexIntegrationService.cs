@@ -1053,6 +1053,11 @@ namespace TeachCrowdSale.Api.Service
             return new BigInteger(amount * multiplier);
         }
 
+        public Task<decimal> GetTotalLpTokenSupplyAsync(string poolAddress)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

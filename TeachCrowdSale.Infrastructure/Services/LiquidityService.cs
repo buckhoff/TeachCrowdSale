@@ -9,6 +9,8 @@ using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models.Response;
 using Task = System.Threading.Tasks.Task;
 using TeachCrowdSale.Core.Models;
+using Newtonsoft.Json.Linq;
+using TeachCrowdSale.Core.Data.Enum;
 
 namespace TeachCrowdSale.Infrastructure.Services
 {
@@ -73,7 +75,8 @@ namespace TeachCrowdSale.Infrastructure.Services
                 return await _cache.GetOrCreateAsync($"pool_{poolId}", async entry =>
                 {
                     entry.SetAbsoluteExpiration(MediumCacheDuration);
-                    return await _liquidityRepository.GetLiquidityPoolByIdAsync(poolId);
+                    var pool = await _liquidityRepository.GetLiquidityPoolByIdAsync(poolId);
+                    return pool;
                 });
             }
             catch (Exception ex)
@@ -141,7 +144,8 @@ namespace TeachCrowdSale.Infrastructure.Services
                     entry.SetAbsoluteExpiration(LongCacheDuration);
 
                     var dexConfigs = await _liquidityRepository.GetActiveDexConfigurationsAsync();
-                    return dexConfigs.Select(MapToDexConfigurationResponse).ToList();
+                    var dexConfigResponses = dexConfigs.Select(MapToDexConfigurationResponse).ToList();
+                    return dexConfigResponses != null ?dexConfigResponses : null;
                 });
             }
             catch (Exception ex)
@@ -350,7 +354,7 @@ namespace TeachCrowdSale.Infrastructure.Services
                     }
                     else
                     {
-                        calculation.EstimatedLpTokens = Math.Sqrt(calculation.Token0Amount * calculation.Token1Amount);
+                        calculation.EstimatedLpTokens = (decimal)Math.Sqrt((double)(calculation.Token0Amount * calculation.Token1Amount));
                     }
                 }
 
@@ -814,10 +818,10 @@ namespace TeachCrowdSale.Infrastructure.Services
 
                     var analytics = new LiquidityAnalyticsResponse
                     {
-                        TvlTrends = await _liquidityRepository.GetTvlTrendsAsync(30),
-                        VolumeTrends = await _liquidityRepository.GetVolumeTrendsAsync(30),
-                        PoolPerformance = await _liquidityRepository.GetPoolPerformanceDataAsync(),
-                        TopProviders = await _liquidityRepository.GetTopLiquidityProvidersAsync(10),
+                        TvlTrends = await GetTvlTrendsAsync(30),
+                        VolumeTrends = await GetVolumeTrendsAsync(30),
+                        PoolPerformance = await GetPoolPerformanceAsync(),
+                        TopProviders = await GetTopLiquidityProvidersAsync(10),
                         DexComparison = await GetDexComparisonDataAsync(),
                         Overview = await GetLiquidityStatsAsync()
                     };
@@ -832,11 +836,32 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Get total LP tokens in circulation for a pool
+        /// Helper method for calculating pool share
+        /// </summary>
+        private async Task<decimal> GetTotalLpTokensInPool(string poolAddress)
+        {
+            try
+            {
+                // This would query the DEX contract for total LP token supply
+                return await _dexIntegrationService.GetTotalLpTokenSupplyAsync(poolAddress);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not get total LP tokens for pool {PoolAddress}", poolAddress);
+
+                // Fallback: Use a reasonable estimate or return 0 to indicate failure
+                return 0;
+            }
+        }
+
+
         public async Task<List<UserLiquidityStatsResponse>> GetTopLiquidityProvidersAsync(int limit = 10)
         {
             try
             {
-                var allPositions = await _liquidityRepository.GetUserLiquidityPositionsAsync(string.Empty, true);
+                var allPositions = await _liquidityRepository.GetTopLiquidityProvidersAsync(limit);
 
                 var userStats = allPositions
                     .GroupBy(p => p.WalletAddress)
@@ -877,7 +902,21 @@ namespace TeachCrowdSale.Infrastructure.Services
         {
             try
             {
-                return await _liquidityRepository.GetPoolPerformanceDataAsync();
+                var allPools =  await _liquidityRepository.GetPoolPerformanceAsync();
+                return allPools.Select(p => new PoolPerformanceDataResponse
+                {
+                    PoolId = p.Id,
+                    PoolName = p.Name,
+                    TokenPair = p.TokenPair,
+                    DexName = p.DexName,
+                    APY = p.APY,
+                    TotalValueLocked = p.TotalValueLocked,
+                    Volume24h = p.Volume24h,
+                    FeesGenerated24h = p.Volume24h * (p.FeePercentage / 100m),
+                    PriceChange24h = CalculatePriceChange24h(p),
+                    ProvidersCount = p.UserPositions?.Where(up => up.IsActive).Select(up => up.WalletAddress).Distinct().Count() ?? 0,
+                    LastUpdated = p.UpdatedAt
+                }).ToList();
             }
             catch (Exception ex)
             {
@@ -890,7 +929,17 @@ namespace TeachCrowdSale.Infrastructure.Services
         {
             try
             {
-                return await _liquidityRepository.GetTvlTrendsAsync(days);
+                var allTrends = await _liquidityRepository.GetTvlTrendsAsync(days);
+                var change24h = 0m;
+                var changePercentage = 0m;
+
+                return allTrends.Select(t => new LiquidityTrendDataResponse
+                {
+                    Date = t.Timestamp.Date,
+                    TotalValueLocked = t.TotalValueLocked,
+                    Change24h = t.Volume24h,
+                    ChangePercentage = Math.Round((change24h / t.TotalValueLocked) * 100m, 2)
+                }).ToList();
             }
             catch (Exception ex)
             {
@@ -903,7 +952,15 @@ namespace TeachCrowdSale.Infrastructure.Services
         {
             try
             {
-                return await _liquidityRepository.GetVolumeTrendsAsync(days);
+                var allVolTrends = await _liquidityRepository.GetVolumeTrendsAsync(days);
+                return allVolTrends.Select(t => new VolumeTrendDataResponse
+                {
+                    Date = t.Timestamp.Date,
+                    Volume = t.Volume24h,
+                    Change24h = t.Volume24h,
+                    ChangePercentage = Math.Round((t.Volume24h / t.TotalValueLocked) * 100m, 2),
+                    TransactionCount = t.ActivePositions
+                }).ToList();
             }
             catch (Exception ex)
             {
@@ -1166,6 +1223,105 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Calculate the current USD value of a liquidity position
+        /// ADDED: Missing method that was being called by MapToUserLiquidityPositionResponseAsync
+        /// </summary>
+        private async Task<decimal> CalculateCurrentPositionValueAsync(UserLiquidityPosition position)
+        {
+            try
+            {
+                _logger.LogDebug("Calculating current value for position {PositionId}", position.Id);
+
+                // Method 1: Try to get current value from DEX integration (most accurate)
+                try
+                {
+                    // Get current token amounts for the LP tokens
+                    var (currentToken0Amount, currentToken1Amount) = await _dexIntegrationService
+                        .EstimateAmountsForLpTokensAsync(position.LiquidityPool.PoolAddress, position.LpTokenAmount);
+
+                    // Get current token prices
+                    var token0Price = await _dexIntegrationService.GetTokenPriceAsync(position.LiquidityPool.Token0Address);
+                    var token1Price = await _dexIntegrationService.GetTokenPriceAsync(position.LiquidityPool.Token1Address);
+
+                    // Calculate total current value
+                    var currentValue = (currentToken0Amount * token0Price) + (currentToken1Amount * token1Price);
+
+                    _logger.LogDebug("Calculated current value using DEX integration: ${CurrentValue} for position {PositionId}",
+                        currentValue, position.Id);
+
+                    return currentValue;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "DEX integration failed for position {PositionId}, using fallback calculation", position.Id);
+                }
+
+                // Method 2: Fallback - Use stored position data with price updates (less accurate but reliable)
+                try
+                {
+                    // Get current token prices
+                    var token0Price = await _dexIntegrationService.GetTokenPriceAsync(position.LiquidityPool.Token0Address);
+                    var token1Price = await _dexIntegrationService.GetTokenPriceAsync(position.LiquidityPool.Token1Address);
+
+                    // Use stored token amounts (may not reflect impermanent loss)
+                    var fallbackValue = (position.Token0Amount * token0Price) + (position.Token1Amount * token1Price);
+
+                    _logger.LogDebug("Calculated fallback value using stored amounts: ${FallbackValue} for position {PositionId}",
+                        fallbackValue, position.Id);
+
+                    return fallbackValue;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Price lookup failed for position {PositionId}, using pool-based calculation", position.Id);
+                }
+
+                // Method 3: Last resort - Use pool data and LP token ratio (least accurate)
+                try
+                {
+                    var pool = position.LiquidityPool;
+
+                    // Calculate position's share of the pool
+                    var totalLpTokens = await GetTotalLpTokensInPool(pool.PoolAddress);
+                    if (totalLpTokens > 0)
+                    {
+                        var poolShare = position.LpTokenAmount / totalLpTokens;
+                        var estimatedValue = pool.TotalValueLocked * poolShare;
+
+                        _logger.LogDebug("Calculated pool-based value: ${EstimatedValue} for position {PositionId}",
+                            estimatedValue, position.Id);
+
+                        return estimatedValue;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Pool-based calculation failed for position {PositionId}", position.Id);
+                }
+
+                // Final fallback: Return stored current value or initial value
+                if (position.CurrentValueUsd > 0)
+                {
+                    _logger.LogWarning("Using stored current value for position {PositionId}: ${StoredValue}",
+                        position.Id, position.CurrentValueUsd);
+                    return position.CurrentValueUsd;
+                }
+
+                _logger.LogWarning("All calculation methods failed for position {PositionId}, returning initial value: ${InitialValue}",
+                    position.Id, position.InitialValueUsd);
+
+                return position.InitialValueUsd;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical error calculating current position value for position {PositionId}", position.Id);
+
+                // Return stored value if available, otherwise initial value
+                return position.CurrentValueUsd > 0 ? position.CurrentValueUsd : position.InitialValueUsd;
+            }
+        }
+
         public async Task<List<DexPerformanceResponse>> GetDexComparisonDataAsync()
         {
             try
@@ -1301,108 +1457,382 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
-        public async Task<LiquidityValidationResponse> ValidateTransactionAsync(string walletAddress, string transactionType, int? poolId = null, int? positionId = null, decimal? token0Amount = null, decimal? token1Amount = null, decimal? percentageToRemove = null)
+        /// <summary>
+        /// ADDED: Validate liquidity parameters for add liquidity operation
+        /// This method matches the API Controller's ValidateLiquidityParameters endpoint signature
+        /// </summary>
+        public async Task<LiquidityValidationResponse> ValidateLiquidityParametersAsync(
+            string walletAddress,
+            int poolId,
+            decimal token0Amount,
+            decimal token1Amount)
         {
             try
             {
-                var response = new LiquidityValidationResponse();
+                _logger.LogDebug("Validating liquidity parameters for wallet {WalletAddress}, pool {PoolId}",
+                    walletAddress, poolId);
 
-                switch (transactionType.ToUpper())
+                var response = new LiquidityValidationResponse
                 {
-                    case "ADD":
-                        if (!poolId.HasValue || !token0Amount.HasValue || !token1Amount.HasValue)
-                        {
-                            response.ValidationMessages.Add("Pool ID and token amounts are required for add liquidity");
-                            return response;
-                        }
+                    IsValid = true,
+                    ValidationMessages = new List<string>(),
+                    WarningMessages = new List<string>()
+                };
 
-                        var pool = await GetLiquidityPoolAsync(poolId.Value);
-                        if (pool == null)
-                        {
-                            response.ValidationMessages.Add($"Pool {poolId} not found");
-                            return response;
-                        }
-
-                        // Check balances
-                        var token0Balance = await _blockchainService.GetBalanceAsync(walletAddress, pool.Token0Address);
-                        var token1Balance = await _blockchainService.GetBalanceAsync(walletAddress, pool.Token1Address);
-
-                        response.HasSufficientBalance = token0Balance >= token0Amount.Value && token1Balance >= token1Amount.Value;
-                        if (!response.HasSufficientBalance)
-                        {
-                            response.ValidationMessages.Add("Insufficient token balance");
-                        }
-
-                        // Calculate price impact
-                        response.PriceImpact = await _dexIntegrationService.CalculatePriceImpactAsync(
-                            pool.PoolAddress, token0Amount.Value, token1Amount.Value);
-
-                        if (response.PriceImpact > 5)
-                        {
-                            response.WarningMessages.Add($"High price impact: {response.PriceImpact:F2}%");
-                        }
-
-                        break;
-
-                    case "REMOVE":
-                        if (!positionId.HasValue || !percentageToRemove.HasValue)
-                        {
-                            response.ValidationMessages.Add("Position ID and percentage are required for remove liquidity");
-                            return response;
-                        }
-
-                        var position = await _liquidityRepository.GetUserLiquidityPositionByIdAsync(positionId.Value);
-                        if (position == null || position.WalletAddress != walletAddress.ToLowerInvariant())
-                        {
-                            response.ValidationMessages.Add("Position not found or unauthorized");
-                            return response;
-                        }
-
-                        if (!position.IsActive)
-                        {
-                            response.ValidationMessages.Add("Position is not active");
-                            return response;
-                        }
-
-                        break;
-
-                    case "CLAIM_FEES":
-                        if (!positionId.HasValue)
-                        {
-                            response.ValidationMessages.Add("Position ID is required for claim fees");
-                            return response;
-                        }
-
-                        var claimPosition = await _liquidityRepository.GetUserLiquidityPositionByIdAsync(positionId.Value);
-                        if (claimPosition == null || claimPosition.WalletAddress != walletAddress.ToLowerInvariant())
-                        {
-                            response.ValidationMessages.Add("Position not found or unauthorized");
-                            return response;
-                        }
-
-                        if (claimPosition.FeesEarnedUsd <= 0)
-                        {
-                            response.ValidationMessages.Add("No fees available to claim");
-                            return response;
-                        }
-
-                        break;
-
-                    default:
-                        response.ValidationMessages.Add($"Unknown transaction type: {transactionType}");
-                        return response;
+                // Get pool information
+                var pool = await GetLiquidityPoolAsync(poolId);
+                if (pool == null)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add($"Liquidity pool {poolId} not found");
+                    return response;
                 }
 
-                // Estimate gas fee
-                response.EstimatedGasFee = await EstimateTransactionGasAsync(walletAddress, transactionType, poolId, positionId);
+                // Validate pool is active
+                if (!pool.IsActive)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add("Liquidity pool is not active");
+                    return response;
+                }
 
-                response.IsValid = !response.ValidationMessages.Any();
+                // Validate amounts are positive
+                if (token0Amount <= 0)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add($"Token 0 amount must be greater than 0");
+                }
+
+                if (token1Amount <= 0)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add($"Token 1 amount must be greater than 0");
+                }
+
+                if (!response.IsValid)
+                {
+                    return response;
+                }
+
+                // Check wallet balances
+                var token0Balance = await _blockchainService.GetBalanceAsync(walletAddress, pool.Token0Address);
+                var token1Balance = await _blockchainService.GetBalanceAsync(walletAddress, pool.Token1Address);
+
+                response.HasSufficientBalance = token0Balance >= token0Amount && token1Balance >= token1Amount;
+                response.Token0Balance = token0Balance;
+                response.Token1Balance = token1Balance;
+
+                if (!response.HasSufficientBalance)
+                {
+                    response.IsValid = false;
+                    if (token0Balance < token0Amount)
+                    {
+                        response.ValidationMessages.Add($"Insufficient {pool.Token0Symbol} balance. Required: {token0Amount}, Available: {token0Balance}");
+                    }
+                    if (token1Balance < token1Amount)
+                    {
+                        response.ValidationMessages.Add($"Insufficient {pool.Token1Symbol} balance. Required: {token1Amount}, Available: {token1Balance}");
+                    }
+                }
+
+                // Calculate price impact
+                try
+                {
+                    response.PriceImpact = await _dexIntegrationService.CalculatePriceImpactAsync(
+                        pool.PoolAddress, token0Amount, token1Amount);
+
+                    // Warning for high price impact
+                    if (response.PriceImpact > 5)
+                    {
+                        response.WarningMessages.Add($"High price impact: {response.PriceImpact:F2}%");
+                    }
+
+                    // Critical warning for very high price impact
+                    if (response.PriceImpact > 15)
+                    {
+                        response.WarningMessages.Add("WARNING: Extremely high price impact may result in significant value loss");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not calculate price impact for pool {PoolId}", poolId);
+                    response.WarningMessages.Add("Unable to calculate price impact");
+                }
+
+                // Check token allowances (if user needs to approve spending)
+                try
+                {
+                    // Note: This would require knowing the DEX router/contract address
+                    // For now, we'll add a warning that allowances should be checked
+                    response.WarningMessages.Add("Please ensure token allowances are sufficient for the DEX contract");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not check token allowances for wallet {WalletAddress}", walletAddress);
+                }
+
+                // Calculate expected LP tokens (approximate)
+                try
+                {
+                    response.ExpectedLpTokens = await CalculateExpectedLpTokensAsync(poolId, token0Amount, token1Amount);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not calculate expected LP tokens for pool {PoolId}", poolId);
+                }
+
+                // Estimate gas costs
+                try
+                {
+                    response.EstimatedGasCost = await EstimateAddLiquidityGasAsync(poolId, token0Amount, token1Amount);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not estimate gas cost for add liquidity operation");
+                    response.WarningMessages.Add("Unable to estimate gas costs");
+                }
+
+                // Final validation check
+                if (response.ValidationMessages.Count == 0)
+                {
+                    response.IsValid = true;
+                }
+
+                _logger.LogDebug("Liquidity validation completed for wallet {WalletAddress}: Valid={IsValid}, Messages={MessageCount}",
+                    walletAddress, response.IsValid, response.ValidationMessages.Count);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating transaction for {WalletAddress}", walletAddress);
-                throw;
+                _logger.LogError(ex, "Error validating liquidity parameters for wallet {WalletAddress}, pool {PoolId}",
+                    walletAddress, poolId);
+
+                return new LiquidityValidationResponse
+                {
+                    IsValid = false,
+                    ValidationMessages = new List<string> { "An error occurred during validation" },
+                    WarningMessages = new List<string>()
+                };
+            }
+        }
+
+        /// <summary>
+        /// UPDATED: Enhanced ValidateTransactionAsync method for comprehensive validation
+        /// This method can handle multiple transaction types (ADD, REMOVE, CLAIM_FEES)
+        /// </summary>
+        public async Task<LiquidityValidationResponse> ValidateTransactionAsync(
+            string walletAddress,
+            string transactionType,
+            int? poolId = null,
+            int? positionId = null,
+            decimal? token0Amount = null,
+            decimal? token1Amount = null,
+            decimal? percentageToRemove = null)
+        {
+            try
+            {
+                var transactionTypeUpper = transactionType.ToUpper();
+
+                switch (transactionTypeUpper)
+                {
+                    case "ADD":
+                        if (!poolId.HasValue || !token0Amount.HasValue || !token1Amount.HasValue)
+                        {
+                            return new LiquidityValidationResponse
+                            {
+                                IsValid = false,
+                                ValidationMessages = new List<string> { "Pool ID and token amounts are required for add liquidity" }
+                            };
+                        }
+                        // Use the dedicated ValidateLiquidityParametersAsync method
+                        return await ValidateLiquidityParametersAsync(walletAddress, poolId.Value, token0Amount.Value, token1Amount.Value);
+
+                    case "REMOVE":
+                        if (!positionId.HasValue || !percentageToRemove.HasValue)
+                        {
+                            return new LiquidityValidationResponse
+                            {
+                                IsValid = false,
+                                ValidationMessages = new List<string> { "Position ID and percentage to remove are required for remove liquidity" }
+                            };
+                        }
+                        return await ValidateRemoveLiquidityAsync(walletAddress, positionId.Value, percentageToRemove.Value);
+
+                    case "CLAIM_FEES":
+                        if (!positionId.HasValue)
+                        {
+                            return new LiquidityValidationResponse
+                            {
+                                IsValid = false,
+                                ValidationMessages = new List<string> { "Position ID is required for claim fees" }
+                            };
+                        }
+                        return await ValidateClaimFeesAsync(walletAddress, positionId.Value);
+
+                    default:
+                        return new LiquidityValidationResponse
+                        {
+                            IsValid = false,
+                            ValidationMessages = new List<string> { $"Unknown transaction type: {transactionType}" }
+                        };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating transaction for wallet {WalletAddress}, type {TransactionType}",
+                    walletAddress, transactionType);
+
+                return new LiquidityValidationResponse
+                {
+                    IsValid = false,
+                    ValidationMessages = new List<string> { "An error occurred during transaction validation" }
+                };
+            }
+        }
+
+        /// <summary>
+        /// ADDED: Validate remove liquidity operation
+        /// </summary>
+        public async Task<LiquidityValidationResponse> ValidateRemoveLiquidityAsync(
+            string walletAddress,
+            int positionId,
+            decimal percentageToRemove)
+        {
+            try
+            {
+                var response = new LiquidityValidationResponse
+                {
+                    IsValid = true,
+                    ValidationMessages = new List<string>(),
+                    WarningMessages = new List<string>()
+                };
+
+                // Validate percentage range
+                if (percentageToRemove <= 0 || percentageToRemove > 100)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add("Percentage to remove must be between 0.1 and 100");
+                    return response;
+                }
+
+                // Get user position
+                var position = await GetUserLiquidityPositionAsync(positionId);
+                if (position == null)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add($"Liquidity position {positionId} not found");
+                    return response;
+                }
+
+                // Verify ownership
+                if (position.WalletAddress.ToLower() != walletAddress.ToLower())
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add("You don't own this liquidity position");
+                    return response;
+                }
+
+                // Verify position is active
+                if (!position.IsActive)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add("This liquidity position is not active");
+                    return response;
+                }
+
+                // Calculate amounts to remove
+                var token0AmountToRemove = position.Token0Amount * (percentageToRemove / 100);
+                var token1AmountToRemove = position.Token1Amount * (percentageToRemove / 100);
+                var valueToRemove = position.CurrentValueUsd * (percentageToRemove / 100);
+
+                response.Token0AmountToRemove = token0AmountToRemove;
+                response.Token1AmountToRemove = token1AmountToRemove;
+                response.ValueToRemove = valueToRemove;
+
+                // Warning for large removals
+                if (percentageToRemove >= 90)
+                {
+                    response.WarningMessages.Add("You are removing most or all of your liquidity position");
+                }
+
+                // Estimate gas costs
+                try
+                {
+                    response.EstimatedGasCost = await EstimateRemoveLiquidityGasAsync(positionId, percentageToRemove);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not estimate gas cost for remove liquidity operation");
+                    response.WarningMessages.Add("Unable to estimate gas costs");
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating remove liquidity for position {PositionId}", positionId);
+
+                return new LiquidityValidationResponse
+                {
+                    IsValid = false,
+                    ValidationMessages = new List<string> { "An error occurred during remove liquidity validation" }
+                };
+            }
+        }
+
+        /// <summary>
+        /// ADDED: Validate claim fees operation
+        /// </summary>
+        private async Task<LiquidityValidationResponse> ValidateClaimFeesAsync(string walletAddress, int positionId)
+        {
+            try
+            {
+                var response = new LiquidityValidationResponse
+                {
+                    IsValid = true,
+                    ValidationMessages = new List<string>(),
+                    WarningMessages = new List<string>()
+                };
+
+                // Get user position
+                var position = await GetUserLiquidityPositionAsync(positionId);
+                if (position == null)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add($"Liquidity position {positionId} not found");
+                    return response;
+                }
+
+                // Verify ownership
+                if (position.WalletAddress.ToLower() != walletAddress.ToLower())
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add("You don't own this liquidity position");
+                    return response;
+                }
+
+                // Check if there are fees to claim
+                if (position.FeesEarnedUsd <= 0)
+                {
+                    response.IsValid = false;
+                    response.ValidationMessages.Add("No fees available to claim");
+                    return response;
+                }
+
+                response.EstimatedGasFee = position.FeesEarnedUsd;
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating claim fees for position {PositionId}", positionId);
+
+                return new LiquidityValidationResponse
+                {
+                    IsValid = false,
+                    ValidationMessages = new List<string> { "An error occurred during claim fees validation" }
+                };
             }
         }
 
@@ -1489,6 +1919,7 @@ namespace TeachCrowdSale.Infrastructure.Services
             }
         }
 
+
         public async Task<bool> UpdateUserPositionValuesAsync(string walletAddress)
         {
             try
@@ -1552,6 +1983,48 @@ namespace TeachCrowdSale.Infrastructure.Services
             return $"${value:F2}";
         }
 
+        /// <summary>
+        /// Calculates 24-hour price change for a liquidity pool using snapshots
+        /// Returns 0 if insufficient historical data available
+        /// </summary>
+        /// <param name="pool">The LiquidityPool entity</param>
+        /// <returns>Price change percentage over 24 hours</returns>
+        private decimal CalculatePriceChange24h(LiquidityPool pool)
+        {
+            try
+            {
+                var currentPrice = pool.CurrentPrice;
+                if (currentPrice <= 0)
+                    return 0m;
+
+                // Look for snapshots to calculate price change
+                if (pool.Snapshots != null && pool.Snapshots.Any())
+                {
+                    var yesterday = DateTime.UtcNow.AddDays(-1);
+
+                    // Find the closest snapshot to 24 hours ago
+                    var previousSnapshot = pool.Snapshots
+                        .Where(s => s.Timestamp <= yesterday)
+                        .OrderByDescending(s => s.Timestamp)
+                        .FirstOrDefault();
+
+                    if (previousSnapshot != null && previousSnapshot.Price > 0)
+                    {
+                        var priceChange = currentPrice - previousSnapshot.Price;
+                        var changePercentage = (priceChange / previousSnapshot.Price) * 100m;
+                        return Math.Round(changePercentage, 2);
+                    }
+                }
+
+                // If no snapshots available, return 0
+                return 0m;
+            }
+            catch
+            {
+                // Return 0 on any calculation error
+                return 0m;
+            }
+        }
         private string FormatTokenAmount(decimal amount, int decimals = 4)
         {
             return amount.ToString($"N{decimals}");
@@ -1562,6 +2035,28 @@ namespace TeachCrowdSale.Infrastructure.Services
             return await _liquidityRepository.GetLiquidityPoolByIdAsync(poolId);
         }
 
+
+        private async Task<decimal> CalculateExpectedLpTokensAsync(int poolId, decimal token0Amount, decimal token1Amount)
+        {
+            // This would calculate expected LP tokens based on pool reserves
+            // Implementation depends on the specific DEX (Uniswap V2/V3, etc.)
+            await Task.CompletedTask;
+            return 0; // Placeholder
+        }
+
+        private async Task<decimal> EstimateAddLiquidityGasAsync(int poolId, decimal token0Amount, decimal token1Amount)
+        {
+            // This would estimate gas costs for the add liquidity transaction
+            await Task.CompletedTask;
+            return 0.01m; // Placeholder - roughly 0.01 ETH
+        }
+
+        private async Task<decimal> EstimateRemoveLiquidityGasAsync(int positionId, decimal percentageToRemove)
+        {
+            // This would estimate gas costs for the remove liquidity transaction
+            await Task.CompletedTask;
+            return 0.008m; // Placeholder - roughly 0.008 ETH
+        }
         #endregion
     }
 }

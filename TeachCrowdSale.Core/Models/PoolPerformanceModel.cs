@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TeachCrowdSale.Core.Models
+namespace TeachCrowdSale.Core.Models.Staking
 {
     /// <summary>
     /// Pool performance model

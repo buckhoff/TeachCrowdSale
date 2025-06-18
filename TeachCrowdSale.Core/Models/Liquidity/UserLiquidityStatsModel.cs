@@ -7,6 +7,6 @@
         public decimal TotalValueProvided { get; set; }
         public decimal TotalFeesEarned { get; set; }
         public int ActivePositions { get; set; }
-        public DateTime FirstProvisionDate { get; set; }
+        public DateTime FirstPositionDate { get; set; }
     }
 }

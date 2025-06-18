@@ -66,16 +66,16 @@ namespace TeachCrowdSale.Core.Models.Liquidity
 
         // Pool performance analytics
         [Display(Name = "Top Performing Pools")]
-        public List<Models.PoolPerformanceModel> TopPerformingPools { get; set; } = new();
+        public List<PoolPerformanceModel> TopPerformingPools { get; set; } = new();
 
         [Display(Name = "Underperforming Pools")]
-        public List<Models.PoolPerformanceModel> UnderperformingPools { get; set; } = new();
+        public List<PoolPerformanceModel> UnderperformingPools { get; set; } = new();
 
         [Display(Name = "New Pools")]
-        public List<Models.PoolPerformanceModel> NewPools { get; set; } = new();
+        public List<PoolPerformanceModel> NewPools { get; set; } = new();
 
         [Display(Name = "Trending Pools")]
-        public List<Models.PoolPerformanceModel> TrendingPools { get; set; } = new();
+        public List<PoolPerformanceModel> TrendingPools { get; set; } = new();
 
         // DEX analytics
         [Display(Name = "DEX Performance")]

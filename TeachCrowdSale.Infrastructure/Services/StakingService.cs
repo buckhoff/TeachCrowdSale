@@ -6,6 +6,7 @@ using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Core.Interfaces.Services;
 using TeachCrowdSale.Core.Models;
 using TeachCrowdSale.Core.Models.Response;
+using TeachCrowdSale.Core.Models.Staking;
 using Task = System.Threading.Tasks.Task;
 
 namespace TeachCrowdSale.Infrastructure.Services;

@@ -1,5 +1,6 @@
 ﻿// TeachCrowdSale.Core/Interfaces/Services/ILiquidityService.cs
 using TeachCrowdSale.Core.Data.Entities;
+using TeachCrowdSale.Core.Data.Enum;
 using TeachCrowdSale.Core.Models.Response;
 using Task = System.Threading.Tasks.Task;
 
@@ -13,7 +14,7 @@ namespace TeachCrowdSale.Core.Interfaces.Services
     {
         #region Pool Management
         Task<List<LiquidityPoolResponse>> GetActiveLiquidityPoolsAsync();
-        Task<LiquidityPoolResponse?> GetLiquidityPoolAsync(int poolId);
+        Task<LiquidityPool?> GetLiquidityPoolAsync(int poolId);
         Task<LiquidityStatsResponse> GetLiquidityStatsAsync();
         Task<List<DexConfigurationResponse>> GetDexConfigurationsAsync();
 
@@ -30,6 +31,9 @@ namespace TeachCrowdSale.Core.Interfaces.Services
         // ADDED: User transaction history method
         Task<List<LiquidityTransactionHistoryResponse>> GetUserTransactionHistoryAsync(string walletAddress, int page = 1, int pageSize = 10);
         #endregion
+
+        Task<List<LiquidityTrendDataResponse>> GetTvlTrendsAsync(int days = 30);
+        Task<List<VolumeTrendDataResponse>> GetVolumeTrendsAsync(int days = 30);
 
         #region Liquidity Calculations
         Task<LiquidityCalculationResponse> CalculateLiquidityPreviewAsync(
@@ -77,6 +81,39 @@ namespace TeachCrowdSale.Core.Interfaces.Services
         Task<List<DexPerformanceResponse>> GetDexComparisonDataAsync();
         #endregion
 
+        #region Validation & Transaction Operations
+        /// <summary>
+        /// Validate liquidity parameters for add liquidity operation
+        /// Called by API Controller's ValidateLiquidityParameters endpoint
+        /// </summary>
+        Task<LiquidityValidationResponse> ValidateLiquidityParametersAsync(
+            string walletAddress,
+            int poolId,
+            decimal token0Amount,
+            decimal token1Amount);
+
+        /// <summary>
+        /// Comprehensive transaction validation for any liquidity operation
+        /// More flexible method for complex validation scenarios
+        /// </summary>
+        Task<LiquidityValidationResponse> ValidateTransactionAsync(
+            string walletAddress,
+            string transactionType,
+            int? poolId = null,
+            int? positionId = null,
+            decimal? token0Amount = null,
+            decimal? token1Amount = null,
+            decimal? percentageToRemove = null);
+
+        /// <summary>
+        /// Validate remove liquidity transaction
+        /// </summary>
+        Task<LiquidityValidationResponse> ValidateRemoveLiquidityAsync(
+            string walletAddress,
+            int positionId,
+            decimal percentageToRemove);
+        #endregion
+        
         #region Guide System
         Task<List<LiquidityGuideStepResponse>> GetLiquidityGuideStepsAsync(string dexName);
         Task<bool> MarkGuideStepCompletedAsync(string walletAddress, int stepNumber);

@@ -296,95 +296,92 @@ namespace TeachCrowdSale.Infrastructure.Repositories.Liquidity
                 .CountAsync();
         }
 
-        public async Task<List<UserLiquidityStatsResponse>> GetTopLiquidityProvidersAsync(int limit)
+        /// <summary>
+        /// Returns UserLiquidityPosition entities for top providers
+        /// Service layer will group and convert to UserLiquidityStatsResponse
+        /// </summary>
+        public async Task<List<UserLiquidityPosition>> GetTopLiquidityProvidersAsync(int limit = 10)
         {
-            var userStats = await _context.UserLiquidityPositions
-                .Where(p => p.IsActive)
-                .GroupBy(p => p.WalletAddress)
-                .Select(g => new UserLiquidityStatsResponse
-                {
-                    WalletAddress = g.Key,
-                    DisplayAddress = g.Key.Substring(0, 6) + "..." + g.Key.Substring(g.Key.Length - 4),
-                    TotalLiquidityValue = g.Sum(p => p.CurrentValueUsd),
-                    TotalValueProvided = g.Sum(p => p.InitialValueUsd),  // FIXED: Added missing property
-                    TotalFeesEarned = g.Sum(p => p.FeesEarnedUsd),
-                    TotalPnL = g.Sum(p => p.NetPnL),
-                    PnLPercentage = g.Sum(p => p.InitialValueUsd) > 0 ?
-                        (g.Sum(p => p.NetPnL) / g.Sum(p => p.InitialValueUsd)) * 100 : 0,
-                    ActivePositions = g.Count(),
-                    FirstPositionDate = g.Min(p => p.AddedAt),
-                    TimeActive = DateTime.UtcNow - g.Min(p => p.AddedAt)
-                })
-                .OrderByDescending(u => u.TotalLiquidityValue)
-                .Take(limit)
-                .ToListAsync();
-
-            // Add ranking
-            for (int i = 0; i < userStats.Count; i++)
+            try
             {
-                userStats[i].Rank = i + 1;
+                // Return all active positions - service will group by wallet and calculate stats
+                return await _context.UserLiquidityPositions
+                    .Include(p => p.LiquidityPool)
+                    .Where(p => p.IsActive && p.CurrentValueUsd > 0)
+                    .OrderByDescending(p => p.CurrentValueUsd)
+                    .ToListAsync();
             }
-
-            return userStats;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving top liquidity providers from database");
+                return new List<UserLiquidityPosition>();
+            }
         }
 
-        public async Task<List<PoolPerformanceDataResponse>> GetPoolPerformanceDataAsync()
+        /// Returns LiquidityPool entities with latest data for performance analysis
+        /// Service layer will convert to PoolPerformanceDataResponse
+        /// </summary>
+        public async Task<List<LiquidityPool>> GetPoolPerformanceAsync()
         {
-            return await _context.LiquidityPools
-                .Where(p => p.IsActive)
-                .Select(p => new PoolPerformanceDataResponse
-                {
-                    PoolId = p.Id,
-                    PoolName = p.Name,
-                    TokenPair = p.TokenPair,
-                    DexName = p.DexName,
-                    APY = p.APY,
-                    TotalValueLocked = p.TotalValueLocked,
-                    Volume24h = p.Volume24h,
-                    FeesGenerated24h = p.Volume24h * (p.FeePercentage / 100),  // Calculate fees
-                    PriceChange24h = 0, // Would need historical data to calculate
-                    ProvidersCount = p.UserPositions.Where(up => up.IsActive).Select(up => up.WalletAddress).Distinct().Count(),
-                    LastUpdated = p.UpdatedAt
-                })
-                .OrderByDescending(p => p.TotalValueLocked)
-                .ToListAsync();
+            try
+            {
+                return await _context.LiquidityPools
+                    .Include(p => p.UserPositions.Where(up => up.IsActive))
+                    .Include(p => p.Snapshots.OrderByDescending(s => s.Timestamp).Take(1))
+                    .Where(p => p.IsActive)
+                    .OrderByDescending(p => p.TotalValueLocked)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving pool performance data from database");
+                return new List<LiquidityPool>();
+            }
         }
 
-        public async Task<List<LiquidityTrendDataResponse>> GetTvlTrendsAsync(int days)
+        /// Returns LiquidityPoolSnapshot entities for TVL trend calculation
+        /// Service layer will aggregate by date and convert to LiquidityTrendDataResponse
+        /// </summary>
+        public async Task<List<LiquidityPoolSnapshot>> GetTvlTrendsAsync(int days = 30)
         {
-            var startDate = DateTime.UtcNow.AddDays(-days);
+            try
+            {
+                var startDate = DateTime.UtcNow.AddDays(-days);
 
-            return await _context.LiquidityPoolSnapshots
-                .Where(s => s.Timestamp >= startDate)
-                .GroupBy(s => s.Timestamp.Date)
-                .Select(g => new LiquidityTrendDataResponse
-                {
-                    Date = g.Key,
-                    TotalValueLocked = g.Sum(s => s.TotalValueLocked),
-                    Change24h = 0, // Would need previous day's data to calculate
-                    ChangePercentage = 0
-                })
-                .OrderBy(t => t.Date)
-                .ToListAsync();
+                return await _context.LiquidityPoolSnapshots
+                    .Include(s => s.LiquidityPool)
+                    .Where(s => s.Timestamp >= startDate && s.LiquidityPool.IsActive)
+                    .OrderBy(s => s.Timestamp)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving TVL trends from database");
+                return new List<LiquidityPoolSnapshot>();
+            }
         }
 
-        public async Task<List<VolumeTrendDataResponse>> GetVolumeTrendsAsync(int days)
+        /// <summary>
+        /// Returns LiquidityPoolSnapshot entities for volume trend calculation
+        /// Service layer will aggregate by date and convert to VolumeTrendDataResponse
+        /// </summary>
+        public async Task<List<LiquidityPoolSnapshot>> GetVolumeTrendsAsync(int days = 30)
         {
-            var startDate = DateTime.UtcNow.AddDays(-days);
+            try
+            {
+                var startDate = DateTime.UtcNow.AddDays(-days);
 
-            return await _context.LiquidityPoolSnapshots
-                .Where(s => s.Timestamp >= startDate)
-                .GroupBy(s => s.Timestamp.Date)
-                .Select(g => new VolumeTrendDataResponse
-                {
-                    Date = g.Key,
-                    Volume = g.Sum(s => s.Volume24h),
-                    Change24h = 0, // Would need previous day's data to calculate
-                    ChangePercentage = 0,
-                    TransactionCount = 0 // Would need transaction data to calculate
-                })
-                .OrderBy(t => t.Date)
-                .ToListAsync();
+                return await _context.LiquidityPoolSnapshots
+                    .Include(s => s.LiquidityPool)
+                    .Where(s => s.Timestamp >= startDate && s.LiquidityPool.IsActive)
+                    .OrderBy(s => s.Timestamp)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving volume trends from database");
+                return new List<LiquidityPoolSnapshot>();
+            }
         }
 
         /// <summary>

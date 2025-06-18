@@ -19,8 +19,6 @@ namespace TeachCrowdSale.Core.Models
         public DateTime Timestamp { get; set; }
         public string TransactionHash { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
-        public string FormattedValue { get; set; } = string.Empty;
-        public string FormattedDate { get; set; } = string.Empty;
         public string StatusClass { get; set; } = string.Empty;
     }
 }

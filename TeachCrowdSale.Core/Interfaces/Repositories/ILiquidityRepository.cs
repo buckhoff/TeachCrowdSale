@@ -52,9 +52,9 @@ namespace TeachCrowdSale.Core.Interfaces.Repositories
         Task<int> GetActivePoolsCountAsync();  // ADDED: Missing method
         Task<int> GetTotalLiquidityProvidersAsync();  // ADDED: Missing method
         Task<decimal> GetAverageAPYAsync();  // ADDED: Missing method
-        Task<List<UserLiquidityStatsResponse>> GetTopLiquidityProvidersAsync(int limit);  // FIXED: Response model
-        Task<List<PoolPerformanceDataResponse>> GetPoolPerformanceDataAsync();  // FIXED: Response model
-        Task<List<LiquidityTrendDataResponse>> GetTvlTrendsAsync(int days);  // FIXED: Response model
-        Task<List<VolumeTrendDataResponse>> GetVolumeTrendsAsync(int days);  // FIXED: Response model
+        Task<List<UserLiquidityPosition>> GetTopLiquidityProvidersAsync(int limit);  // FIXED: Response model
+        Task<List<LiquidityPool>> GetPoolPerformanceAsync();  // FIXED: Response model
+        Task<List<LiquidityPoolSnapshot>> GetTvlTrendsAsync(int days);  // FIXED: Response model
+        Task<List<LiquidityPoolSnapshot>> GetVolumeTrendsAsync(int days);  // FIXED: Response model
     }
 }

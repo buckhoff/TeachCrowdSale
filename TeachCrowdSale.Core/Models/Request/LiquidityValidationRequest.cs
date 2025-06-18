@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TeachCrowdSale.Core.Attributes;
+using TeachCrowdSale.Core.Data.Enum;
 
 namespace TeachCrowdSale.Core.Models.Request
 {
@@ -28,5 +29,7 @@ namespace TeachCrowdSale.Core.Models.Request
         [Required]
         [Range(0.000001, double.MaxValue)]
         public decimal Token1Amount { get; set; }
+
+        public LiquidityTransactionType TransactionType { get; set; }
     }
 }

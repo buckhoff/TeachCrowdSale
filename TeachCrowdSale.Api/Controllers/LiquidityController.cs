@@ -106,7 +106,7 @@ namespace TeachCrowdSale.Api.Controllers
                     Token1Symbol = pool.Token1Symbol,
                     DexName = pool.DexName,
                     PoolAddress = pool.PoolAddress,
-                    CurrentAPY = pool.CurrentAPY,
+                    CurrentAPY = pool.APY,
                     TotalValueLocked = pool.TotalValueLocked,
                     Volume24h = pool.Volume24h,
                     FeePercentage = pool.FeePercentage,

@@ -13,6 +13,7 @@
         public decimal AverageAPY { get; set; }
         public decimal UserCount { get; set; }
         public decimal PerformanceScore { get; set; }
+        public decimal Volume24h { get; set; }
 
         public string TotalTVLDisplay => FormatCurrency(TotalTVL);
         public string MarketShareDisplay => $"{MarketShare:F1}%";

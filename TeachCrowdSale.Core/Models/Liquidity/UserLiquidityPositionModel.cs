@@ -173,9 +173,9 @@ namespace TeachCrowdSale.Core.Models.Liquidity
             var sign = showSign && amount >= 0 ? "+" : "";
             return amount switch
             {
-                >= 1_000_000 => $"{sign}${amount / 1_000_000:F{decimals})}M",
-                >= 1_000 => $"{sign}${amount / 1_000:F{decimals}}K",
-                _ => $"{sign}${amount:F{decimals}}"
+                >= 1_000_000 => $"{sign}${(amount / 1_000_000).ToString($"F{decimals}")}M",
+                >= 1_000 => $"{sign}${(amount / 1_000).ToString($"F{decimals}")}K",
+                _ => $"{sign}${(amount).ToString($"F{decimals}")}"
             };
         }
 

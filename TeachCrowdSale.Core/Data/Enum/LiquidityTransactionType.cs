@@ -10,7 +10,7 @@ namespace TeachCrowdSale.Core.Data.Enum
     {
         Add,
         Remove,
-        ClaimFees,
+        Claim_Fees,
         Compound
     }
 }

@@ -16,6 +16,11 @@ namespace TeachCrowdSale.Core.Models.Response
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Icon { get; set; } = string.Empty;
+
+        // FIXED: Added missing ActionText and ActionUrl properties
+        public string ActionText { get; set; } = string.Empty;
+        public string ActionUrl { get; set; } = string.Empty;
+
         public List<string> ActionItems { get; set; } = new();
         public List<string> Tips { get; set; } = new();
         public List<string> Warnings { get; set; } = new();
