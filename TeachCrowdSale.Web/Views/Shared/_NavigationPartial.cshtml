@@ -1,10 +1,10 @@
 ﻿<!-- TeachCrowdSale.Web/Views/Shared/_NavigationPartial.cshtml -->
-<!-- Updated navigation component with roadmap integration -->
+<!-- Updated navigation component with liquidity integration -->
 @{
     var currentPage = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
 }
-
+<link rel="stylesheet" href="~/css/liquidity-nav.css" asp-append-version="true" />
 <nav class="navbar" id="navbar">
     <div class="container">
         <div class="nav-container">
@@ -33,6 +33,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="/liquidity" class="nav-link @(currentPage == "liquidity" ? "active" : "")">
+                        <span>Liquidity</span>
+                        <span class="nav-badge">New</span>
+                    </a>
+                </li>
+                <li>
                     <a href="/buy" class="nav-link @(currentPage == "buytrade" || currentPage == "buy" ? "active" : "")">
                         Buy TEACH
                     </a>
@@ -49,10 +55,17 @@
                 <span>Buy TEACH</span>
                 <i class="nav-cta-icon">→</i>
             </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <span class="mobile-toggle-line"></span>
+                <span class="mobile-toggle-line"></span>
+                <span class="mobile-toggle-line"></span>
+            </button>
         </div>
 
-       <!-- Mobile navigation menu-->
-        <!--<div class="mobile-nav-menu">
+        <!-- Mobile navigation menu -->
+        <div class="mobile-nav-menu" id="mobile-nav-menu">
             <div class="mobile-nav-content">
                 <ul class="mobile-nav-links">
                     <li>
@@ -75,6 +88,13 @@
                         </a>
                     </li>
                     <li>
+                        <a href="/liquidity" class="mobile-nav-link @(currentPage == "liquidity" ? "active" : "")">
+                            <span class="mobile-nav-icon">💧</span>
+                            <span>Liquidity</span>
+                            <span class="mobile-nav-badge">New</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="/buy" class="mobile-nav-link @(currentPage == "buytrade" || currentPage == "buy" ? "active" : "")">
                             <span class="mobile-nav-icon">💰</span>
                             <span>Buy TEACH</span>
@@ -82,19 +102,76 @@
                     </li>
                     <li>
                         <a href="/staking" class="mobile-nav-link @(currentPage == "staking" ? "active" : "")">
-                            <span class="mobile-nav-icon">🔐</span>
+                            <span class="mobile-nav-icon">🎯</span>
                             <span>Staking</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#community" class="mobile-nav-link">
+                            <span class="mobile-nav-icon">👥</span>
+                            <span>Community</span>
                         </a>
                     </li>
                 </ul>
 
                 <div class="mobile-nav-cta">
-                    <a href="/buy" class="nav-cta mobile-cta">
-                        <span>Buy TEACH</span>
-                        <i class="nav-cta-icon">→</i>
+                    <a href="/buy" class="btn-primary" style="width: 100%; text-align: center;">
+                        Buy TEACH Token
                     </a>
                 </div>
+
+                <!-- Mobile Liquidity Quick Actions -->
+                @if (currentPage == "liquidity")
+                {
+                    <div class="mobile-liquidity-nav">
+                        <h4>Liquidity Actions</h4>
+                        <div class="mobile-liquidity-links">
+                            <a href="/liquidity" class="mobile-liquidity-link @(currentAction == "index" ? "active" : "")">
+                                <span class="mobile-nav-icon">📊</span>
+                                <span>Dashboard</span>
+                            </a>
+                            <a href="/liquidity/add" class="mobile-liquidity-link @(currentAction == "add" ? "active" : "")">
+                                <span class="mobile-nav-icon">➕</span>
+                                <span>Add Liquidity</span>
+                            </a>
+                            <a href="/liquidity/manage" class="mobile-liquidity-link @(currentAction == "manage" ? "active" : "")">
+                                <span class="mobile-nav-icon">⚙️</span>
+                                <span>Manage Positions</span>
+                            </a>
+                        </div>
+                    </div>
+                }
             </div>
-        </div>-->
+        </div>
     </div>
+
+    <!-- Liquidity Quick Navigation (for liquidity pages only) -->
+    @if (currentPage == "liquidity")
+    {
+        <div class="liquidity-quick-nav">
+            <div class="container">
+                <div class="quick-nav-content">
+                    <div class="quick-nav-title">Liquidity</div>
+                    <div class="quick-nav-links">
+                        <a href="/liquidity" class="quick-nav-link @(currentAction == "index" ? "active" : "")">
+                            <span class="quick-nav-icon">📊</span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="/liquidity/add" class="quick-nav-link @(currentAction == "add" ? "active" : "")">
+                            <span class="quick-nav-icon">➕</span>
+                            <span>Add Liquidity</span>
+                        </a>
+                        <a href="/liquidity/manage" class="quick-nav-link @(currentAction == "manage" ? "active" : "")">
+                            <span class="quick-nav-icon">⚙️</span>
+                            <span>Manage Positions</span>
+                        </a>
+                        <a href="/liquidity/education" class="quick-nav-link">
+                            <span class="quick-nav-icon">📚</span>
+                            <span>Learn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </nav>

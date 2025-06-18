@@ -1,0 +1,582 @@
+﻿@model TeachCrowdSale.Core.Models.Liquidity.UserLiquidityInfoModel?
+@{
+    Layout = null;
+}
+@{
+    ViewData["Title"] = "Manage Liquidity Positions - TEACH Token";
+    ViewData["Description"] = "View and manage your TEACH token liquidity positions, track performance, and claim rewards.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Manage Liquidity Positions - TEACH Token" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/teachtoken-manage-liquidity-og.jpg" />
+    <meta property="og:url" content="https://teachtoken.io/liquidity/manage" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Manage Liquidity Positions - TEACH Token" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/liquidity.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    @await Html.PartialAsync("_NavigationPartial")
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content">
+
+        <!-- Manage Hero Section -->
+        <section class="liquidity-hero-section">
+            <div class="container">
+                <div class="liquidity-hero-container">
+                    <div class="liquidity-hero-content">
+                        <h1>Manage Liquidity Positions</h1>
+                        <p class="liquidity-hero-subtitle">
+                            Track your liquidity positions, monitor performance, and manage your rewards across all pools.
+                        </p>
+                        <div class="liquidity-hero-actions">
+                            <a href="/liquidity/add" class="btn-primary hero-cta">
+                                Add New Position
+                            </a>
+                            <button class="btn-secondary hero-cta" onclick="refreshPositions()">
+                                Refresh Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @if (string.IsNullOrEmpty(ViewBag.WalletAddress))
+        {
+            <!-- Wallet Connection Section -->
+            <section class="wallet-connection-section">
+                <div class="container">
+                    <div class="wallet-connect">
+                        <h3>Connect Your Wallet</h3>
+                        <p>Connect your wallet to view and manage your liquidity positions.</p>
+
+                        <div class="wallet-options">
+                            <button class="wallet-option" data-wallet="metamask">
+                                <img src="/images/wallets/metamask.png" alt="MetaMask" class="wallet-icon">
+                                <span>MetaMask</span>
+                            </button>
+                            <button class="wallet-option" data-wallet="walletconnect">
+                                <img src="/images/wallets/walletconnect.png" alt="WalletConnect" class="wallet-icon">
+                                <span>WalletConnect</span>
+                            </button>
+                            <button class="wallet-option" data-wallet="coinbase">
+                                <img src="/images/wallets/coinbase.png" alt="Coinbase Wallet" class="wallet-icon">
+                                <span>Coinbase Wallet</span>
+                            </button>
+                            <button class="wallet-option" data-wallet="trust">
+                                <img src="/images/wallets/trust.png" alt="Trust Wallet" class="wallet-icon">
+                                <span>Trust Wallet</span>
+                            </button>
+                        </div>
+
+                        <div class="wallet-manual-input">
+                            <h4>Or Enter Wallet Address Manually</h4>
+                            <div class="manual-input-group">
+                                <input type="text" id="manual-wallet-address" placeholder="0x..." maxlength="42">
+                                <button class="btn-primary" onclick="loadManualWallet()">Load Positions</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+        else
+        {
+            <!-- Portfolio Overview Section -->
+            <section class="portfolio-overview-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Portfolio Overview</h2>
+                        <p>Connected Wallet: <span class="wallet-address">@ViewBag.WalletAddress</span></p>
+                    </div>
+
+                    <div class="positions-overview">
+                        @if (Model?.Overview != null)
+                        {
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.Overview.TotalValue">
+                                    $@Model.Overview.TotalValue.ToString("N2")
+                                </div>
+                                <div class="position-label">Total Portfolio Value</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value @(Model.Overview.TotalPnl >= 0 ? "positive" : "negative")" data-value="@Model.Overview.TotalPnl">
+                                    @(Model.Overview.TotalPnl >= 0 ? "+" : "")$@Model.Overview.TotalPnl.ToString("N2")
+                                </div>
+                                <div class="position-label">Total P&L</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.Overview.TotalFeesEarned">
+                                    $@Model.Overview.TotalFeesEarned.ToString("N2")
+                                </div>
+                                <div class="position-label">Fees Earned</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.Overview.ActivePositions">
+                                    @Model.Overview.ActivePositions
+                                </div>
+                                <div class="position-label">Active Positions</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.Overview.AverageApy">
+                                    @Model.Overview.AverageApy.ToString("F2")%
+                                </div>
+                                <div class="position-label">Average APY</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active Positions Section -->
+            <section class="active-positions-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Active Positions</h2>
+                        <p>Manage your current liquidity positions</p>
+                    </div>
+
+                    @if (Model?.Positions != null && Model.Positions.Any())
+                    {
+                        <div class="positions-table-container">
+                            <table class="positions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pool</th>
+                                        <th>DEX</th>
+                                        <th>Position Size</th>
+                                        <th>Current Value</th>
+                                        <th>P&L</th>
+                                        <th>APY</th>
+                                        <th>Fees Earned</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var position in Model.Positions)
+                                    {
+                                        <tr class="position-row" data-position-id="@position.Id">
+                                            <td>
+                                                <div class="pool-cell">
+                                                    <div class="token-pair-small">
+                                                        <img src="@position.Token1Icon" alt="@position.Token1Symbol" class="token-icon-small">
+                                                        <img src="@position.Token2Icon" alt="@position.Token2Symbol" class="token-icon-small">
+                                                    </div>
+                                                    <div class="pool-info">
+                                                        <span class="pool-name">@position.Token1Symbol/@position.Token2Symbol</span>
+                                                        <span class="pool-fee">@(position.FeeTier * 100)% fee</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="dex-badge-small">@position.DexName</span></td>
+                                            <td>
+                                                <div class="position-size">
+                                                    <div>@position.Token1Amount.ToString("N4") @position.Token1Symbol</div>
+                                                    <div>@position.Token2Amount.ToString("N4") @position.Token2Symbol</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="current-value">$@position.CurrentValue.ToString("N2")</span>
+                                            </td>
+                                            <td>
+                                                <span class="pnl-value @(position.PnlAmount >= 0 ? "positive" : "negative")">
+                                                    @(position.PnlAmount >= 0 ? "+" : "")$@position.PnlAmount.ToString("N2")
+                                                    <small>(@(position.PnlPercentage >= 0 ? "+" : "")@position.PnlPercentage.ToString("F1")%)</small>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="apy-value">@position.CurrentApy.ToString("F2")%</span>
+                                            </td>
+                                            <td>
+                                                <div class="fees-earned">
+                                                    <span class="fee-amount">$@position.FeesEarned.ToString("N2")</span>
+                                                    @if (position.UnclaimedFees > 0)
+                                                    {
+                                                        <button class="claim-btn" onclick="claimFees(@position.Id)">
+                                                            Claim $@position.UnclaimedFees.ToString("N2")
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="position-actions">
+                                                    <button class="action-btn btn-secondary" onclick="viewPosition(@position.Id)">
+                                                        View
+                                                    </button>
+                                                    <button class="action-btn btn-primary" onclick="addToPosition(@position.Id)">
+                                                        Add
+                                                    </button>
+                                                    <button class="action-btn btn-danger" onclick="removePosition(@position.Id)">
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-positions">
+                            <div class="no-positions-icon">🏊‍♂️</div>
+                            <h3>No Active Positions</h3>
+                            <p>You don't have any active liquidity positions yet.</p>
+                            <a href="/liquidity/add" class="btn-primary">Add Your First Position</a>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Performance Charts Section -->
+            <section class="performance-charts-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Performance Analytics</h2>
+                        <p>Track your liquidity performance over time</p>
+                    </div>
+
+                    <div class="charts-grid">
+                        <!-- Portfolio Value Chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Portfolio Value Over Time</h3>
+                                <div class="chart-controls">
+                                    <button class="chart-period active" data-period="7d">7D</button>
+                                    <button class="chart-period" data-period="30d">30D</button>
+                                    <button class="chart-period" data-period="90d">90D</button>
+                                    <button class="chart-period" data-period="1y">1Y</button>
+                                </div>
+                            </div>
+                            <div id="portfolio-value-chart" class="chart-content"></div>
+                        </div>
+
+                        <!-- Fees Earned Chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Cumulative Fees Earned</h3>
+                                <div class="chart-controls">
+                                    <button class="chart-period active" data-period="7d">7D</button>
+                                    <button class="chart-period" data-period="30d">30D</button>
+                                    <button class="chart-period" data-period="90d">90D</button>
+                                    <button class="chart-period" data-period="1y">1Y</button>
+                                </div>
+                            </div>
+                            <div id="fees-earned-chart" class="chart-content"></div>
+                        </div>
+
+                        <!-- P&L Distribution -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>P&L by Position</h3>
+                            </div>
+                            <div id="pnl-distribution-chart" class="chart-content"></div>
+                        </div>
+
+                        <!-- APY Trends -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>APY Trends</h3>
+                            </div>
+                            <div id="apy-trends-chart" class="chart-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transaction History Section -->
+            <section class="transaction-history-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Transaction History</h2>
+                        <p>View all your liquidity-related transactions</p>
+                    </div>
+
+                    <div class="transaction-filters">
+                        <div class="filter-group">
+                            <label for="tx-type-filter">Transaction Type</label>
+                            <select id="tx-type-filter">
+                                <option value="">All Types</option>
+                                <option value="add">Add Liquidity</option>
+                                <option value="remove">Remove Liquidity</option>
+                                <option value="claim">Claim Fees</option>
+                                <option value="swap">Swap</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="tx-pool-filter">Pool</label>
+                            <select id="tx-pool-filter">
+                                <option value="">All Pools</option>
+                                @if (Model?.Positions != null)
+                                {
+                                    @foreach (var position in Model.Positions.GroupBy(p => $"{p.Token1Symbol}/{p.Token2Symbol}"))
+                                    {
+                                        <option value="@position.Key">@position.Key</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="tx-date-filter">Date Range</label>
+                            <select id="tx-date-filter">
+                                <option value="7d">Last 7 days</option>
+                                <option value="30d">Last 30 days</option>
+                                <option value="90d">Last 90 days</option>
+                                <option value="1y">Last year</option>
+                                <option value="all">All time</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    @if (Model?.Transactions != null && Model.Transactions.Any())
+                    {
+                        <div class="transactions-table-container">
+                            <table class="transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Pool</th>
+                                        <th>Amount</th>
+                                        <th>Value</th>
+                                        <th>Gas Fee</th>
+                                        <th>Transaction</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactions-table-body">
+                                    @foreach (var tx in Model.Transactions.Take(20))
+                                    {
+                                        <tr class="transaction-row" data-tx-type="@tx.Type.ToLower()" data-pool="@tx.PoolName">
+                                            <td>
+                                                <div class="tx-date">
+                                                    <span class="date">@tx.Timestamp.ToString("MMM dd, yyyy")</span>
+                                                    <span class="time">@tx.Timestamp.ToString("HH:mm")</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="tx-type tx-type-@tx.Type.ToLower()">
+                                                    @tx.Type
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="pool-cell">
+                                                    <div class="token-pair-small">
+                                                        <img src="@tx.Token1Icon" alt="@tx.Token1Symbol" class="token-icon-small">
+                                                        <img src="@tx.Token2Icon" alt="@tx.Token2Symbol" class="token-icon-small">
+                                                    </div>
+                                                    <span>@tx.PoolName</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="tx-amounts">
+                                                    @if (tx.Token1Amount.HasValue)
+                                                    {
+                                                        <div>@tx.Token1Amount.Value.ToString("N4") @tx.Token1Symbol</div>
+                                                    }
+                                                    @if (tx.Token2Amount.HasValue)
+                                                    {
+                                                        <div>@tx.Token2Amount.Value.ToString("N4") @tx.Token2Symbol</div>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="tx-value">$@tx.ValueUsd.ToString("N2")</span>
+                                            </td>
+                                            <td>
+                                                <span class="gas-fee">$@tx.GasFeeUsd.ToString("N2")</span>
+                                            </td>
+                                            <td>
+                                                <a href="https://etherscan.io/tx/@tx.TransactionHash" target="_blank" class="tx-hash">
+                                                    @tx.TransactionHash.Substring(0, 8)...
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination" id="transactions-pagination">
+                            <button class="pagination-btn" id="prev-page" onclick="loadPreviousPage()" disabled>Previous</button>
+                            <span class="pagination-info">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+                            <button class="pagination-btn" id="next-page" onclick="loadNextPage()">Next</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-transactions">
+                            <div class="no-transactions-icon">📜</div>
+                            <h3>No Transaction History</h3>
+                            <p>No liquidity transactions found for this wallet.</p>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+    </div>
+
+    <!-- Footer -->
+    @await Html.PartialAsync("_FooterPartial")
+
+    <!-- Modals -->
+    <!-- Position Details Modal -->
+    <div id="position-details-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Position Details</h3>
+                <button class="modal-close" onclick="closeModal('position-details-modal')">&times;</button>
+            </div>
+            <div class="modal-body" id="position-details-body">
+                <!-- Position details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Liquidity Modal -->
+    <div id="remove-liquidity-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Remove Liquidity</h3>
+                <button class="modal-close" onclick="closeModal('remove-liquidity-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="remove-liquidity-form">
+                    <h4>How much liquidity do you want to remove?</h4>
+
+                    <div class="removal-percentage">
+                        <input type="range" id="removal-slider" min="0" max="100" value="0" step="1">
+                        <div class="percentage-buttons">
+                            <button class="percentage-btn" onclick="setRemovalPercentage(25)">25%</button>
+                            <button class="percentage-btn" onclick="setRemovalPercentage(50)">50%</button>
+                            <button class="percentage-btn" onclick="setRemovalPercentage(75)">75%</button>
+                            <button class="percentage-btn" onclick="setRemovalPercentage(100)">100%</button>
+                        </div>
+                        <div class="removal-display">
+                            <span id="removal-percentage">0</span>%
+                        </div>
+                    </div>
+
+                    <div class="removal-preview">
+                        <h5>You will receive:</h5>
+                        <div class="receive-amounts">
+                            <div class="receive-item">
+                                <span id="receive-token1-amount">0.00</span>
+                                <span id="receive-token1-symbol">TEACH</span>
+                            </div>
+                            <div class="receive-item">
+                                <span id="receive-token2-amount">0.00</span>
+                                <span id="receive-token2-symbol">ETH</span>
+                            </div>
+                        </div>
+                        <div class="receive-total">
+                            Total Value: $<span id="receive-total-value">0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="removal-actions">
+                        <button class="btn-secondary" onclick="closeModal('remove-liquidity-modal')">Cancel</button>
+                        <button class="btn-danger" onclick="proceedToRemoval()" id="proceed-removal-btn" disabled>
+                            Proceed to DEX
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Message Container -->
+    <div id="error-message" class="error-toast" style="display: none;">
+        <span id="error-text"></span>
+        <button onclick="hideError()" class="error-close">&times;</button>
+    </div>
+
+    <!-- Success Message Container -->
+    <div id="success-message" class="success-toast" style="display: none;">
+        <span id="success-text"></span>
+        <button onclick="hideSuccess()" class="success-close">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Loading positions...</p>
+    </div>
+
+    <!-- Syncfusion Scripts -->
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+    <!-- Custom Scripts -->
+    <script src="~/js/liquidity-dashboard.js" asp-append-version="true"></script>
+
+    <!-- Initialize Management Dashboard -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize management dashboard with server data
+            const initialData = @Html.Raw(ViewBag.JsonData ?? "{}");
+            const walletAddress = '@ViewBag.WalletAddress';
+            const errorMessage = '@ViewBag.ErrorMessage';
+
+            if (errorMessage) {
+                showError(errorMessage);
+            }
+
+            if (window.LiquidityDashboard) {
+                window.LiquidityDashboard.initManagement(initialData, walletAddress);
+            }
+        });
+    </script>
+</body>
+</html>

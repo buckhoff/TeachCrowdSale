@@ -29,7 +29,5 @@ namespace TeachCrowdSale.Core.Models.Request
         [Required]
         [Range(0.000001, double.MaxValue)]
         public decimal Token1Amount { get; set; }
-
-        public LiquidityTransactionType TransactionType { get; set; }
     }
 }
