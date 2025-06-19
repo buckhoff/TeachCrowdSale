@@ -4,7 +4,7 @@
 }
 @{
     ViewData["Title"] = "Liquidity Dashboard - TEACH Token Pool Management";
-    ViewData["Description"] = "Manage your TEACH token liquidity positions, explore pools, track performance, and add liquidity to earn rewards.";
+    ViewData["Description"] = "Manage your TEACH token liquidity positions, view pool analytics, and discover new yield farming opportunities.";
 }
 
 <!DOCTYPE html>
@@ -75,8 +75,8 @@
                             <div class="stat-card animate-fade-in">
                                 <div class="stat-icon">💧</div>
                                 <div class="stat-content">
-                                    <div class="stat-value" data-value="@(Model.Stats.TotalValueLocked)" data-format="currency">
-                                        $@(Model.Stats.TotalValueLocked.ToString("N0"))
+                                    <div class="stat-value" id="total-tvl" data-value="@Model.Stats.TotalValueLocked" data-format="currency">
+                                        @Model.Stats.TotalValueLockedDisplay
                                     </div>
                                     <div class="stat-label">Total Value Locked</div>
                                 </div>
@@ -85,8 +85,8 @@
                             <div class="stat-card animate-fade-in">
                                 <div class="stat-icon">📊</div>
                                 <div class="stat-content">
-                                    <div class="stat-value" data-value="@(Model.Stats.Volume24h)" data-format="currency">
-                                        $@(Model.Stats.Volume24h.ToString("N0"))
+                                    <div class="stat-value" id="total-volume" data-value="@Model.Stats.Volume24h" data-format="currency">
+                                        @Model.Stats.Volume24hDisplay
                                     </div>
                                     <div class="stat-label">24h Volume</div>
                                 </div>
@@ -95,8 +95,8 @@
                             <div class="stat-card animate-fade-in">
                                 <div class="stat-icon">🎯</div>
                                 <div class="stat-content">
-                                    <div class="stat-value" data-value="@(Model.Stats.AverageApy)" data-format="percentage">
-                                        @(Model.Stats.AverageApy.ToString("F2"))%
+                                    <div class="stat-value" id="average-apy" data-value="@Model.Stats.AveragePoolAPY" data-format="percentage">
+                                        @Model.Stats.AveragePoolAPYDisplay
                                     </div>
                                     <div class="stat-label">Average APY</div>
                                 </div>
@@ -105,8 +105,8 @@
                             <div class="stat-card animate-fade-in">
                                 <div class="stat-icon">🏊</div>
                                 <div class="stat-content">
-                                    <div class="stat-value" data-value="@(Model.Stats.ActivePools)">
-                                        @(Model.Stats.ActivePools)
+                                    <div class="stat-value" id="active-pools" data-value="@Model.Stats.ActivePools">
+                                        @Model.Stats.ActivePools
                                     </div>
                                     <div class="stat-label">Active Pools</div>
                                 </div>
@@ -149,43 +149,56 @@
                     <div class="filter-group">
                         <label for="sort-by">Sort By</label>
                         <select id="sort-by">
-                            <option value="apy">Highest APY</option>
-                            <option value="tvl">Highest TVL</option>
-                            <option value="volume">Highest Volume</option>
-                            <option value="newest">Newest</option>
+                            <option value="APY">Highest APY</option>
+                            <option value="TotalValueLocked">Highest TVL</option>
+                            <option value="Volume24h">Highest Volume</option>
+                            <option value="Name">Pool Name</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label for="dex-filter">DEX</label>
                         <select id="dex-filter">
                             <option value="">All DEXs</option>
-                            <option value="uniswap">Uniswap</option>
-                            <option value="sushiswap">SushiSwap</option>
-                            <option value="pancakeswap">PancakeSwap</option>
+                            @if (Model?.DexOptions != null)
+                            {
+                                @foreach (var dex in Model.DexOptions.Where(d => d.IsActive))
+                                {
+                                    <option value="@dex.Name.ToLower()">@dex.DisplayName</option>
+                                }
+                            }
                         </select>
+                    </div>
+                    <div class="filter-group">
+                        <button type="button" id="clear-filters" class="btn btn-outline-secondary">
+                            Clear Filters
+                        </button>
                     </div>
                 </div>
 
                 <!-- Pool Cards Grid -->
-                <div class="pools-grid" id="pools-grid">
-                    @if (Model?.Pools != null && Model.Pools.Any())
+                <div class="pools-grid" id="pools-container">
+                    @if (Model?.LiquidityPools != null && Model.LiquidityPools.Any())
                     {
-                        @foreach (var pool in Model.Pools)
+                        @foreach (var pool in Model.LiquidityPools)
                         {
-                            <div class="pool-card" data-pool-id="@pool.Id" data-dex="@pool.DexName.ToLower()">
+                            <div class="pool-card glass-card @(pool.IsActive ? "active" : "inactive")" data-pool-id="@pool.Id" data-dex="@pool.DexName.ToLower()">
                                 <div class="pool-header">
                                     <div class="pool-tokens">
                                         <div class="token-pair">
-                                            <img src="@pool.Token1Icon" alt="@pool.Token1Symbol" class="token-icon">
-                                            <img src="@pool.Token2Icon" alt="@pool.Token2Symbol" class="token-icon">
+                                            <img src="/images/tokens/@(pool.Token0Symbol.ToLower()).png" alt="@pool.Token0Symbol" class="token-icon" onerror="this.src='/images/tokens/default.png'">
+                                            <img src="/images/tokens/@(pool.Token1Symbol.ToLower()).png" alt="@pool.Token1Symbol" class="token-icon" onerror="this.src='/images/tokens/default.png'">
                                         </div>
                                         <div class="pool-name">
-                                            <h3>@pool.Token1Symbol/@pool.Token2Symbol</h3>
+                                            <h3>@pool.TokenPair</h3>
                                             <span class="dex-badge">@pool.DexName</span>
+                                            @if (pool.IsFeatured)
+                                            {
+                                                <span class="badge bg-warning">Featured</span>
+                                            }
                                         </div>
                                     </div>
                                     <div class="pool-apy">
-                                        <span class="apy-value">@pool.Apy.ToString("F2")%</span>
+                                        <span class="apy-value @(pool.APY >= 50 ? "high-yield" : pool.APY >= 20 ? "medium-yield" : "low-yield")">@pool.APYDisplay</span>
                                         <span class="apy-label">APY</span>
                                     </div>
                                 </div>
@@ -193,25 +206,36 @@
                                 <div class="pool-stats">
                                     <div class="stat-row">
                                         <span class="stat-label">TVL</span>
-                                        <span class="stat-value">$@pool.TotalValueLocked.ToString("N0")</span>
+                                        <span class="stat-value">@pool.TotalValueLockedDisplay</span>
                                     </div>
                                     <div class="stat-row">
                                         <span class="stat-label">24h Volume</span>
-                                        <span class="stat-value">$@pool.Volume24h.ToString("N0")</span>
+                                        <span class="stat-value">@pool.Volume24hDisplay</span>
                                     </div>
                                     <div class="stat-row">
                                         <span class="stat-label">Fee Tier</span>
-                                        <span class="stat-value">@(pool.FeeTier * 100)%</span>
+                                        <span class="stat-value">@pool.FeeDisplay</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">Risk Level</span>
+                                        <span class="stat-value">
+                                            <span class="risk-badge risk-@pool.RiskLevel.ToLower()">@pool.RiskLevel</span>
+                                        </span>
                                     </div>
                                 </div>
 
                                 <div class="pool-actions">
-                                    <a href="/liquidity/add?poolId=@pool.Id" class="btn-primary pool-btn">
+                                    <a href="/liquidity/add?poolId=@pool.Id" class="btn-primary pool-btn add-liquidity-btn" data-pool-id="@pool.Id">
                                         Add Liquidity
                                     </a>
-                                    <button class="btn-secondary pool-btn" onclick="viewPoolDetails(@pool.Id)">
+                                    <button class="btn-secondary pool-btn view-pool-btn" data-pool-id="@pool.Id">
                                         View Details
                                     </button>
+                                    <input type="checkbox" class="btn-check compare-pool-checkbox"
+                                           id="compare-@pool.Id" data-pool-id="@pool.Id">
+                                    <label class="btn btn-outline-info btn-sm compare-label" for="compare-@pool.Id">
+                                        <i class="fas fa-balance-scale"></i>
+                                    </label>
                                 </div>
                             </div>
                         }
@@ -224,6 +248,9 @@
                         </div>
                     }
                 </div>
+
+                <!-- Pool Comparison Container -->
+                <div id="pool-comparison"></div>
             </div>
         </section>
 
@@ -267,15 +294,15 @@
                         <div class="chart-header">
                             <h3>Pool Distribution</h3>
                         </div>
-                        <div id="pool-distribution-chart" class="chart-content"></div>
+                        <div id="dex-distribution-chart" class="chart-content"></div>
                     </div>
 
                     <!-- APY Trends Chart -->
                     <div class="chart-container">
                         <div class="chart-header">
-                            <h3>APY Trends</h3>
+                            <h3>APY Distribution</h3>
                         </div>
-                        <div id="apy-trends-chart" class="chart-content"></div>
+                        <div id="apy-chart" class="chart-content"></div>
                     </div>
                 </div>
             </div>
@@ -288,34 +315,54 @@
                     <div class="education-content">
                         <h2>Liquidity Provider Guide</h2>
                         <div class="guide-steps">
-                            <div class="guide-step">
-                                <div class="step-number">1</div>
-                                <div class="step-content">
-                                    <h4>Choose a Pool</h4>
-                                    <p>Select a liquidity pool based on APY, risk level, and your token holdings.</p>
+                            @if (Model?.GuideSteps != null && Model.GuideSteps.Any())
+                            {
+                                @foreach (var step in Model.GuideSteps.Take(4))
+                                {
+                                    <div class="guide-step">
+                                        <div class="step-number">@step.StepNumber</div>
+                                        <div class="step-content">
+                                            <h4>@step.Title</h4>
+                                            <p>@step.Description</p>
+                                            @if (!string.IsNullOrEmpty(step.ActionUrl))
+                                            {
+                                                <a href="@step.ActionUrl" class="step-action">@step.ActionText</a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="guide-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h4>Choose a Pool</h4>
+                                        <p>Select a liquidity pool based on APY, risk level, and your token holdings.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="guide-step">
-                                <div class="step-number">2</div>
-                                <div class="step-content">
-                                    <h4>Add Liquidity</h4>
-                                    <p>Deposit equal values of both tokens in the pool to become a liquidity provider.</p>
+                                <div class="guide-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h4>Add Liquidity</h4>
+                                        <p>Deposit equal values of both tokens in the pool to become a liquidity provider.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="guide-step">
-                                <div class="step-number">3</div>
-                                <div class="step-content">
-                                    <h4>Earn Rewards</h4>
-                                    <p>Receive LP tokens and earn fees from trades, plus potential farming rewards.</p>
+                                <div class="guide-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h4>Earn Rewards</h4>
+                                        <p>Receive LP tokens and earn fees from trades, plus potential farming rewards.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="guide-step">
-                                <div class="step-number">4</div>
-                                <div class="step-content">
-                                    <h4>Manage Positions</h4>
-                                    <p>Monitor performance, claim rewards, and withdraw liquidity when needed.</p>
+                                <div class="guide-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h4>Manage Positions</h4>
+                                        <p>Monitor performance, claim rewards, and withdraw liquidity when needed.</p>
+                                    </div>
                                 </div>
-                            </div>
+                            }
                         </div>
                     </div>
 
@@ -363,27 +410,28 @@
                             </tr>
                         </thead>
                         <tbody id="pools-table-body">
-                            @if (Model?.Pools != null && Model.Pools.Any())
+                            @if (Model?.LiquidityPools != null && Model.LiquidityPools.Any())
                             {
-                                @foreach (var pool in Model.Pools.Take(10))
+                                @foreach (var pool in Model.LiquidityPools.OrderByDescending(p => p.APY).Take(10))
                                 {
                                     <tr>
                                         <td>
                                             <div class="pool-cell">
                                                 <div class="token-pair-small">
-                                                    <img src="@pool.Token1Icon" alt="@pool.Token1Symbol" class="token-icon-small">
-                                                    <img src="@pool.Token2Icon" alt="@pool.Token2Symbol" class="token-icon-small">
+                                                    <img src="/images/tokens/@(pool.Token0Symbol.ToLower()).png" alt="@pool.Token0Symbol" class="token-icon-small" onerror="this.src='/images/tokens/default.png'">
+                                                    <img src="/images/tokens/@(pool.Token1Symbol.ToLower()).png" alt="@pool.Token1Symbol" class="token-icon-small" onerror="this.src='/images/tokens/default.png'">
                                                 </div>
-                                                <span>@pool.Token1Symbol/@pool.Token2Symbol</span>
+                                                <span>@pool.TokenPair</span>
                                             </div>
                                         </td>
                                         <td><span class="dex-badge-small">@pool.DexName</span></td>
-                                        <td><span class="apy-cell">@pool.Apy.ToString("F2")%</span></td>
-                                        <td>$@pool.TotalValueLocked.ToString("N0")</td>
-                                        <td>$@pool.Volume24h.ToString("N0")</td>
-                                        <td>@(pool.FeeTier * 100)%</td>
+                                        <td><span class="apy-cell @(pool.APY >= 50 ? "high-yield" : pool.APY >= 20 ? "medium-yield" : "low-yield")">@pool.APYDisplay</span></td>
+                                        <td>@pool.TotalValueLockedDisplay</td>
+                                        <td>@pool.Volume24hDisplay</td>
+                                        <td>@pool.FeeDisplay</td>
                                         <td>
                                             <a href="/liquidity/add?poolId=@pool.Id" class="btn-small btn-primary">Add</a>
+                                            <button class="btn-small btn-outline-secondary view-pool-btn" data-pool-id="@pool.Id">View</button>
                                         </td>
                                     </tr>
                                 }
@@ -394,22 +442,30 @@
             </div>
         </section>
 
+        <!-- User Positions Section (if wallet connected) -->
+        <section class="user-positions-section" id="user-positions" style="display: none;">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Your Positions</h2>
+                    <p>Manage your current liquidity positions</p>
+                </div>
+                <!-- Dynamic content loaded by JavaScript -->
+            </div>
+        </section>
+
     </div>
 
     <!-- Footer -->
     @await Html.PartialAsync("_FooterPartial")
 
-    <!-- Error Message Container -->
-    <div id="error-message" class="error-toast" style="display: none;">
-        <span id="error-text"></span>
-        <button onclick="hideError()" class="error-close">&times;</button>
-    </div>
-
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div id="loading-spinner" class="loading-overlay" style="display: none;">
         <div class="loading-spinner"></div>
         <p>Loading data...</p>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
 
     <!-- Syncfusion Scripts -->
     <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
@@ -418,18 +474,13 @@
     <script src="~/js/liquidity-dashboard.js" asp-append-version="true"></script>
 
     <!-- Initialize Dashboard -->
+    <script data-json="liquidity-data" type="application/json">@Html.Raw(ViewBag.JsonData ?? "{}")</script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize dashboard with server data
-            const initialData = @Html.Raw(ViewBag.JsonData ?? "{}");
+            // Check for error message
             const errorMessage = '@ViewBag.ErrorMessage';
-
-            if (errorMessage) {
-                showError(errorMessage);
-            }
-
-            if (window.LiquidityDashboard) {
-                window.LiquidityDashboard.init(initialData);
+            if (errorMessage && window.liquidityDashboard) {
+                window.liquidityDashboard.showErrorMessage(errorMessage);
             }
         });
     </script>

@@ -1,1064 +1,963 @@
-﻿// ================================================
-// ADD LIQUIDITY WIZARD - JAVASCRIPT
-// Following TeachToken patterns for multi-step forms
-// ================================================
+﻿/**
+ * Add Liquidity Wizard JavaScript
+ * Handles step-by-step liquidity addition process (Add.cshtml)
+ * Integrates with LiquidityController wizard endpoints
+ */
 
-window.AddLiquidityWizard = (function () {
-    'use strict';
+class AddLiquidityWizard {
+    constructor() {
+        this.currentStep = 1;
+        this.totalSteps = 5;
+        this.wizardData = {};
+        this.calculator = null;
+        this.isLoading = false;
+        this.walletAddress = null;
+        this.selectedPool = null;
+        this.selectedDex = null;
+        this.validationTimer = null;
 
-    // ================================================
-    // CONFIGURATION & STATE
-    // ================================================
-    const config = {
-        endpoints: {
-            wizardData: '/liquidity/wizard-data',
-            comparePools: '/liquidity/compare-pools',
-            calculate: '/liquidity/calculate',
-            calculateIL: '/liquidity/calculate-il',
-            projections: '/liquidity/projections',
-            validate: '/liquidity/validate',
-            dexUrl: '/liquidity/dex-url'
-        },
-        steps: {
-            total: 5,
-            current: 1
-        },
-        validation: {
-            minAmount: 1,
-            maxSlippage: 50
-        }
-    };
+        this.initializeOnLoad();
+    }
 
-    let state = {
-        currentStep: 1,
-        wizardData: null,
-        selectedPool: null,
-        selectedDex: null,
-        tokenAmounts: {
-            token1: 0,
-            token2: 0
-        },
-        calculatedData: null,
-        walletConnected: false,
-        walletAddress: null,
-        walletBalance: {
-            eth: 0,
-            token1: 0,
-            token2: 0
-        }
-    };
-
-    // ================================================
-    // INITIALIZATION
-    // ================================================
-    function init(initialData) {
-        console.log('🧙‍♂️ Initializing Add Liquidity Wizard...');
-
-        try {
-            // Store initial data
-            if (initialData && Object.keys(initialData).length > 0) {
-                state.wizardData = initialData;
-                console.log('✅ Initial wizard data loaded:', initialData);
-            }
-
-            // Initialize components
-            initializeEventListeners();
-            initializeWizardNavigation();
-            initializeStepValidation();
-
-            // Check for pre-selected pool from URL
-            checkUrlParameters();
-
-            // Load initial step
-            showStep(1);
-
-            console.log('✅ Add Liquidity Wizard initialized successfully');
-        } catch (error) {
-            console.error('❌ Error initializing Add Liquidity Wizard:', error);
-            showError('Failed to initialize wizard. Please refresh the page.');
+    /**
+     * Initialize wizard when DOM is loaded
+     */
+    initializeOnLoad() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initialize());
+        } else {
+            this.initialize();
         }
     }
 
-    // ================================================
-    // EVENT LISTENERS
-    // ================================================
-    function initializeEventListeners() {
+    /**
+     * Main initialization method
+     */
+    async initialize() {
+        try {
+            console.log('Initializing Add Liquidity Wizard...');
+
+            // Get initial data from ViewBag
+            this.wizardData = this.getInitialData();
+            this.currentStep = parseInt(document.querySelector('[data-current-step]')?.dataset.currentStep) || 1;
+
+            // Initialize step-specific components
+            this.initializeCurrentStep();
+            this.initializeNavigation();
+            this.initializeWalletConnection();
+            this.initializeProgressBar();
+
+            console.log('Add Liquidity Wizard initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize wizard:', error);
+            this.showErrorMessage('Failed to initialize wizard');
+        }
+    }
+
+    /**
+     * Get initial data from server-side ViewBag
+     */
+    getInitialData() {
+        try {
+            const jsonDataElement = document.querySelector('script[data-json="wizard-data"]');
+            if (jsonDataElement) {
+                return JSON.parse(jsonDataElement.textContent);
+            }
+
+            if (typeof window.addLiquidityInitialData !== 'undefined') {
+                return window.addLiquidityInitialData;
+            }
+
+            console.warn('No wizard data found, using empty object');
+            return {};
+        } catch (error) {
+            console.warn('Could not parse wizard data:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Initialize components for current step
+     */
+    initializeCurrentStep() {
+        switch (this.currentStep) {
+            case 1:
+                this.initializeStep1(); // Connect Wallet & Select Pool
+                break;
+            case 2:
+                this.initializeStep2(); // Choose DEX
+                break;
+            case 3:
+                this.initializeStep3(); // Enter Amounts
+                break;
+            case 4:
+                this.initializeStep4(); // Review & Confirm
+                break;
+            case 5:
+                this.initializeStep5(); // Transaction Status
+                break;
+        }
+    }
+
+    /**
+     * Initialize Step 1: Connect Wallet & Select Pool
+     */
+    initializeStep1() {
         // Wallet connection
-        const walletOptions = document.querySelectorAll('.wallet-option');
-        walletOptions.forEach(option => {
-            option.addEventListener('click', function () {
-                const walletType = this.dataset.wallet;
-                connectWallet(walletType);
-            });
-        });
+        this.initializeWalletConnection();
 
         // Pool selection
-        document.addEventListener('change', function (e) {
-            if (e.target.name === 'selected-pool') {
-                handlePoolSelection(e.target.value);
-            }
-            if (e.target.name === 'selected-dex') {
-                handleDexSelection(e.target.value);
-            }
-        });
+        this.initializePoolSelection();
 
-        // Pool search
-        const poolSearchWizard = document.getElementById('pool-search-wizard');
-        if (poolSearchWizard) {
-            poolSearchWizard.addEventListener('input', debounce(handlePoolSearch, 300));
-        }
-
-        // Token amount inputs
-        const token1Input = document.getElementById('token1-amount');
-        const token2Input = document.getElementById('token2-amount');
-
-        if (token2UsdElement && state.selectedPool) {
-            const usdValue = state.tokenAmounts.token2 * (state.selectedPool.token2Price || 0);
-            token2UsdElement.textContent = `${usdValue.toFixed(2)}`;
-        }
+        // Pool comparison
+        this.initializePoolComparison();
     }
 
-    function updatePoolPositionPreview() {
-        if (!state.calculatedData) return;
-
-        const totalDepositElement = document.getElementById('total-deposit-value');
-        const poolShareElement = document.getElementById('pool-share');
-        const lpTokensElement = document.getElementById('lp-tokens');
-        const dailyEarningsElement = document.getElementById('daily-earnings');
-
-        if (totalDepositElement) {
-            totalDepositElement.textContent = `${state.calculatedData.totalDepositValue?.toFixed(2) || '0.00'}`;
-        }
-
-        if (poolShareElement) {
-            poolShareElement.textContent = `${state.calculatedData.poolSharePercentage?.toFixed(4) || '0.00'}%`;
-        }
-
-        if (lpTokensElement) {
-            lpTokensElement.textContent = state.calculatedData.lpTokensReceived?.toFixed(6) || '0.00';
-        }
-
-        if (dailyEarningsElement) {
-            dailyEarningsElement.textContent = `${state.calculatedData.estimatedDailyEarnings?.toFixed(2) || '0.00'}`;
-        }
+    /**
+     * Initialize Step 2: Choose DEX
+     */
+    initializeStep2() {
+        this.initializeDexSelection();
     }
 
-    async function updateImpermanentLossCalculation() {
-        if (!state.selectedPool || !state.tokenAmounts.token1 || !state.tokenAmounts.token2) return;
-
-        try {
-            const response = await fetch(config.endpoints.calculateIL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    poolId: state.selectedPool.id,
-                    token1Amount: state.tokenAmounts.token1,
-                    token2Amount: state.tokenAmounts.token2
-                })
-            });
-
-            if (!response.ok) return; // Silent fail for IL calculation
-
-            const data = await response.json();
-
-            // Update IL scenarios
-            const scenarios = document.querySelectorAll('.il-scenario .il-value');
-            if (scenarios.length >= 3 && data.scenarios) {
-                scenarios[0].textContent = `${data.scenarios.change25?.toFixed(1) || '-0.6'}%`;
-                scenarios[1].textContent = `${data.scenarios.change50?.toFixed(1) || '-2.0'}%`;
-                scenarios[2].textContent = `${data.scenarios.change100?.toFixed(1) || '-5.7'}%`;
-            }
-
-        } catch (error) {
-            console.error('❌ Error calculating impermanent loss:', error);
-            // Silent fail - use default values
-        }
+    /**
+     * Initialize Step 3: Enter Amounts
+     */
+    initializeStep3() {
+        this.initializeAmountInputs();
+        this.initializeCalculator();
+        this.initializeSlippageSettings();
     }
 
-    // ================================================
-    // REVIEW & CONFIRM (Step 5)
-    // ================================================
-    function updateReviewData() {
-        if (!state.selectedPool || !state.selectedDex) return;
-
-        // Update review summary
-        const reviewPool = document.getElementById('review-pool');
-        const reviewDex = document.getElementById('review-dex');
-        const reviewToken1 = document.getElementById('review-token1');
-        const reviewToken2 = document.getElementById('review-token2');
-        const reviewTotal = document.getElementById('review-total');
-        const reviewApy = document.getElementById('review-apy');
-
-        if (reviewPool) {
-            reviewPool.textContent = `${state.selectedPool.token1Symbol}/${state.selectedPool.token2Symbol}`;
-        }
-
-        if (reviewDex) {
-            reviewDex.textContent = state.selectedDex.name;
-        }
-
-        if (reviewToken1) {
-            reviewToken1.textContent = `${state.tokenAmounts.token1.toFixed(4)} ${state.selectedPool.token1Symbol}`;
-        }
-
-        if (reviewToken2) {
-            reviewToken2.textContent = `${state.tokenAmounts.token2.toFixed(4)} ${state.selectedPool.token2Symbol}`;
-        }
-
-        if (reviewTotal && state.calculatedData) {
-            reviewTotal.textContent = `${state.calculatedData.totalDepositValue?.toFixed(2) || '0.00'}`;
-        }
-
-        if (reviewApy) {
-            reviewApy.textContent = `${state.selectedPool.apy.toFixed(2)}%`;
-        }
-
-        // Update cost breakdown
-        updateCostBreakdown();
-
-        // Update final DEX name
-        const finalDexName = document.getElementById('final-dex-name');
-        const dexNameBtn = document.getElementById('dex-name-btn');
-
-        if (finalDexName) finalDexName.textContent = state.selectedDex.name;
-        if (dexNameBtn) dexNameBtn.textContent = state.selectedDex.name;
+    /**
+     * Initialize Step 4: Review & Confirm
+     */
+    initializeStep4() {
+        this.initializeTransactionReview();
+        this.initializeRiskWarnings();
     }
 
-    async function updateCostBreakdown() {
-        try {
-            // Estimate gas fees
-            const gasEstimate = await estimateGasFees();
-            const reviewGas = document.getElementById('review-gas');
-            if (reviewGas) {
-                reviewGas.textContent = `~${gasEstimate.toFixed(2)}`;
-            }
-
-            // Update DEX fee
-            const reviewDexFee = document.getElementById('review-dex-fee');
-            if (reviewDexFee && state.selectedPool) {
-                reviewDexFee.textContent = `${(state.selectedPool.feeTier * 100)}%`;
-            }
-
-        } catch (error) {
-            console.error('❌ Error updating cost breakdown:', error);
-        }
+    /**
+     * Initialize Step 5: Transaction Status
+     */
+    initializeStep5() {
+        this.initializeTransactionMonitoring();
     }
 
-    async function estimateGasFees() {
-        try {
-            if (typeof window.ethereum !== 'undefined') {
-                const gasPrice = await window.ethereum.request({
-                    method: 'eth_gasPrice'
-                });
-
-                // Estimate gas limit for liquidity addition (typical: 200k gas)
-                const gasLimit = 200000;
-                const gasPriceGwei = parseInt(gasPrice, 16) / 1e9;
-                const gasCostEth = (gasLimit * gasPriceGwei) / 1e9;
-
-                // Convert to USD (assume ETH price from pool data)
-                const ethPrice = state.selectedPool?.token2Price || 2000; // fallback
-                return gasCostEth * ethPrice;
-            }
-        } catch (error) {
-            console.error('❌ Error estimating gas fees:', error);
+    /**
+     * Initialize navigation controls
+     */
+    initializeNavigation() {
+        // Next button
+        const nextBtn = document.getElementById('next-step-btn');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => this.goToNextStep());
         }
-
-        return 25; // fallback estimate
-    }
-
-    function handleSlippageChange() {
-        const slippageInput = document.getElementById('slippage-tolerance');
-        if (!slippageInput) return;
-
-        const slippage = parseFloat(slippageInput.value);
-
-        if (slippage > config.validation.maxSlippage) {
-            showError(`Slippage tolerance too high. Maximum is ${config.validation.maxSlippage}%.`);
-            slippageInput.value = config.validation.maxSlippage;
-        }
-    }
-
-    async function proceedToDex() {
-        if (!validateFinalStep()) return;
-
-        showLoading('Preparing transaction...');
-
-        try {
-            const response = await fetch(config.endpoints.dexUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    poolId: state.selectedPool.id,
-                    dexId: state.selectedDex.id,
-                    token1Amount: state.tokenAmounts.token1,
-                    token2Amount: state.tokenAmounts.token2,
-                    slippageTolerance: parseFloat(document.getElementById('slippage-tolerance')?.value || 0.5),
-                    walletAddress: state.walletAddress
-                })
-            });
-
-            if (!response.ok) throw new Error('Failed to generate DEX URL');
-
-            const data = await response.json();
-
-            // Open DEX in new tab
-            window.open(data.url, '_blank');
-
-            showSuccess(`Redirected to ${state.selectedDex.name} to complete your transaction.`);
-
-            // Optional: redirect to management page after a delay
-            setTimeout(() => {
-                window.location.href = '/liquidity/manage';
-            }, 3000);
-
-        } catch (error) {
-            console.error('❌ Error proceeding to DEX:', error);
-            showError('Failed to redirect to DEX. Please try again.');
-        } finally {
-            hideLoading();
-        }
-    }
-
-    // ================================================
-    // WIZARD NAVIGATION
-    // ================================================
-    function nextStep() {
-        if (!validateCurrentStep()) {
-            return;
-        }
-
-        if (state.currentStep < config.steps.total) {
-            state.currentStep++;
-            showStep(state.currentStep);
-        }
-    }
-
-    function previousStep() {
-        if (state.currentStep > 1) {
-            state.currentStep--;
-            showStep(state.currentStep);
-        }
-    }
-
-    function showStep(stepNumber) {
-        // Hide all step contents
-        const stepContents = document.querySelectorAll('.wizard-step-content');
-        stepContents.forEach(content => {
-            content.classList.remove('active');
-        });
-
-        // Show current step content
-        const currentStepContent = document.querySelector(`[data-step="${stepNumber}"]`);
-        if (currentStepContent) {
-            currentStepContent.classList.add('active');
-        }
-
-        // Update progress indicator
-        updateProgressIndicator();
-
-        // Update navigation buttons
-        updateNavigationButtons();
-
-        // Update step-specific UI
-        updateStepUI(stepNumber);
-
-        // Update step counter
-        const currentStepSpan = document.getElementById('current-step');
-        if (currentStepSpan) {
-            currentStepSpan.textContent = stepNumber;
-        }
-
-        console.log(`📍 Wizard step ${stepNumber} displayed`);
-    }
-
-    function updateProgressIndicator() {
-        const progressFill = document.getElementById('progress-fill');
-        const stepCircles = document.querySelectorAll('.step-circle');
-
-        // Update progress bar
-        if (progressFill) {
-            const progressPercentage = ((state.currentStep - 1) / (config.steps.total - 1)) * 100;
-            progressFill.style.width = `${progressPercentage}%`;
-        }
-
-        // Update step circles
-        stepCircles.forEach((circle, index) => {
-            const stepNumber = index + 1;
-            circle.classList.remove('active', 'completed');
-
-            if (stepNumber < state.currentStep) {
-                circle.classList.add('completed');
-                circle.textContent = '✓';
-            } else if (stepNumber === state.currentStep) {
-                circle.classList.add('active');
-                circle.textContent = stepNumber;
-            } else {
-                circle.textContent = stepNumber;
-            }
-        });
-    }
-
-    function updateNavigationButtons() {
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
 
         // Previous button
+        const prevBtn = document.getElementById('prev-step-btn');
         if (prevBtn) {
-            prevBtn.disabled = state.currentStep <= 1;
+            prevBtn.addEventListener('click', () => this.goToPreviousStep());
         }
 
-        // Next button
-        if (nextBtn) {
-            if (state.currentStep === config.steps.total) {
-                nextBtn.style.display = 'none';
+        // Step navigation
+        document.querySelectorAll('.step-nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const step = parseInt(e.target.dataset.step);
+                if (this.canNavigateToStep(step)) {
+                    this.goToStep(step);
+                }
+            });
+        });
+    }
+
+    /**
+     * Initialize progress bar
+     */
+    initializeProgressBar() {
+        const progressBar = document.getElementById('wizard-progress');
+        if (progressBar) {
+            const percentage = (this.currentStep / this.totalSteps) * 100;
+            progressBar.style.width = `${percentage}%`;
+            progressBar.setAttribute('aria-valuenow', percentage);
+        }
+
+        // Update step indicators
+        document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+            const stepNumber = index + 1;
+            if (stepNumber < this.currentStep) {
+                indicator.classList.add('completed');
+                indicator.classList.remove('active');
+            } else if (stepNumber === this.currentStep) {
+                indicator.classList.add('active');
+                indicator.classList.remove('completed');
             } else {
-                nextBtn.style.display = 'block';
-                nextBtn.disabled = !validateCurrentStep();
+                indicator.classList.remove('active', 'completed');
+            }
+        });
+    }
 
-                if (state.currentStep === config.steps.total - 1) {
-                    nextBtn.textContent = 'Review';
-                } else {
-                    nextBtn.textContent = 'Next';
+    /**
+     * Initialize wallet connection
+     */
+    initializeWalletConnection() {
+        const connectBtn = document.getElementById('connect-wallet-btn');
+        if (connectBtn) {
+            connectBtn.addEventListener('click', () => this.connectWallet());
+        }
+
+        const disconnectBtn = document.getElementById('disconnect-wallet-btn');
+        if (disconnectBtn) {
+            disconnectBtn.addEventListener('click', () => this.disconnectWallet());
+        }
+
+        // Check if wallet is already connected
+        this.checkWalletConnection();
+    }
+
+    /**
+     * Initialize pool selection
+     */
+    initializePoolSelection() {
+        // Pool cards
+        document.querySelectorAll('.pool-selection-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const poolId = parseInt(e.currentTarget.dataset.poolId);
+                this.selectPool(poolId);
+            });
+        });
+
+        // Pool filter
+        const poolFilter = document.getElementById('pool-filter');
+        if (poolFilter) {
+            poolFilter.addEventListener('input', (e) => this.filterPools(e.target.value));
+        }
+
+        // Sort pools
+        const sortSelect = document.getElementById('pool-sort');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => this.sortPools(e.target.value));
+        }
+    }
+
+    /**
+     * Initialize pool comparison
+     */
+    initializePoolComparison() {
+        const compareBtn = document.getElementById('compare-pools-btn');
+        if (compareBtn) {
+            compareBtn.addEventListener('click', () => this.showPoolComparison());
+        }
+
+        document.querySelectorAll('.pool-compare-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateCompareButton());
+        });
+    }
+
+    /**
+     * Initialize DEX selection
+     */
+    initializeDexSelection() {
+        document.querySelectorAll('.dex-selection-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const dexId = parseInt(e.currentTarget.dataset.dexId);
+                this.selectDex(dexId);
+            });
+        });
+
+        // DEX comparison
+        const compareBtn = document.getElementById('compare-dex-btn');
+        if (compareBtn) {
+            compareBtn.addEventListener('click', () => this.showDexComparison());
+        }
+    }
+
+    /**
+     * Initialize amount inputs
+     */
+    initializeAmountInputs() {
+        const token0Input = document.getElementById('token0-amount');
+        const token1Input = document.getElementById('token1-amount');
+
+        if (token0Input) {
+            token0Input.addEventListener('input', (e) => this.onToken0AmountChange(e.target.value));
+        }
+
+        if (token1Input) {
+            token1Input.addEventListener('input', (e) => this.onToken1AmountChange(e.target.value));
+        }
+
+        // Balance buttons
+        document.querySelectorAll('.use-max-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tokenType = e.target.dataset.token;
+                this.useMaxBalance(tokenType);
+            });
+        });
+
+        // Percentage buttons
+        document.querySelectorAll('.percentage-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const percentage = parseFloat(e.target.dataset.percentage);
+                this.usePercentageOfBalance(percentage);
+            });
+        });
+    }
+
+    /**
+     * Initialize calculator
+     */
+    initializeCalculator() {
+        // Auto-calculate toggle
+        const autoCalcToggle = document.getElementById('auto-calculate');
+        if (autoCalcToggle) {
+            autoCalcToggle.addEventListener('change', (e) => {
+                this.autoCalculate = e.target.checked;
+            });
+        }
+
+        // Manual calculate button
+        const calcBtn = document.getElementById('calculate-btn');
+        if (calcBtn) {
+            calcBtn.addEventListener('click', () => this.calculateLiquidity());
+        }
+
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-calculation');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.refreshCalculation());
+        }
+    }
+
+    /**
+     * Initialize slippage settings
+     */
+    initializeSlippageSettings() {
+        const slippageInput = document.getElementById('slippage-tolerance');
+        if (slippageInput) {
+            slippageInput.addEventListener('input', (e) => this.updateSlippage(e.target.value));
+        }
+
+        // Preset slippage buttons
+        document.querySelectorAll('.slippage-preset').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const slippage = parseFloat(e.target.dataset.slippage);
+                this.setSlippage(slippage);
+            });
+        });
+
+        // Advanced settings toggle
+        const advancedToggle = document.getElementById('show-advanced');
+        if (advancedToggle) {
+            advancedToggle.addEventListener('change', (e) => {
+                const advancedPanel = document.getElementById('advanced-settings');
+                if (advancedPanel) {
+                    advancedPanel.style.display = e.target.checked ? 'block' : 'none';
+                }
+            });
+        }
+    }
+
+    /**
+     * Initialize transaction review
+     */
+    initializeTransactionReview() {
+        // Recalculate button
+        const recalcBtn = document.getElementById('recalculate-btn');
+        if (recalcBtn) {
+            recalcBtn.addEventListener('click', () => this.recalculateTransaction());
+        }
+
+        // Submit transaction button
+        const submitBtn = document.getElementById('submit-transaction-btn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => this.submitTransaction());
+        }
+
+        // Risk acknowledgment
+        const riskCheckbox = document.getElementById('acknowledge-risks');
+        if (riskCheckbox) {
+            riskCheckbox.addEventListener('change', (e) => {
+                const submitBtn = document.getElementById('submit-transaction-btn');
+                if (submitBtn) {
+                    submitBtn.disabled = !e.target.checked;
+                }
+            });
+        }
+    }
+
+    /**
+     * Initialize risk warnings
+     */
+    initializeRiskWarnings() {
+        // IL calculator
+        const ilBtn = document.getElementById('calculate-il-btn');
+        if (ilBtn) {
+            ilBtn.addEventListener('click', () => this.showImpermanentLossCalculator());
+        }
+
+        // Risk toggle
+        const riskToggle = document.getElementById('show-risks');
+        if (riskToggle) {
+            riskToggle.addEventListener('change', (e) => {
+                const riskPanel = document.getElementById('risk-warnings');
+                if (riskPanel) {
+                    riskPanel.style.display = e.target.checked ? 'block' : 'none';
+                }
+            });
+        }
+    }
+
+    /**
+     * Initialize transaction monitoring
+     */
+    initializeTransactionMonitoring() {
+        // Check transaction status periodically
+        this.startTransactionMonitoring();
+
+        // View on explorer button
+        const explorerBtn = document.getElementById('view-on-explorer');
+        if (explorerBtn) {
+            explorerBtn.addEventListener('click', () => this.viewOnExplorer());
+        }
+
+        // Add another position button
+        const addAnotherBtn = document.getElementById('add-another-position');
+        if (addAnotherBtn) {
+            addAnotherBtn.addEventListener('click', () => this.addAnotherPosition());
+        }
+
+        // View positions button
+        const viewPositionsBtn = document.getElementById('view-positions');
+        if (viewPositionsBtn) {
+            viewPositionsBtn.addEventListener('click', () => this.viewPositions());
+        }
+    }
+
+    /**
+     * Connect wallet
+     */
+    async connectWallet() {
+        try {
+            if (typeof window.ethereum === 'undefined') {
+                this.showErrorMessage('Please install MetaMask or another Web3 wallet');
+                return;
+            }
+
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
+
+            if (accounts.length > 0) {
+                this.walletAddress = accounts[0];
+                this.updateWalletUI(this.walletAddress);
+                await this.loadWalletBalances();
+                this.showSuccessMessage('Wallet connected successfully');
+                this.validateCurrentStep();
+            }
+        } catch (error) {
+            console.error('Error connecting wallet:', error);
+            this.showErrorMessage('Failed to connect wallet');
+        }
+    }
+
+    /**
+     * Disconnect wallet
+     */
+    disconnectWallet() {
+        this.walletAddress = null;
+        this.updateWalletUI(null);
+        this.clearWalletData();
+        this.showSuccessMessage('Wallet disconnected');
+        this.validateCurrentStep();
+    }
+
+    /**
+     * Check wallet connection
+     */
+    async checkWalletConnection() {
+        try {
+            if (typeof window.ethereum !== 'undefined') {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length > 0) {
+                    this.walletAddress = accounts[0];
+                    this.updateWalletUI(this.walletAddress);
+                    await this.loadWalletBalances();
                 }
             }
+        } catch (error) {
+            console.error('Error checking wallet connection:', error);
         }
     }
 
-    function updateStepUI(stepNumber) {
-        switch (stepNumber) {
-            case 3:
-                // Load DEX options if pool is selected
-                if (state.selectedPool) {
-                    loadDexOptionsForPool(state.selectedPool.id);
-                }
-                break;
+    /**
+     * Update wallet UI
+     */
+    updateWalletUI(walletAddress) {
+        const connectBtn = document.getElementById('connect-wallet-btn');
+        const disconnectBtn = document.getElementById('disconnect-wallet-btn');
+        const walletInfo = document.getElementById('wallet-info');
+        const walletDisplay = document.getElementById('wallet-display');
 
-            case 4:
-                // Update token display
-                updateTokenDisplay();
-                break;
-
-            case 5:
-                // Update review data
-                updateReviewData();
-                break;
-        }
-    }
-
-    // ================================================
-    // VALIDATION
-    // ================================================
-    function validateCurrentStep() {
-        const validator = state.validators[state.currentStep];
-        return validator ? validator() : true;
-    }
-
-    function validateWalletConnection() {
-        return state.walletConnected && state.walletAddress;
-    }
-
-    function validatePoolSelection() {
-        return state.selectedPool !== null;
-    }
-
-    function validateDexSelection() {
-        return state.selectedDex !== null;
-    }
-
-    function validateTokenAmounts() {
-        const hasAmounts = state.tokenAmounts.token1 > 0 && state.tokenAmounts.token2 > 0;
-        const meetsMinimum = state.calculatedData?.totalDepositValue >= config.validation.minAmount;
-
-        return hasAmounts && meetsMinimum;
-    }
-
-    function validateFinalStep() {
-        const checkboxes = document.querySelectorAll('.risk-checkbox input[type="checkbox"]');
-        const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-
-        const proceedBtn = document.getElementById('proceed-to-dex');
-        if (proceedBtn) {
-            proceedBtn.disabled = !allChecked;
-        }
-
-        return allChecked && validateTokenAmounts();
-    }
-
-    // ================================================
-    // UTILITY FUNCTIONS
-    // ================================================
-    function checkUrlParameters() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const poolId = urlParams.get('poolId');
-
-        if (poolId) {
-            // Pre-select pool if specified in URL
-            const poolRadio = document.querySelector(`input[name="selected-pool"][value="${poolId}"]`);
-            if (poolRadio) {
-                poolRadio.checked = true;
-                handlePoolSelection(poolId);
+        if (walletAddress) {
+            if (connectBtn) connectBtn.style.display = 'none';
+            if (disconnectBtn) disconnectBtn.style.display = 'block';
+            if (walletInfo) walletInfo.style.display = 'block';
+            if (walletDisplay) {
+                walletDisplay.textContent = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
             }
-        }
-    }
-
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    function showImpermanentLossGuide() {
-        const modal = document.getElementById('il-guide-modal');
-        if (modal) {
-            modal.style.display = 'block';
-        }
-    }
-
-    function openDexInfo() {
-        if (state.selectedDex?.infoUrl) {
-            window.open(state.selectedDex.infoUrl, '_blank');
         } else {
-            showError('DEX information not available.');
+            if (connectBtn) connectBtn.style.display = 'block';
+            if (disconnectBtn) disconnectBtn.style.display = 'none';
+            if (walletInfo) walletInfo.style.display = 'none';
         }
     }
 
-    // ================================================
-    // UI FEEDBACK FUNCTIONS
-    // ================================================
-    function showLoading(message = 'Loading...') {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) {
-            const messageElement = overlay.querySelector('p');
-            if (messageElement) {
-                messageElement.textContent = message;
+    /**
+     * Load wallet balances
+     */
+    async loadWalletBalances() {
+        if (!this.walletAddress) return;
+
+        try {
+            // This would typically call the API to get wallet balances
+            // For now, we'll simulate the data
+            this.walletBalances = {
+                eth: 1.5,
+                token0: 1000,
+                token1: 500
+            };
+
+            this.updateBalanceDisplay();
+        } catch (error) {
+            console.error('Error loading wallet balances:', error);
+        }
+    }
+
+    /**
+     * Update balance display
+     */
+    updateBalanceDisplay() {
+        if (!this.walletBalances) return;
+
+        const ethBalance = document.getElementById('eth-balance');
+        const token0Balance = document.getElementById('token0-balance');
+        const token1Balance = document.getElementById('token1-balance');
+
+        if (ethBalance) ethBalance.textContent = `${this.walletBalances.eth.toFixed(4)} ETH`;
+        if (token0Balance) token0Balance.textContent = `${this.walletBalances.token0.toLocaleString()} TEACH`;
+        if (token1Balance) token1Balance.textContent = `${this.walletBalances.token1.toLocaleString()} USDC`;
+    }
+
+    /**
+     * Clear wallet data
+     */
+    clearWalletData() {
+        this.walletBalances = null;
+        this.updateBalanceDisplay();
+    }
+
+    /**
+     * Select pool
+     */
+    selectPool(poolId) {
+        // Update UI
+        document.querySelectorAll('.pool-selection-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        const selectedCard = document.querySelector(`[data-pool-id="${poolId}"]`);
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+        }
+
+        // Find pool data
+        const pools = this.wizardData.availablePools || [];
+        this.selectedPool = pools.find(p => p.id === poolId);
+
+        if (this.selectedPool) {
+            this.updatePoolDisplay();
+            this.validateCurrentStep();
+        }
+    }
+
+    /**
+     * Update pool display
+     */
+    updatePoolDisplay() {
+        if (!this.selectedPool) return;
+
+        const poolName = document.getElementById('selected-pool-name');
+        const poolPair = document.getElementById('selected-pool-pair');
+        const poolApy = document.getElementById('selected-pool-apy');
+        const poolTvl = document.getElementById('selected-pool-tvl');
+
+        if (poolName) poolName.textContent = this.selectedPool.name;
+        if (poolPair) poolPair.textContent = this.selectedPool.tokenPair;
+        if (poolApy) poolApy.textContent = this.selectedPool.apyDisplay;
+        if (poolTvl) poolTvl.textContent = this.selectedPool.totalValueLockedDisplay;
+
+        // Update token symbols
+        const token0Symbol = document.getElementById('token0-symbol');
+        const token1Symbol = document.getElementById('token1-symbol');
+
+        if (token0Symbol) token0Symbol.textContent = this.selectedPool.token0Symbol;
+        if (token1Symbol) token1Symbol.textContent = this.selectedPool.token1Symbol;
+    }
+
+    /**
+     * Select DEX
+     */
+    selectDex(dexId) {
+        // Update UI
+        document.querySelectorAll('.dex-selection-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        const selectedCard = document.querySelector(`[data-dex-id="${dexId}"]`);
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+        }
+
+        // Find DEX data
+        const dexes = this.wizardData.availableDexes || [];
+        this.selectedDex = dexes.find(d => d.id === dexId);
+
+        if (this.selectedDex) {
+            this.updateDexDisplay();
+            this.validateCurrentStep();
+        }
+    }
+
+    /**
+     * Update DEX display
+     */
+    updateDexDisplay() {
+        if (!this.selectedDex) return;
+
+        const dexName = document.getElementById('selected-dex-name');
+        const dexNetwork = document.getElementById('selected-dex-network');
+        const dexFee = document.getElementById('selected-dex-fee');
+
+        if (dexName) dexName.textContent = this.selectedDex.displayName;
+        if (dexNetwork) dexNetwork.textContent = this.selectedDex.network;
+        if (dexFee) dexFee.textContent = this.selectedDex.feeDisplay;
+    }
+
+    /**
+     * Handle token 0 amount change
+     */
+    onToken0AmountChange(value) {
+        const amount = parseFloat(value) || 0;
+
+        // Clear validation timer
+        if (this.validationTimer) {
+            clearTimeout(this.validationTimer);
+        }
+
+        // Validate and calculate after delay
+        this.validationTimer = setTimeout(() => {
+            this.validateTokenAmount(0, amount);
+            if (this.autoCalculate && amount > 0) {
+                this.calculateOptimalToken1Amount(amount);
             }
-            overlay.style.display = 'flex';
+        }, 500);
+    }
+
+    /**
+     * Handle token 1 amount change
+     */
+    onToken1AmountChange(value) {
+        const amount = parseFloat(value) || 0;
+
+        // Clear validation timer
+        if (this.validationTimer) {
+            clearTimeout(this.validationTimer);
+        }
+
+        // Validate and calculate after delay
+        this.validationTimer = setTimeout(() => {
+            this.validateTokenAmount(1, amount);
+            if (this.autoCalculate && amount > 0) {
+                this.calculateOptimalToken0Amount(amount);
+            }
+        }, 500);
+    }
+
+    /**
+     * Calculate optimal token 1 amount based on token 0
+     */
+    calculateOptimalToken1Amount(token0Amount) {
+        if (!this.selectedPool) return;
+
+        // Simple ratio calculation (would use real pool data in production)
+        const ratio = 2; // Assuming 1 TEACH = 2 USDC
+        const token1Amount = token0Amount * ratio;
+
+        const token1Input = document.getElementById('token1-amount');
+        if (token1Input) {
+            token1Input.value = token1Amount.toFixed(6);
+        }
+
+        this.triggerCalculation();
+    }
+
+    /**
+     * Calculate optimal token 0 amount based on token 1
+     */
+    calculateOptimalToken0Amount(token1Amount) {
+        if (!this.selectedPool) return;
+
+        // Simple ratio calculation (would use real pool data in production)
+        const ratio = 0.5; // Assuming 1 USDC = 0.5 TEACH
+        const token0Amount = token1Amount * ratio;
+
+        const token0Input = document.getElementById('token0-amount');
+        if (token0Input) {
+            token0Input.value = token0Amount.toFixed(6);
+        }
+
+        this.triggerCalculation();
+    }
+
+    /**
+     * Use maximum balance for token
+     */
+    useMaxBalance(tokenType) {
+        if (!this.walletBalances) return;
+
+        const balance = tokenType === 'token0' ? this.walletBalances.token0 : this.walletBalances.token1;
+        const input = document.getElementById(`${tokenType}-amount`);
+
+        if (input) {
+            input.value = balance.toString();
+            if (tokenType === 'token0') {
+                this.onToken0AmountChange(balance.toString());
+            } else {
+                this.onToken1AmountChange(balance.toString());
+            }
         }
     }
 
-    function hideLoading() {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) {
-            overlay.style.display = 'none';
+    /**
+     * Use percentage of balance
+     */
+    usePercentageOfBalance(percentage) {
+        if (!this.walletBalances) return;
+
+        const token0Amount = (this.walletBalances.token0 * percentage / 100);
+        const token1Amount = (this.walletBalances.token1 * percentage / 100);
+
+        const token0Input = document.getElementById('token0-amount');
+        const token1Input = document.getElementById('token1-amount');
+
+        if (token0Input) {
+            token0Input.value = token0Amount.toFixed(6);
+            this.onToken0AmountChange(token0Amount.toString());
+        }
+
+        if (token1Input) {
+            token1Input.value = token1Amount.toFixed(6);
+            this.onToken1AmountChange(token1Amount.toString());
         }
     }
 
-    function showError(message) {
-        const errorToast = document.getElementById('error-message');
-        const errorText = document.getElementById('error-text');
+    /**
+     * Validate token amount
+     */
+    validateTokenAmount(tokenIndex, amount) {
+        const tokenType = tokenIndex === 0 ? 'token0' : 'token1';
+        const balance = this.walletBalances ?
+            (tokenIndex === 0 ? this.walletBalances.token0 : this.walletBalances.token1) : 0;
 
-        if (errorToast && errorText) {
-            errorText.textContent = message;
-            errorToast.style.display = 'flex';
-            errorToast.classList.add('show');
+        const inputElement = document.getElementById(`${tokenType}-amount`);
+        const errorElement = document.getElementById(`${tokenType}-error`);
 
-            setTimeout(() => {
-                hideError();
-            }, 5000);
+        let isValid = true;
+        let errorMessage = '';
+
+        if (amount <= 0) {
+            isValid = false;
+            errorMessage = 'Amount must be greater than 0';
+        } else if (amount > balance) {
+            isValid = false;
+            errorMessage = 'Insufficient balance';
         }
-
-        console.error('🚨 Wizard Error:', message);
-    }
-
-    function hideError() {
-        const errorToast = document.getElementById('error-message');
-        if (errorToast) {
-            errorToast.classList.remove('show');
-            setTimeout(() => {
-                errorToast.style.display = 'none';
-            }, 300);
-        }
-    }
-
-    function showSuccess(message) {
-        console.log('✅ Wizard Success:', message);
-
-        // You could implement a success toast similar to error toast
-        // For now, just log to console
-    }
-
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    }
-
-    // ================================================
-    // GLOBAL FUNCTIONS (exposed to window)
-    // ================================================
-    window.nextStep = nextStep;
-    window.previousStep = previousStep;
-    window.showImpermanentLossGuide = showImpermanentLossGuide;
-    window.openDexInfo = openDexInfo;
-    window.proceedToDex = proceedToDex;
-    window.closeModal = closeModal;
-    window.hideError = hideError;
-
-    // ================================================
-    // PUBLIC API
-    // ================================================
-    return {
-        init: init,
-        nextStep: nextStep,
-        previousStep: previousStep,
-        validateCurrentStep: validateCurrentStep,
-
-        // Expose state for debugging
-        getState: () => ({ ...state }),
-        getConfig: () => ({ ...config })
-    };
-
-})();
-
-// ================================================
-// ADDITIONAL MODAL STYLES AND FUNCTIONALITY
-// ================================================
-
-// Modal handling
-document.addEventListener('click', function (e) {
-    // Close modal when clicking outside
-    if (e.target.classList.contains('modal')) {
-        e.target.style.display = 'none';
-    }
-});
-
-// Escape key to close modals
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-        const openModals = document.querySelectorAll('.modal[style*="block"]');
-        openModals.forEach(modal => {
-            modal.style.display = 'none';
-        });
-    }
-});
-
-// Removal slider functionality
-document.addEventListener('input', function (e) {
-    if (e.target.id === 'removal-slider') {
-        const percentage = parseInt(e.target.value);
-        window.updateRemovalPreview(percentage);
-    }
-});
-
-// Console startup message for wizard
-console.log(`
-🧙‍♂️ TeachToken Add Liquidity Wizard
-📝 Version: 1.0.0
-🚀 Initialized: ${new Date().toISOString()}
-🔗 Steps: ${5} total
-`);
-
-// Export for module systems (if needed)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = window.AddLiquidityWizard;
-} 1Input) {
-    token1Input.addEventListener('input', function () {
-        handleTokenAmountChange(1, this.value);
-    });
-}
-
-if (token2Input) {
-    token2Input.addEventListener('input', function () {
-        handleTokenAmountChange(2, this.value);
-    });
-}
-
-// Amount percentage buttons
-document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('amount-btn')) {
-        const percentage = parseInt(e.target.dataset.percentage);
-        const tokenNumber = e.target.closest('.token-input-card').querySelector('input').id.includes('token1') ? 1 : 2;
-        handlePercentageClick(tokenNumber, percentage);
-    }
-});
-
-// Slippage tolerance
-const slippageTolerance = document.getElementById('slippage-tolerance');
-if (slippageTolerance) {
-    slippageTolerance.addEventListener('change', handleSlippageChange);
-}
-
-// Risk acknowledgment checkboxes
-const riskCheckboxes = document.querySelectorAll('.risk-checkbox input[type="checkbox"]');
-riskCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', validateFinalStep);
-});
-
-// DEX option cards
-document.addEventListener('click', function (e) {
-    const dexCard = e.target.closest('.dex-option-card');
-    if (dexCard) {
-        const radio = dexCard.querySelector('input[type="radio"]');
-        if (radio) {
-            radio.checked = true;
-            handleDexSelection(radio.value);
-        }
-    }
-});
-    }
-
-function initializeWizardNavigation() {
-    // Next/Previous button handlers are set up in global scope
-    // See nextStep() and previousStep() functions
-
-    updateProgressIndicator();
-    updateNavigationButtons();
-}
-
-function initializeStepValidation() {
-    // Set up validation rules for each step
-    const validators = {
-        1: validateWalletConnection,
-        2: validatePoolSelection,
-        3: validateDexSelection,
-        4: validateTokenAmounts,
-        5: validateFinalStep
-    };
-
-    state.validators = validators;
-}
-
-// ================================================
-// WALLET CONNECTION (Step 1)
-// ================================================
-async function connectWallet(walletType) {
-    showLoading('Connecting wallet...');
-
-    try {
-        let provider;
-
-        switch (walletType) {
-            case 'metamask':
-                if (typeof window.ethereum !== 'undefined') {
-                    provider = window.ethereum;
-                } else {
-                    throw new Error('MetaMask not found. Please install MetaMask.');
-                }
-                break;
-
-            case 'walletconnect':
-                throw new Error('WalletConnect integration coming soon.');
-
-            case 'coinbase':
-                throw new Error('Coinbase Wallet integration coming soon.');
-
-            case 'trust':
-                throw new Error('Trust Wallet integration coming soon.');
-
-            default:
-                throw new Error('Unsupported wallet type.');
-        }
-
-        // Request account access
-        const accounts = await provider.request({ method: 'eth_requestAccounts' });
-        const walletAddress = accounts[0];
-
-        // Get balance
-        const balanceWei = await provider.request({
-            method: 'eth_getBalance',
-            params: [walletAddress, 'latest']
-        });
-        const balanceEth = parseInt(balanceWei, 16) / Math.pow(10, 18);
-
-        // Update state
-        state.walletConnected = true;
-        state.walletAddress = walletAddress;
-        state.walletBalance.eth = balanceEth;
 
         // Update UI
-        updateWalletStatus(walletAddress, balanceEth);
+        if (inputElement) {
+            inputElement.classList.toggle('is-invalid', !isValid);
+            inputElement.classList.toggle('is-valid', isValid);
+        }
 
-        // Enable next step
-        updateNavigationButtons();
+        if (errorElement) {
+            errorElement.textContent = errorMessage;
+            errorElement.style.display = errorMessage ? 'block' : 'none';
+        }
 
-        showSuccess('Wallet connected successfully!');
+        return isValid;
+    }
 
-        // Auto-advance to next step after 1 second
-        setTimeout(() => {
-            nextStep();
+    /**
+     * Trigger calculation
+     */
+    triggerCalculation() {
+        if (this.calculationTimer) {
+            clearTimeout(this.calculationTimer);
+        }
+
+        this.calculationTimer = setTimeout(() => {
+            this.calculateLiquidity();
         }, 1000);
-
-    } catch (error) {
-        console.error('❌ Wallet connection error:', error);
-        showError(error.message || 'Failed to connect wallet.');
-    } finally {
-        hideLoading();
-    }
-}
-
-function updateWalletStatus(address, balance) {
-    const walletStatus = document.getElementById('wallet-status');
-    const walletAddressSpan = document.getElementById('wallet-address');
-    const walletBalanceSpan = document.getElementById('wallet-balance');
-
-    if (walletStatus && walletAddressSpan && walletBalanceSpan) {
-        walletAddressSpan.textContent = `${address.substring(0, 6)}...${address.substring(38)}`;
-        walletBalanceSpan.textContent = balance.toFixed(4);
-        walletStatus.style.display = 'block';
     }
 
-    // Hide wallet connection options
-    const walletConnect = document.getElementById('wallet-connect');
-    if (walletConnect) {
-        walletConnect.querySelector('.wallet-options').style.display = 'none';
-    }
-}
+    /**
+     * Calculate liquidity
+     */
+    async calculateLiquidity() {
+        if (!this.walletAddress || !this.selectedPool) return;
 
-// ================================================
-// POOL SELECTION (Step 2)
-// ================================================
-function handlePoolSearch() {
-    const searchInput = document.getElementById('pool-search-wizard');
-    if (!searchInput) return;
+        const token0Amount = parseFloat(document.getElementById('token0-amount')?.value) || 0;
+        const token1Amount = parseFloat(document.getElementById('token1-amount')?.value) || 0;
+        const slippage = parseFloat(document.getElementById('slippage-tolerance')?.value) || 0.5;
 
-    const searchTerm = searchInput.value.toLowerCase();
-    const rows = document.querySelectorAll('.pool-comparison-row');
+        if (token0Amount <= 0 || token1Amount <= 0) return;
 
-    rows.forEach(row => {
-        const poolText = row.textContent.toLowerCase();
-        const shouldShow = poolText.includes(searchTerm);
-        row.style.display = shouldShow ? 'table-row' : 'none';
-    });
-}
+        try {
+            this.showCalculationLoading();
 
-function handlePoolSelection(poolId) {
-    console.log('🏊 Pool selected:', poolId);
+            const response = await fetch('/liquidity/calculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    walletAddress: this.walletAddress,
+                    poolId: this.selectedPool.id,
+                    token0Amount: token0Amount,
+                    token1Amount: token1Amount,
+                    slippageTolerance: slippage,
+                    autoCalculateToken1: false
+                })
+            });
 
-    if (!state.wizardData?.availablePools) return;
+            if (!response.ok) throw new Error('Calculation failed');
 
-    // Find selected pool data
-    const pool = state.wizardData.availablePools.find(p => p.id == poolId);
-    if (!pool) return;
-
-    state.selectedPool = pool;
-
-    // Update pool details display
-    updatePoolDetails(pool);
-
-    // Enable next step
-    updateNavigationButtons();
-
-    // Load DEX options for this pool
-    loadDexOptionsForPool(poolId);
-}
-
-function updatePoolDetails(pool) {
-    const detailsContainer = document.getElementById('selected-pool-details');
-    if (!detailsContainer) return;
-
-    const poolName = document.getElementById('selected-pool-name');
-    const poolApy = document.getElementById('selected-pool-apy');
-    const poolFee = document.getElementById('selected-pool-fee');
-    const poolRisk = document.getElementById('selected-pool-risk');
-
-    if (poolName) poolName.textContent = `${pool.token1Symbol}/${pool.token2Symbol}`;
-    if (poolApy) poolApy.textContent = `${pool.apy.toFixed(2)}%`;
-    if (poolFee) poolFee.textContent = `${(pool.feeTier * 100)}%`;
-    if (poolRisk) poolRisk.textContent = pool.riskLevel;
-
-    detailsContainer.style.display = 'block';
-}
-
-async function loadDexOptionsForPool(poolId) {
-    try {
-        const response = await fetch(`${config.endpoints.wizardData}?poolId=${poolId}`);
-        if (!response.ok) throw new Error('Failed to load DEX options');
-
-        const data = await response.json();
-        if (data.dexOptions) {
-            state.wizardData.dexOptions = data.dexOptions;
-            updateDexOptionsDisplay(data.dexOptions);
+            this.calculator = await response.json();
+            this.displayCalculationResults();
+            this.hideCalculationLoading();
+            this.validateCurrentStep();
+        } catch (error) {
+            console.error('Error calculating liquidity:', error);
+            this.showErrorMessage('Failed to calculate liquidity');
+            this.hideCalculationLoading();
         }
-    } catch (error) {
-        console.error('❌ Error loading DEX options:', error);
-        showError('Failed to load DEX options for selected pool.');
     }
-}
 
-function updateDexOptionsDisplay(dexOptions) {
-    const dexGrid = document.getElementById('dex-options-grid');
-    if (!dexGrid || !dexOptions) return;
+    /**
+     * Display calculation results
+     */
+    displayCalculationResults() {
+        if (!this.calculator) return;
 
-    // Update existing DEX cards with pool-specific data
-    dexOptions.forEach(dex => {
-        const dexCard = dexGrid.querySelector(`[data-dex-id="${dex.id}"]`);
-        if (dexCard) {
-            const apyElement = dexCard.querySelector('.stat-value');
-            if (apyElement) apyElement.textContent = `${dex.poolApy.toFixed(2)}%`;
+        // LP tokens
+        const lpTokens = document.getElementById('estimated-lp-tokens');
+        if (lpTokens) lpTokens.textContent = this.calculator.estimatedLpTokensDisplay;
+
+        // Total value
+        const totalValue = document.getElementById('estimated-total-value');
+        if (totalValue) totalValue.textContent = this.calculator.estimatedValueDisplay;
+
+        // Price impact
+        const priceImpact = document.getElementById('price-impact');
+        if (priceImpact) {
+            priceImpact.textContent = this.calculator.priceImpactDisplay;
+            priceImpact.className = `price-impact ${this.calculator.priceImpactClass}`;
         }
-    });
-}
 
-// ================================================
-// DEX SELECTION (Step 3)
-// ================================================
-function handleDexSelection(dexId) {
-    console.log('🔄 DEX selected:', dexId);
+        // APY
+        const apy = document.getElementById('estimated-apy');
+        if (apy) apy.textContent = this.calculator.apyDisplay;
 
-    if (!state.wizardData?.dexOptions) return;
+        // Daily earnings
+        const dailyEarnings = document.getElementById('daily-earnings');
+        if (dailyEarnings) dailyEarnings.textContent = this.calculator.dailyEarningsDisplay;
 
-    // Find selected DEX data
-    const dex = state.wizardData.dexOptions.find(d => d.id == dexId);
-    if (!dex) return;
+        // Monthly earnings
+        const monthlyEarnings = document.getElementById('monthly-earnings');
+        if (monthlyEarnings) monthlyEarnings.textContent = this.calculator.monthlyEarningsDisplay;
 
-    state.selectedDex = dex;
+        // Gas estimate
+        const gasEstimate = document.getElementById('gas-estimate');
+        if (gasEstimate) gasEstimate.textContent = this.calculator.gasEstimateDisplay;
 
-    // Update DEX comparison display
-    updateDexComparison(dex);
-
-    // Update token icons and symbols for next step
-    updateTokenDisplay();
-
-    // Enable next step
-    updateNavigationButtons();
-}
-
-function updateDexComparison(dex) {
-    const comparisonContainer = document.getElementById('dex-comparison');
-    if (!comparisonContainer) return;
-
-    const securityElement = document.getElementById('selected-dex-security');
-    const ratingElement = document.getElementById('selected-dex-rating');
-    const speedElement = document.getElementById('selected-dex-speed');
-
-    if (securityElement) securityElement.textContent = dex.securityRating || 'A+';
-    if (ratingElement) ratingElement.textContent = `${dex.userRating || 4.8}/5`;
-    if (speedElement) speedElement.textContent = dex.avgTransactionTime || '~2 min';
-
-    comparisonContainer.style.display = 'block';
-}
-
-function updateTokenDisplay() {
-    if (!state.selectedPool) return;
-
-    const token1Icon = document.getElementById('token1-icon');
-    const token1Symbol = document.getElementById('token1-symbol');
-    const token2Icon = document.getElementById('token2-icon');
-    const token2Symbol = document.getElementById('token2-symbol');
-
-    if (token1Icon) token1Icon.src = state.selectedPool.token1Icon;
-    if (token1Symbol) token1Symbol.textContent = state.selectedPool.token1Symbol;
-    if (token2Icon) token2Icon.src = state.selectedPool.token2Icon;
-    if (token2Symbol) token2Symbol.textContent = state.selectedPool.token2Symbol;
-}
-
-// ================================================
-// TOKEN AMOUNTS (Step 4)
-// ================================================
-async function handleTokenAmountChange(tokenNumber, value) {
-    const numValue = parseFloat(value) || 0;
-
-    // Update state
-    if (tokenNumber === 1) {
-        state.tokenAmounts.token1 = numValue;
-    } else {
-        state.tokenAmounts.token2 = numValue;
+        // Warnings
+        this.displayCalculationWarnings();
     }
 
-    // Calculate corresponding amount for the other token
-    if (numValue > 0) {
-        await calculateCorrespondingAmount(tokenNumber, numValue);
-    } else {
-        // Clear the other input if this one is empty
-        const otherInput = document.getElementById(tokenNumber === 1 ? 'token2-amount' : 'token1-amount');
-        if (otherInput) otherInput.value = '';
+    /**
+     * Display calculation warnings
+     */
+    displayCalculationWarnings() {
+        if (!this.calculator) return;
+
+        const warningsContainer = document.getElementById('calculation-warnings');
+        if (!warningsContainer) return;
+
+        let warningsHtml = '';
+
+        if (this.calculator.warningMessages && this.calculator.warningMessages.length > 0) {
+            this.calculator.warningMessages.forEach(warning => {
+                warningsHtml += `
+                    <div class="alert alert-warning alert-sm">
+                        <i class="fas fa-exclamation-triangle me-2"></i>${warning}
+                    </div>
+                `;
+            });
+        }
+
+        if (this.calculator.validationMessages && this.calculator.validationMessages.length > 0) {
+            this.calculator.validationMessages.forEach(error => {
+                warningsHtml += `
+                    <div class="alert alert-danger alert-sm">
+                        <i class="fas fa-times-circle me-2"></i>${error}
+                    </div>
+                `;
+            });
+        }
+
+        warningsContainer.innerHTML = warningsHtml;
     }
 
-    // Update USD values
-    updateUSDValues();
+    /**
+     * Show calculation loading state
+     */
+    showCalculationLoading() {
+        const loadingElement = document.getElementById('calculation-loading');
+        const resultsElement = document.getElementById('calculation-results');
 
-    // Update pool position preview
-    updatePoolPositionPreview();
+        if (loadingElement) loadingElement.style.display = 'block';
+        if (resultsElement) resultsElement.style.display = 'none';
+    }
 
-    // Update impermanent loss calculation
-    updateImpermanentLossCalculation();
+    /**
+     * Hide calculation loading state
+     */
+    hideCalculationLoading() {
+        const loadingElement = document.getElementById('calculation-loading');
+        const resultsElement = document.getElementById('calculation-results');
 
-    // Validate amounts
-    validateTokenAmounts();
-}
+        if (loadingElement) loadingElement.style.display = 'none';
+        if (resultsElement) resultsElement.style.display = 'block';
+    }
 
-async function calculateCorrespondingAmount(inputTokenNumber, inputAmount) {
-    if (!state.selectedPool || !state.selectedDex) return;
+    /**
+     * Update slippage
+     */
+    updateSlippage(value) {
+        const slippage = parseFloat(value) || 0.5;
 
-    try {
-        const response = await fetch(config.endpoints.calculate, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                poolId: state.selectedPool.id,
-                dexId: state.selectedDex.id,
-                inputToken: inputTokenNumber,
-                inputAmount: inputAmount
-            })
-        });
-
-        if (!response.ok) throw new Error('Calculation failed');
-
-        const data = await response.json();
-
-        // Update the corresponding input
-        const otherInput = document.getElementById(inputTokenNumber === 1 ? 'token2-amount' : 'token1-amount');
-        if (otherInput) {
-            otherInput.value = data.correspondingAmount.toFixed(6);
-
-            // Update state
-            if (inputTokenNumber === 1) {
-                state.tokenAmounts.token2 = data.correspondingAmount;
-            } else {
-                state.tokenAmounts.token1 = data.correspondingAmount;
+        // Update preset buttons
+        document.querySelectorAll('.slippage-preset').forEach(btn => {
+            btn.classList.remove('active');
+            if (parseFloat(btn.dataset.slippage) === slippage) {
+                btn.classList.add('active');
             }
-        }
-
-        // Store calculation data
-        state.calculatedData = data;
-
-    } catch (error) {
-        console.error('❌ Error calculating corresponding amount:', error);
-        showError('Failed to calculate token amounts. Please try again.');
-    }
-}
-
-function handlePercentageClick(tokenNumber, percentage) {
-    if (!state.walletBalance) return;
-
-    let maxAmount = 0;
-
-    if (tokenNumber === 1) {
-        maxAmount = state.walletBalance.token1 || 0;
-    } else if (tokenNumber === 2) {
-        maxAmount = state.walletBalance.token2 || state.walletBalance.eth || 0;
-    }
-
-    const amount = (maxAmount * percentage) / 100;
-    const input = document.getElementById(`token${tokenNumber}-amount`);
-
-    if (input) {
-        input.value = amount.toFixed(6);
-        handleTokenAmountChange(tokenNumber, amount);
-    }
-}
-
-function updateUSDValues() {
-    const token1UsdElement = document.getElementById('token1-usd');
-    const token2UsdElement = document.getElementById('token2-usd');
-
-    if (token1UsdElement && state.selectedPool) {
-        const usdValue = state.tokenAmounts.token1 * (state.selectedPool.token1Price || 0);
-        token1UsdElement.textContent = `$${usdValue.toFixed(2)}`;
-    }
-
-    if (token

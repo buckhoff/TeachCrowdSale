@@ -8,7 +8,6 @@ using TeachCrowdSale.Infrastructure.Configuration;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using TeachCrowdSale.Infrastructure.Repositories;
 using TeachCrowdSale.Infrastructure.Services;
-using TeachCrowdSale.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

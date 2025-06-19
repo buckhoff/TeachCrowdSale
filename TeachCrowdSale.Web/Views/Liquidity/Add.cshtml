@@ -60,170 +60,195 @@
                     </div>
 
                     <!-- Wizard Progress Indicator -->
-                    <div class="wizard-progress" id="wizard-progress">
-                        <div class="wizard-progress-fill" id="progress-fill"></div>
+                    <div class="wizard-progress-container">
+                        <div class="wizard-progress" id="wizard-progress">
+                            <div class="wizard-progress-fill" style="width: @((Model?.CurrentStep ?? 1) * 20)%"></div>
+                        </div>
 
-                        <div class="wizard-step" data-step="1">
-                            <div class="step-circle active" id="step-circle-1">1</div>
-                            <span class="step-label">Connect Wallet</span>
-                        </div>
-                        <div class="wizard-step" data-step="2">
-                            <div class="step-circle" id="step-circle-2">2</div>
-                            <span class="step-label">Select Pool</span>
-                        </div>
-                        <div class="wizard-step" data-step="3">
-                            <div class="step-circle" id="step-circle-3">3</div>
-                            <span class="step-label">Choose DEX</span>
-                        </div>
-                        <div class="wizard-step" data-step="4">
-                            <div class="step-circle" id="step-circle-4">4</div>
-                            <span class="step-label">Enter Amounts</span>
-                        </div>
-                        <div class="wizard-step" data-step="5">
-                            <div class="step-circle" id="step-circle-5">5</div>
-                            <span class="step-label">Review & Confirm</span>
+                        <div class="wizard-steps">
+                            @for (int i = 1; i <= (Model?.TotalSteps ?? 5); i++)
+                            {
+                                <div class="wizard-step step-indicator @((Model?.CurrentStep ?? 1) == i ? "active" : (Model?.CurrentStep ?? 1) > i ? "completed" : "")" data-step="@i">
+                                    <div class="step-circle" id="step-circle-@i">@i</div>
+                                    <span class="step-label">@(Model?.StepTitles?.ContainsKey(i) == true ? Model.StepTitles[i] : $"Step {i}")</span>
+                                </div>
+                            }
                         </div>
                     </div>
 
                     <!-- Wizard Content Container -->
-                    <div class="wizard-content" id="wizard-content">
+                    <div class="wizard-content" data-current-step="@(Model?.CurrentStep ?? 1)" id="wizard-content">
 
-                        <!-- Step 1: Connect Wallet -->
-                        <div class="wizard-step-content active" data-step="1">
-                            <h2>Connect Your Wallet</h2>
-                            <p>Connect your crypto wallet to add liquidity to TEACH token pools.</p>
+                        @if ((Model?.CurrentStep ?? 1) == 1)
+                        {
+                            <!-- Step 1: Connect Wallet & Select Pool -->
+                            <div class="wizard-step-content active" data-step="1">
+                                <h2>Connect Wallet & Select Pool</h2>
+                                <p>Connect your crypto wallet and choose a liquidity pool to provide liquidity to.</p>
 
-                            <div class="wallet-connect" id="wallet-connect">
-                                <h3>Choose Your Wallet</h3>
-                                <p>Select a wallet to connect and manage your liquidity positions.</p>
-
-                                <div class="wallet-options">
-                                    <button class="wallet-option" data-wallet="metamask">
-                                        <img src="/images/wallets/metamask.png" alt="MetaMask" class="wallet-icon">
-                                        <span>MetaMask</span>
-                                    </button>
-                                    <button class="wallet-option" data-wallet="walletconnect">
-                                        <img src="/images/wallets/walletconnect.png" alt="WalletConnect" class="wallet-icon">
-                                        <span>WalletConnect</span>
-                                    </button>
-                                    <button class="wallet-option" data-wallet="coinbase">
-                                        <img src="/images/wallets/coinbase.png" alt="Coinbase Wallet" class="wallet-icon">
-                                        <span>Coinbase Wallet</span>
-                                    </button>
-                                    <button class="wallet-option" data-wallet="trust">
-                                        <img src="/images/wallets/trust.png" alt="Trust Wallet" class="wallet-icon">
-                                        <span>Trust Wallet</span>
-                                    </button>
-                                </div>
-
-                                <div class="wallet-status" id="wallet-status" style="display: none;">
-                                    <div class="wallet-connected">
-                                        <h4>✅ Wallet Connected</h4>
-                                        <p>Address: <span id="wallet-address"></span></p>
-                                        <p>Balance: <span id="wallet-balance"></span> ETH</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 2: Select Pool -->
-                        <div class="wizard-step-content" data-step="2">
-                            <h2>Select Liquidity Pool</h2>
-                            <p>Choose a pool to provide liquidity to. Compare APY, risk level, and requirements.</p>
-
-                            <div class="pool-selection">
-                                <div class="pool-search">
-                                    <input type="text" id="pool-search-wizard" placeholder="Search pools...">
-                                </div>
-
-                                <div class="pool-comparison-table">
-                                    <table class="comparison-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Select</th>
-                                                <th>Pool</th>
-                                                <th>DEX</th>
-                                                <th>APY</th>
-                                                <th>TVL</th>
-                                                <th>Risk</th>
-                                                <th>Min. Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="pool-comparison-body">
-                                            @if (Model?.AvailablePools != null && Model.AvailablePools.Any())
-                                            {
-                                                @foreach (var pool in Model.AvailablePools)
-                                                {
-                                                    <tr class="pool-comparison-row" data-pool-id="@pool.Id">
-                                                        <td>
-                                                            <input type="radio" name="selected-pool" value="@pool.Id" id="pool-@pool.Id">
-                                                        </td>
-                                                        <td>
-                                                            <div class="pool-cell">
-                                                                <div class="token-pair-small">
-                                                                    <img src="@pool.Token1Icon" alt="@pool.Token1Symbol" class="token-icon-small">
-                                                                    <img src="@pool.Token2Icon" alt="@pool.Token2Symbol" class="token-icon-small">
-                                                                </div>
-                                                                <span>@pool.Token1Symbol/@pool.Token2Symbol</span>
-                                                            </div>
-                                                        </td>
-                                                        <td><span class="dex-badge-small">@pool.DexName</span></td>
-                                                        <td><span class="apy-cell">@pool.Apy.ToString("F2")%</span></td>
-                                                        <td>$@pool.TotalValueLocked.ToString("N0")</td>
-                                                        <td>
-                                                            <span class="risk-badge risk-@pool.RiskLevel.ToLower()">
-                                                                @pool.RiskLevel
-                                                            </span>
-                                                        </td>
-                                                        <td>$@pool.MinimumAmount.ToString("N0")</td>
-                                                    </tr>
-                                                }
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div class="selected-pool-details" id="selected-pool-details" style="display: none;">
-                                    <h4>Selected Pool Details</h4>
-                                    <div class="pool-detail-grid">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Pool:</span>
-                                            <span class="detail-value" id="selected-pool-name"></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">APY:</span>
-                                            <span class="detail-value" id="selected-pool-apy"></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fee Tier:</span>
-                                            <span class="detail-value" id="selected-pool-fee"></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Risk Level:</span>
-                                            <span class="detail-value" id="selected-pool-risk"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Choose DEX -->
-                        <div class="wizard-step-content" data-step="3">
-                            <h2>Choose DEX Platform</h2>
-                            <p>Select the decentralized exchange where you want to provide liquidity.</p>
-
-                            <div class="dex-selection">
-                                <div class="dex-options-grid" id="dex-options-grid">
-                                    @if (Model?.DexOptions != null && Model.DexOptions.Any())
+                                <!-- Wallet Connection -->
+                                <div class="wallet-connect" id="wallet-connect">
+                                    @if (string.IsNullOrEmpty(Model?.WalletAddress))
                                     {
-                                        @foreach (var dex in Model.DexOptions)
-                                        {
-                                            <div class="dex-option-card" data-dex-id="@dex.Id">
-                                                <input type="radio" name="selected-dex" value="@dex.Id" id="dex-@dex.Id" style="display: none;">
-                                                <label for="dex-@dex.Id" class="dex-card-label">
+                                        <h3>Connect Your Wallet</h3>
+                                        <p>Select a wallet to connect and manage your liquidity positions.</p>
+
+                                        <div class="wallet-options">
+                                            <button class="wallet-option" id="connect-wallet-btn" data-wallet="metamask">
+                                                <img src="/images/wallets/metamask.png" alt="MetaMask" class="wallet-icon">
+                                                <span>MetaMask</span>
+                                            </button>
+                                            <button class="wallet-option" data-wallet="walletconnect">
+                                                <img src="/images/wallets/walletconnect.png" alt="WalletConnect" class="wallet-icon">
+                                                <span>WalletConnect</span>
+                                            </button>
+                                            <button class="wallet-option" data-wallet="coinbase">
+                                                <img src="/images/wallets/coinbase.png" alt="Coinbase Wallet" class="wallet-icon">
+                                                <span>Coinbase Wallet</span>
+                                            </button>
+                                            <button class="wallet-option" data-wallet="trust">
+                                                <img src="/images/wallets/trust.png" alt="Trust Wallet" class="wallet-icon">
+                                                <span>Trust Wallet</span>
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="wallet-status" id="wallet-info">
+                                            <div class="wallet-connected">
+                                                <h4>✅ Wallet Connected</h4>
+                                                <p>Address: <span id="wallet-display">@Model.WalletAddress</span></p>
+                                                <div class="wallet-balances">
+                                                    <span id="eth-balance">Loading...</span> |
+                                                    <span id="token0-balance">Loading...</span> |
+                                                    <span id="token1-balance">Loading...</span>
+                                                </div>
+                                                <button class="btn btn-outline-secondary btn-sm" id="disconnect-wallet-btn">Disconnect</button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Pool Selection -->
+                                @if (Model?.AvailablePools != null && Model.AvailablePools.Any())
+                                {
+                                    <div class="pool-selection mt-4">
+                                        <h3>Select Liquidity Pool</h3>
+                                        <p>Choose a pool to provide liquidity to. Compare APY, risk level, and requirements.</p>
+
+                                        <div class="pool-controls">
+                                            <div class="pool-search">
+                                                <input type="text" id="pool-filter" placeholder="Search pools...">
+                                            </div>
+                                            <div class="pool-sort">
+                                                <select id="pool-sort">
+                                                    <option value="apy">Highest APY</option>
+                                                    <option value="tvl">Highest TVL</option>
+                                                    <option value="volume">Highest Volume</option>
+                                                    <option value="name">Pool Name</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="pool-grid">
+                                            @foreach (var pool in Model.AvailablePools)
+                                            {
+                                                <div class="pool-selection-card" data-pool-id="@pool.Id" data-apy="@pool.APY" data-tvl="@pool.TotalValueLocked" data-volume="@pool.Volume24h">
+                                                    <div class="pool-card-header">
+                                                        <div class="token-pair">
+                                                            <img src="/images/tokens/@(pool.Token0Symbol.ToLower()).png" alt="@pool.Token0Symbol" class="token-icon" onerror="this.src='/images/tokens/default.png'">
+                                                            <img src="/images/tokens/@(pool.Token1Symbol.ToLower()).png" alt="@pool.Token1Symbol" class="token-icon" onerror="this.src='/images/tokens/default.png'">
+                                                        </div>
+                                                        <div class="pool-info">
+                                                            <h4 class="pool-name">@pool.TokenPair</h4>
+                                                            <span class="dex-name">@pool.DexName</span>
+                                                            @if (pool.IsFeatured)
+                                                            {
+                                                                <span class="badge bg-warning">Featured</span>
+                                                            }
+                                                        </div>
+                                                        <div class="pool-apy">
+                                                            <span class="apy-value">@pool.APYDisplay</span>
+                                                            <span class="apy-label">APY</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="pool-stats">
+                                                        <div class="stat-item">
+                                                            <span class="stat-label">TVL</span>
+                                                            <span class="stat-value">@pool.TotalValueLockedDisplay</span>
+                                                        </div>
+                                                        <div class="stat-item">
+                                                            <span class="stat-label">24h Volume</span>
+                                                            <span class="stat-value">@pool.Volume24hDisplay</span>
+                                                        </div>
+                                                        <div class="stat-item">
+                                                            <span class="stat-label">Fee</span>
+                                                            <span class="stat-value">@pool.FeeDisplay</span>
+                                                        </div>
+                                                        <div class="stat-item">
+                                                            <span class="stat-label">Risk</span>
+                                                            <span class="stat-value">
+                                                                <span class="risk-badge risk-@pool.RiskLevel.ToLower()">@pool.RiskLevel</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="pool-selection-actions">
+                                                        <input type="checkbox" class="pool-compare-checkbox" value="@pool.Id">
+                                                        <label>Compare</label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="pool-comparison-actions">
+                                            <button class="btn btn-outline-primary" id="compare-pools-btn" disabled>
+                                                Compare Pools (0)
+                                            </button>
+                                        </div>
+
+                                        <div class="selected-pool-details" id="selected-pool-details" style="display: none;">
+                                            <h4>Selected Pool Details</h4>
+                                            <div class="pool-detail-grid">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Pool:</span>
+                                                    <span class="detail-value" id="selected-pool-name"></span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">APY:</span>
+                                                    <span class="detail-value" id="selected-pool-apy"></span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Fee Tier:</span>
+                                                    <span class="detail-value" id="selected-pool-fee"></span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Risk Level:</span>
+                                                    <span class="detail-value" id="selected-pool-risk"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if ((Model?.CurrentStep ?? 1) == 2)
+                        {
+                            <!-- Step 2: Choose DEX -->
+                            <div class="wizard-step-content active" data-step="2">
+                                <h2>Choose DEX Platform</h2>
+                                <p>Select the decentralized exchange where you want to provide liquidity.</p>
+
+                                <div class="dex-selection">
+                                    @if (Model?.AvailableDexes != null && Model.AvailableDexes.Any())
+                                    {
+                                        <div class="dex-options-grid">
+                                            @foreach (var dex in Model.AvailableDexes.Where(d => d.IsActive))
+                                            {
+                                                <div class="dex-selection-card" data-dex-id="@dex.Id">
                                                     <div class="dex-header">
-                                                        <img src="@dex.LogoUrl" alt="@dex.Name" class="dex-logo">
-                                                        <h3>@dex.Name</h3>
+                                                        <img src="@dex.LogoUrl" alt="@dex.Name" class="dex-logo" onerror="this.src='/images/dex/default.png'">
+                                                        <h3>@dex.DisplayName</h3>
                                                         @if (dex.IsRecommended)
                                                         {
                                                             <span class="recommended-badge">Recommended</span>
@@ -232,151 +257,222 @@
 
                                                     <div class="dex-stats">
                                                         <div class="dex-stat">
-                                                            <span class="stat-label">Pool APY</span>
-                                                            <span class="stat-value">@dex.PoolApy.ToString("F2")%</span>
+                                                            <span class="stat-label">Network</span>
+                                                            <span class="stat-value">@dex.NetworkDisplay</span>
                                                         </div>
                                                         <div class="dex-stat">
-                                                            <span class="stat-label">Gas Fees</span>
-                                                            <span class="stat-value gas-@dex.GasFeeLevel.ToLower()">@dex.GasFeeLevel</span>
+                                                            <span class="stat-label">Fee</span>
+                                                            <span class="stat-value">@dex.FeeDisplay</span>
+                                                        </div>
+                                                        <div class="dex-stat">
+                                                            <span class="stat-label">Pools</span>
+                                                            <span class="stat-value">@dex.PoolCountDisplay</span>
                                                         </div>
                                                         <div class="dex-stat">
                                                             <span class="stat-label">TVL</span>
-                                                            <span class="stat-value">$@dex.TotalValueLocked.ToString("N0")</span>
+                                                            <span class="stat-value">@dex.TotalTVLDisplay</span>
                                                         </div>
                                                     </div>
 
+                                                    @if (!string.IsNullOrEmpty(dex.Description))
+                                                    {
+                                                        <div class="dex-description">
+                                                            <p>@dex.Description</p>
+                                                        </div>
+                                                    }
+
                                                     <div class="dex-features">
-                                                        @foreach (var feature in dex.Features)
+                                                        @if (dex.HasRouter)
                                                         {
-                                                            <span class="feature-tag">@feature</span>
+                                                            <span class="feature-tag">Router</span>
+                                                        }
+                                                        @if (dex.SupportsDirectIntegration)
+                                                        {
+                                                            <span class="feature-tag">Direct Integration</span>
+                                                        }
+                                                        @if (dex.HasMobileApp)
+                                                        {
+                                                            <span class="feature-tag">Mobile App</span>
                                                         }
                                                     </div>
+                                                </div>
+                                            }
+                                        </div>
 
-                                                    <div class="dex-description">
-                                                        <p>@dex.Description</p>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        }
+                                        <div class="dex-comparison-actions">
+                                            <button class="btn btn-outline-primary" id="compare-dex-btn">
+                                                Compare DEX Platforms
+                                            </button>
+                                        </div>
                                     }
                                 </div>
-
-                                <div class="dex-comparison" id="dex-comparison" style="display: none;">
-                                    <h4>Platform Comparison</h4>
-                                    <div class="comparison-metrics">
-                                        <div class="metric">
-                                            <span class="metric-label">Security Audit</span>
-                                            <span class="metric-value" id="selected-dex-security"></span>
-                                        </div>
-                                        <div class="metric">
-                                            <span class="metric-label">User Rating</span>
-                                            <span class="metric-value" id="selected-dex-rating"></span>
-                                        </div>
-                                        <div class="metric">
-                                            <span class="metric-label">Avg. Transaction Time</span>
-                                            <span class="metric-value" id="selected-dex-speed"></span>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
-                        </div>
+                        }
 
-                        <!-- Step 4: Enter Amounts -->
-                        <div class="wizard-step-content" data-step="4">
-                            <h2>Enter Liquidity Amounts</h2>
-                            <p>Specify how much of each token you want to provide as liquidity.</p>
+                        @if ((Model?.CurrentStep ?? 1) == 3)
+                        {
+                            <!-- Step 3: Enter Amounts -->
+                            <div class="wizard-step-content active" data-step="3">
+                                <h2>Enter Liquidity Amounts</h2>
+                                <p>Specify how much of each token you want to provide as liquidity.</p>
 
-                            <div class="amount-input-section">
-                                <div class="token-inputs-grid">
-                                    <!-- Token 1 Input -->
-                                    <div class="token-input-card">
-                                        <div class="token-input-header">
-                                            <div class="token-info">
-                                                <img src="" alt="" class="token-icon" id="token1-icon">
-                                                <span class="token-symbol" id="token1-symbol">TEACH</span>
+                                <div class="amount-input-section">
+                                    <div class="token-inputs-grid">
+                                        <!-- Token 0 Input -->
+                                        <div class="token-input-card">
+                                            <div class="token-input-header">
+                                                <div class="token-info">
+                                                    <img src="/images/tokens/teach.png" alt="TEACH" class="token-icon" id="token0-icon">
+                                                    <span class="token-symbol" id="token0-symbol">TEACH</span>
+                                                </div>
+                                                <div class="token-balance">
+                                                    Balance: <span id="token0-balance">0.00</span>
+                                                </div>
                                             </div>
-                                            <div class="token-balance">
-                                                Balance: <span id="token1-balance">0.00</span>
+                                            <div class="token-input-body">
+                                                <input type="number" id="token0-amount" placeholder="0.00" class="amount-input" step="0.000001" min="0">
+                                                <div class="amount-buttons">
+                                                    <button class="percentage-btn" data-percentage="25">25%</button>
+                                                    <button class="percentage-btn" data-percentage="50">50%</button>
+                                                    <button class="percentage-btn" data-percentage="75">75%</button>
+                                                    <button class="use-max-btn" data-token="token0">MAX</button>
+                                                </div>
+                                            </div>
+                                            <div class="token-input-footer">
+                                                <span class="usd-value" id="token0-usd">$0.00</span>
+                                                <div class="input-error" id="token0-error" style="display: none;"></div>
                                             </div>
                                         </div>
-                                        <div class="token-input-body">
-                                            <input type="number" id="token1-amount" placeholder="0.00" class="amount-input">
-                                            <div class="amount-buttons">
-                                                <button class="amount-btn" data-percentage="25">25%</button>
-                                                <button class="amount-btn" data-percentage="50">50%</button>
-                                                <button class="amount-btn" data-percentage="75">75%</button>
-                                                <button class="amount-btn" data-percentage="100">MAX</button>
-                                            </div>
+
+                                        <!-- Plus Icon -->
+                                        <div class="input-separator">
+                                            <div class="plus-icon">+</div>
                                         </div>
-                                        <div class="token-input-footer">
-                                            <span class="usd-value" id="token1-usd">$0.00</span>
+
+                                        <!-- Token 1 Input -->
+                                        <div class="token-input-card">
+                                            <div class="token-input-header">
+                                                <div class="token-info">
+                                                    <img src="/images/tokens/usdc.png" alt="USDC" class="token-icon" id="token1-icon">
+                                                    <span class="token-symbol" id="token1-symbol">USDC</span>
+                                                </div>
+                                                <div class="token-balance">
+                                                    Balance: <span id="token1-balance">0.00</span>
+                                                </div>
+                                            </div>
+                                            <div class="token-input-body">
+                                                <input type="number" id="token1-amount" placeholder="0.00" class="amount-input" step="0.000001" min="0">
+                                                <div class="amount-buttons">
+                                                    <button class="percentage-btn" data-percentage="25">25%</button>
+                                                    <button class="percentage-btn" data-percentage="50">50%</button>
+                                                    <button class="percentage-btn" data-percentage="75">75%</button>
+                                                    <button class="use-max-btn" data-token="token1">MAX</button>
+                                                </div>
+                                            </div>
+                                            <div class="token-input-footer">
+                                                <span class="usd-value" id="token1-usd">$0.00</span>
+                                                <div class="input-error" id="token1-error" style="display: none;"></div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <!-- Plus Icon -->
-                                    <div class="input-separator">
-                                        <div class="plus-icon">+</div>
-                                    </div>
-
-                                    <!-- Token 2 Input -->
-                                    <div class="token-input-card">
-                                        <div class="token-input-header">
-                                            <div class="token-info">
-                                                <img src="" alt="" class="token-icon" id="token2-icon">
-                                                <span class="token-symbol" id="token2-symbol">ETH</span>
-                                            </div>
-                                            <div class="token-balance">
-                                                Balance: <span id="token2-balance">0.00</span>
+                                    <!-- Calculator Section -->
+                                    <div class="calculator-section">
+                                        <div class="calculator-header">
+                                            <h4>Position Preview</h4>
+                                            <div class="calculator-controls">
+                                                <label class="auto-calc-toggle">
+                                                    <input type="checkbox" id="auto-calculate" checked>
+                                                    Auto-calculate
+                                                </label>
+                                                <button class="btn btn-outline-primary btn-sm" id="calculate-btn">Calculate</button>
+                                                <button class="btn btn-outline-secondary btn-sm" id="refresh-calculation">Refresh</button>
                                             </div>
                                         </div>
-                                        <div class="token-input-body">
-                                            <input type="number" id="token2-amount" placeholder="0.00" class="amount-input">
-                                            <div class="amount-buttons">
-                                                <button class="amount-btn" data-percentage="25">25%</button>
-                                                <button class="amount-btn" data-percentage="50">50%</button>
-                                                <button class="amount-btn" data-percentage="75">75%</button>
-                                                <button class="amount-btn" data-percentage="100">MAX</button>
+
+                                        <div id="calculation-loading" class="calculation-loading" style="display: none;">
+                                            <div class="loading-spinner"></div>
+                                            <p>Calculating...</p>
+                                        </div>
+
+                                        <div id="calculation-results" class="calculation-results">
+                                            <div class="calculator-grid">
+                                                <div class="calc-item">
+                                                    <span class="calc-label">Total Deposit Value</span>
+                                                    <span class="calc-value" id="estimated-total-value">$0.00</span>
+                                                </div>
+                                                <div class="calc-item">
+                                                    <span class="calc-label">LP Tokens Received</span>
+                                                    <span class="calc-value" id="estimated-lp-tokens">0.00</span>
+                                                </div>
+                                                <div class="calc-item">
+                                                    <span class="calc-label">Price Impact</span>
+                                                    <span class="calc-value" id="price-impact">0.00%</span>
+                                                </div>
+                                                <div class="calc-item">
+                                                    <span class="calc-label">Estimated APY</span>
+                                                    <span class="calc-value" id="estimated-apy">0.00%</span>
+                                                </div>
+                                                <div class="calc-item">
+                                                    <span class="calc-label">Daily Earnings</span>
+                                                    <span class="calc-value" id="daily-earnings">$0.00</span>
+                                                </div>
+                                                <div class="calc-item">
+                                                    <span class="calc-label">Monthly Earnings</span>
+                                                    <span class="calc-value" id="monthly-earnings">$0.00</span>
+                                                </div>
+                                                <div class="calc-item">
+                                                    <span class="calc-label">Gas Estimate</span>
+                                                    <span class="calc-value" id="gas-estimate">$0.00</span>
+                                                </div>
+                                            </div>
+
+                                            <div id="calculation-warnings" class="calculation-warnings">
+                                                <!-- Dynamic warnings/errors -->
                                             </div>
                                         </div>
-                                        <div class="token-input-footer">
-                                            <span class="usd-value" id="token2-usd">$0.00</span>
-                                        </div>
                                     </div>
-                                </div>
 
-                                <!-- Pool Share Calculator -->
-                                <div class="pool-calculator">
-                                    <h4>Pool Position Preview</h4>
-                                    <div class="calculator-grid">
-                                        <div class="calc-item">
-                                            <span class="calc-label">Total Deposit Value</span>
-                                            <span class="calc-value" id="total-deposit-value">$0.00</span>
+                                    <!-- Advanced Settings -->
+                                    <div class="advanced-settings">
+                                        <div class="settings-header">
+                                            <label class="settings-toggle">
+                                                <input type="checkbox" id="show-advanced">
+                                                <span>Advanced Settings</span>
+                                            </label>
                                         </div>
-                                        <div class="calc-item">
-                                            <span class="calc-label">Pool Share</span>
-                                            <span class="calc-value" id="pool-share">0.00%</span>
-                                        </div>
-                                        <div class="calc-item">
-                                            <span class="calc-label">LP Tokens Received</span>
-                                            <span class="calc-value" id="lp-tokens">0.00</span>
-                                        </div>
-                                        <div class="calc-item">
-                                            <span class="calc-label">Estimated Daily Earnings</span>
-                                            <span class="calc-value" id="daily-earnings">$0.00</span>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Impermanent Loss Warning -->
-                                <div class="impermanent-loss-warning">
-                                    <div class="warning-header">
-                                        <span class="warning-icon">⚠️</span>
-                                        <h4>Impermanent Loss Risk</h4>
+                                        <div id="advanced-settings" class="settings-panel" style="display: none;">
+                                            <div class="setting-group">
+                                                <label for="slippage-tolerance">Slippage Tolerance (%)</label>
+                                                <div class="slippage-controls">
+                                                    <input type="number" id="slippage-tolerance" value="0.5" min="0.1" max="50" step="0.1">
+                                                    <div class="slippage-presets">
+                                                        <button class="slippage-preset active" data-slippage="0.1">0.1%</button>
+                                                        <button class="slippage-preset" data-slippage="0.5">0.5%</button>
+                                                        <button class="slippage-preset" data-slippage="1.0">1.0%</button>
+                                                        <button class="slippage-preset" data-slippage="3.0">3.0%</button>
+                                                    </div>
+                                                </div>
+                                                <div class="setting-warning" id="slippage-warning" style="display: none;"></div>
+                                            </div>
+
+                                            <div class="setting-group">
+                                                <label for="transaction-deadline">Transaction Deadline (minutes)</label>
+                                                <input type="number" id="transaction-deadline" value="20" min="1" max="60">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="warning-content">
-                                        <p>Your tokens may be worth less when you withdraw compared to holding them separately if their prices diverge significantly.</p>
-                                        <div class="il-calculator">
-                                            <span class="il-label">Estimated IL at price changes:</span>
+
+                                    <!-- Impermanent Loss Warning -->
+                                    <div class="impermanent-loss-warning">
+                                        <div class="warning-header">
+                                            <span class="warning-icon">⚠️</span>
+                                            <h4>Impermanent Loss Risk</h4>
+                                            <button class="btn btn-link btn-sm" id="calculate-il-btn">Calculate IL</button>
+                                        </div>
+                                        <div class="warning-content">
+                                            <p>Your tokens may be worth less when you withdraw compared to holding them separately if their prices diverge significantly.</p>
                                             <div class="il-scenarios">
                                                 <div class="il-scenario">
                                                     <span>+25% price diff:</span>
@@ -392,133 +488,148 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <button class="learn-more-btn" onclick="showImpermanentLossGuide()">
-                                            Learn More About Impermanent Loss
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if ((Model?.CurrentStep ?? 1) == 4)
+                        {
+                            <!-- Step 4: Review & Confirm -->
+                            <div class="wizard-step-content active" data-step="4">
+                                <h2>Review & Confirm</h2>
+                                <p>Review your liquidity provision details before proceeding to the external DEX.</p>
+
+                                <div class="review-section">
+                                    <!-- Transaction Summary -->
+                                    <div class="review-card">
+                                        <h4>Transaction Summary</h4>
+                                        <div class="review-grid">
+                                            <div class="review-item">
+                                                <span class="review-label">Pool</span>
+                                                <span class="review-value" id="review-pool">TEACH/USDC</span>
+                                            </div>
+                                            <div class="review-item">
+                                                <span class="review-label">DEX Platform</span>
+                                                <span class="review-value" id="review-dex">Uniswap V3</span>
+                                            </div>
+                                            <div class="review-item">
+                                                <span class="review-label">Token 0 Amount</span>
+                                                <span class="review-value" id="review-token0">1,000 TEACH</span>
+                                            </div>
+                                            <div class="review-item">
+                                                <span class="review-label">Token 1 Amount</span>
+                                                <span class="review-value" id="review-token1">500 USDC</span>
+                                            </div>
+                                            <div class="review-item">
+                                                <span class="review-label">Total Value</span>
+                                                <span class="review-value" id="review-total">$1,000.00</span>
+                                            </div>
+                                            <div class="review-item">
+                                                <span class="review-label">Expected APY</span>
+                                                <span class="review-value" id="review-apy">12.5%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Cost Breakdown -->
+                                    <div class="review-card">
+                                        <h4>Cost Breakdown</h4>
+                                        <div class="cost-breakdown">
+                                            <div class="cost-item">
+                                                <span class="cost-label">Estimated Gas Fees</span>
+                                                <span class="cost-value" id="review-gas">~$25.00</span>
+                                            </div>
+                                            <div class="cost-item">
+                                                <span class="cost-label">DEX Fee</span>
+                                                <span class="cost-value" id="review-dex-fee">0.3%</span>
+                                            </div>
+                                            <div class="cost-item">
+                                                <span class="cost-label">Slippage Tolerance</span>
+                                                <span class="cost-value" id="review-slippage">0.5%</span>
+                                            </div>
+                                            <div class="cost-item">
+                                                <span class="cost-label">Price Impact</span>
+                                                <span class="cost-value" id="review-price-impact">0.12%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Risk Acknowledgment -->
+                                    <div class="review-card risk-acknowledgment">
+                                        <h4>Risk Acknowledgment</h4>
+                                        <div class="risk-checklist">
+                                            <label class="risk-checkbox">
+                                                <input type="checkbox" id="acknowledge-risks" required>
+                                                <span class="checkmark"></span>
+                                                I understand the risks involved including impermanent loss, smart contract risks, and gas fees
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Final Actions -->
+                                    <div class="review-card final-actions">
+                                        <h4>Ready to Proceed</h4>
+                                        <p>You will be redirected to <span id="final-dex-name">Uniswap</span> to complete your liquidity provision. Make sure you have sufficient tokens and ETH for gas fees.</p>
+
+                                        <div class="final-action-buttons">
+                                            <button class="btn btn-outline-secondary" id="recalculate-btn">
+                                                Recalculate
+                                            </button>
+                                            <button class="btn btn-primary" id="submit-transaction-btn" disabled>
+                                                Proceed to <span id="dex-name-btn">Uniswap</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if ((Model?.CurrentStep ?? 1) == 5)
+                        {
+                            <!-- Step 5: Transaction Status -->
+                            <div class="wizard-step-content active" data-step="5">
+                                <h2>Transaction Status</h2>
+                                <p>Monitor your transaction progress and view the results.</p>
+
+                                <div class="transaction-status-section">
+                                    <div class="transaction-status" id="transaction-status">
+                                        <div class="status-icon" id="status-icon">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="status-content">
+                                            <h3>Transaction <span id="status-text">Pending</span></h3>
+                                            <p>Your liquidity addition is being processed...</p>
+                                            <div class="transaction-hash" id="transaction-hash-display" style="display: none;">
+                                                Transaction Hash: <a href="#" id="view-on-explorer" target="_blank" rel="noopener"></a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="transaction-actions">
+                                        <button class="btn btn-primary" id="add-another-position">
+                                            Add Another Position
+                                        </button>
+                                        <button class="btn btn-secondary" id="view-positions">
+                                            View All Positions
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Step 5: Review & Confirm -->
-                        <div class="wizard-step-content" data-step="5">
-                            <h2>Review & Confirm</h2>
-                            <p>Review your liquidity provision details before proceeding to the external DEX.</p>
-
-                            <div class="review-section">
-                                <!-- Transaction Summary -->
-                                <div class="review-card">
-                                    <h4>Transaction Summary</h4>
-                                    <div class="review-grid">
-                                        <div class="review-item">
-                                            <span class="review-label">Pool</span>
-                                            <span class="review-value" id="review-pool">TEACH/ETH</span>
-                                        </div>
-                                        <div class="review-item">
-                                            <span class="review-label">DEX Platform</span>
-                                            <span class="review-value" id="review-dex">Uniswap V3</span>
-                                        </div>
-                                        <div class="review-item">
-                                            <span class="review-label">Token 1 Amount</span>
-                                            <span class="review-value" id="review-token1">1,000 TEACH</span>
-                                        </div>
-                                        <div class="review-item">
-                                            <span class="review-label">Token 2 Amount</span>
-                                            <span class="review-value" id="review-token2">0.5 ETH</span>
-                                        </div>
-                                        <div class="review-item">
-                                            <span class="review-label">Total Value</span>
-                                            <span class="review-value" id="review-total">$1,250.00</span>
-                                        </div>
-                                        <div class="review-item">
-                                            <span class="review-label">Expected APY</span>
-                                            <span class="review-value" id="review-apy">12.5%</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Cost Breakdown -->
-                                <div class="review-card">
-                                    <h4>Cost Breakdown</h4>
-                                    <div class="cost-breakdown">
-                                        <div class="cost-item">
-                                            <span class="cost-label">Estimated Gas Fees</span>
-                                            <span class="cost-value" id="review-gas">~$25.00</span>
-                                        </div>
-                                        <div class="cost-item">
-                                            <span class="cost-label">DEX Fee</span>
-                                            <span class="cost-value" id="review-dex-fee">0.3%</span>
-                                        </div>
-                                        <div class="cost-item">
-                                            <span class="cost-label">Slippage Tolerance</span>
-                                            <span class="cost-value">
-                                                <select id="slippage-tolerance">
-                                                    <option value="0.1">0.1%</option>
-                                                    <option value="0.5" selected>0.5%</option>
-                                                    <option value="1.0">1.0%</option>
-                                                    <option value="3.0">3.0%</option>
-                                                </select>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Risk Acknowledgment -->
-                                <div class="review-card risk-acknowledgment">
-                                    <h4>Risk Acknowledgment</h4>
-                                    <div class="risk-checklist">
-                                        <label class="risk-checkbox">
-                                            <input type="checkbox" id="understand-il" required>
-                                            <span class="checkmark"></span>
-                                            I understand the risk of impermanent loss
-                                        </label>
-                                        <label class="risk-checkbox">
-                                            <input type="checkbox" id="understand-gas" required>
-                                            <span class="checkmark"></span>
-                                            I understand gas fees may vary and are non-refundable
-                                        </label>
-                                        <label class="risk-checkbox">
-                                            <input type="checkbox" id="understand-smart-contract" required>
-                                            <span class="checkmark"></span>
-                                            I understand smart contract risks and that this is not investment advice
-                                        </label>
-                                        <label class="risk-checkbox">
-                                            <input type="checkbox" id="understand-external" required>
-                                            <span class="checkmark"></span>
-                                            I understand I will be redirected to an external DEX to complete the transaction
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Final Actions -->
-                                <div class="review-card final-actions">
-                                    <h4>Ready to Proceed</h4>
-                                    <p>You will be redirected to <span id="final-dex-name">Uniswap</span> to complete your liquidity provision. Make sure you have sufficient tokens and ETH for gas fees.</p>
-
-                                    <div class="final-action-buttons">
-                                        <button class="btn-secondary" onclick="openDexInfo()">
-                                            View DEX Information
-                                        </button>
-                                        <button class="btn-primary" id="proceed-to-dex" onclick="proceedToDex()" disabled>
-                                            Proceed to <span id="dex-name-btn">Uniswap</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        }
 
                     </div>
 
                     <!-- Wizard Navigation -->
                     <div class="wizard-actions">
-                        <button class="wizard-btn btn-secondary" id="prev-btn" onclick="previousStep()" disabled>
+                        <button class="wizard-btn btn-secondary" id="prev-step-btn" @((Model?.CurrentStep ?? 1) <= 1 ? "disabled" : "")>
                             Previous
                         </button>
                         <div class="wizard-step-indicator">
-                            Step <span id="current-step">1</span> of 5
+                            Step @(Model?.CurrentStep ?? 1) of @(Model?.TotalSteps ?? 5)
                         </div>
-                        <button class="wizard-btn btn-primary" id="next-btn" onclick="nextStep()" disabled>
-                            Next
+                        <button class="wizard-btn btn-primary" id="next-step-btn" disabled>
+                            @((Model?.CurrentStep ?? 1) == (Model?.TotalSteps ?? 5) ? "Complete" : "Next")
                         </button>
                     </div>
                 </div>
@@ -530,61 +641,14 @@
     <!-- Footer -->
     @await Html.PartialAsync("_FooterPartial")
 
-    <!-- Modals -->
-    <!-- Impermanent Loss Guide Modal -->
-    <div id="il-guide-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Understanding Impermanent Loss</h3>
-                <button class="modal-close" onclick="closeModal('il-guide-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="il-guide-content">
-                    <h4>What is Impermanent Loss?</h4>
-                    <p>Impermanent loss occurs when the price ratio of your deposited tokens changes compared to when you deposited them. The bigger the change, the more you lose.</p>
-
-                    <h4>Why does it happen?</h4>
-                    <p>Automated market makers rebalance your tokens automatically. If one token gains value relative to the other, the AMM will sell some of the gaining token for the losing one.</p>
-
-                    <h4>Example Scenario</h4>
-                    <div class="il-example">
-                        <div class="il-step">
-                            <strong>Initial:</strong> You deposit $1000 worth of ETH and $1000 worth of TEACH
-                        </div>
-                        <div class="il-step">
-                            <strong>Price Change:</strong> ETH doubles in price relative to TEACH
-                        </div>
-                        <div class="il-step">
-                            <strong>Result:</strong> Your position is now worth ~$1,900 instead of $2,000 if you held tokens separately
-                        </div>
-                        <div class="il-step">
-                            <strong>Impermanent Loss:</strong> ~5% (offset by trading fees earned)
-                        </div>
-                    </div>
-
-                    <h4>Mitigation Strategies</h4>
-                    <ul>
-                        <li>Choose pairs with correlated price movements</li>
-                        <li>Consider stablecoin pairs for lower risk</li>
-                        <li>Factor in trading fees and rewards</li>
-                        <li>Monitor and adjust positions regularly</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Error Message Container -->
-    <div id="error-message" class="error-toast" style="display: none;">
-        <span id="error-text"></span>
-        <button onclick="hideError()" class="error-close">&times;</button>
-    </div>
-
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div id="wizard-loading" class="loading-overlay" style="display: none;">
         <div class="loading-spinner"></div>
         <p>Processing...</p>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
 
     <!-- Syncfusion Scripts -->
     <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
@@ -593,18 +657,13 @@
     <script src="~/js/add-liquidity.js" asp-append-version="true"></script>
 
     <!-- Initialize Wizard -->
+    <script data-json="wizard-data" type="application/json">@Html.Raw(ViewBag.JsonData ?? "{}")</script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize wizard with server data
-            const initialData = @Html.Raw(ViewBag.JsonData ?? "{}");
+            // Check for error message
             const errorMessage = '@ViewBag.ErrorMessage';
-
-            if (errorMessage) {
-                showError(errorMessage);
-            }
-
-            if (window.AddLiquidityWizard) {
-                window.AddLiquidityWizard.init(initialData);
+            if (errorMessage && window.addLiquidityWizard) {
+                window.addLiquidityWizard.showErrorMessage(errorMessage);
             }
         });
     </script>

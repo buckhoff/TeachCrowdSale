@@ -1,1737 +1,1306 @@
-﻿function initializeManagementCharts() {
-    try {
-        // Portfolio Value Chart
-        initializePortfolioValueChart();
+﻿/**
+ * Liquidity Dashboard JavaScript
+ * Handles main liquidity dashboard functionality (Index.cshtml)
+ * Integrates with LiquidityController endpoints
+ */
 
-        // Fees Earned Chart
-        initializeFeesEarnedChart();
+class LiquidityDashboard {
+    constructor() {
+        this.charts = {};
+        this.refreshInterval = null;
+        this.isLoading = false;
+        this.currentFilters = {
+            dex: '',
+            minTvl: 0,
+            minApy: 0,
+            sortBy: 'TotalValueLocked',
+            sortDirection: 'DESC'
+        };
 
-        // P&L Distribution Chart
-        initializePnLDistributionChart();
-
-        // APY Trends Chart for user positions
-        initializeUserAPYTrendsChart();
-
-    } catch (error) {
-        console.error('❌ Error initializing management charts:', error);
+        this.initializeOnLoad();
     }
-}
 
-function initializeTVLChart() {
-    const chartContainer = document.getElementById('tvl-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.Chart({
-        theme: config.charts.theme,
-        primaryXAxis: {
-            valueType: 'DateTime',
-            labelFormat: 'MMM dd',
-            majorGridLines: { width: 0 },
-            labelStyle: { color: '#94a3b8' }
-        },
-        primaryYAxis: {
-            labelFormat: '${value}',
-            majorGridLines: { color: 'rgba(255,255,255,0.1)' },
-            labelStyle: { color: '#94a3b8' }
-        },
-        series: [{
-            type: 'Area',
-            dataSource: [],
-            xName: 'date',
-            yName: 'tvl',
-            name: 'TVL',
-            fill: 'url(#tvl-gradient)',
-            border: { width: 2, color: '#4f46e5' }
-        }],
-        tooltip: {
-            enable: true,
-            format: '${point.y}',
-            textStyle: { color: '#ffffff' }
-        },
-        background: 'transparent',
-        margin: { top: 20, bottom: 20, left: 60, right: 20 }
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.tvl = chart;
-}
-
-function initializeVolumeChart() {
-    const chartContainer = document.getElementById('volume-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.Chart({
-        theme: config.charts.theme,
-        primaryXAxis: {
-            valueType: 'DateTime',
-            labelFormat: 'MMM dd',
-            majorGridLines: { width: 0 },
-            labelStyle: { color: '#94a3b8' }
-        },
-        primaryYAxis: {
-            labelFormat: '${value}',
-            majorGridLines: { color: 'rgba(255,255,255,0.1)' },
-            labelStyle: { color: '#94a3b8' }
-        },
-        series: [{
-            type: 'Column',
-            dataSource: [],
-            xName: 'date',
-            yName: 'volume',
-            name: 'Volume',
-            fill: '#06b6d4'
-        }],
-        tooltip: {
-            enable: true,
-            format: '${point.y}',
-            textStyle: { color: '#ffffff' }
-        },
-        background: 'transparent',
-        margin: { top: 20, bottom: 20, left: 60, right: 20 }
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.volume = chart;
-}
-
-function initializePoolDistributionChart() {
-    const chartContainer = document.getElementById('pool-distribution-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.AccumulationChart({
-        theme: config.charts.theme,
-        series: [{
-            dataSource: [],
-            xName: 'pool',
-            yName: 'tvl',
-            name: 'TVL Distribution',
-            innerRadius: '40%',
-            dataLabel: {
-                visible: true,
-                name: 'pool',
-                position: 'Outside',
-                font: { color: '#ffffff' }
-            }
-        }],
-        tooltip: {
-            enable: true,
-            format: '${point.x}: ${point.y}%'
-        },
-        background: 'transparent'
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.poolDistribution = chart;
-}
-
-function initializeAPYTrendsChart() {
-    const chartContainer = document.getElementById('apy-trends-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.Chart({
-        theme: config.charts.theme,
-        primaryXAxis: {
-            valueType: 'DateTime',
-            labelFormat: 'MMM dd',
-            majorGridLines: { width: 0 },
-            labelStyle: { color: '#94a3b8' }
-        },
-        primaryYAxis: {
-            labelFormat: '{value}%',
-            majorGridLines: { color: 'rgba(255,255,255,0.1)' },
-            labelStyle: { color: '#94a3b8' }
-        },
-        series: [],
-        tooltip: {
-            enable: true,
-            shared: true,
-            textStyle: { color: '#ffffff' }
-        },
-        background: 'transparent',
-        margin: { top: 20, bottom: 20, left: 60, right: 20 }
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.apyTrends = chart;
-}
-
-function initializePortfolioValueChart() {
-    const chartContainer = document.getElementById('portfolio-value-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.Chart({
-        theme: config.charts.theme,
-        primaryXAxis: {
-            valueType: 'DateTime',
-            labelFormat: 'MMM dd',
-            majorGridLines: { width: 0 },
-            labelStyle: { color: '#94a3b8' }
-        },
-        primaryYAxis: {
-            labelFormat: '${value}',
-            majorGridLines: { color: 'rgba(255,255,255,0.1)' },
-            labelStyle: { color: '#94a3b8' }
-        },
-        series: [{
-            type: 'SplineArea',
-            dataSource: [],
-            xName: 'date',
-            yName: 'value',
-            name: 'Portfolio Value',
-            fill: 'url(#portfolio-gradient)',
-            border: { width: 2, color: '#10b981' }
-        }],
-        tooltip: {
-            enable: true,
-            format: '${point.y}',
-            textStyle: { color: '#ffffff' }
-        },
-        background: 'transparent',
-        margin: { top: 20, bottom: 20, left: 60, right: 20 }
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.portfolioValue = chart;
-}
-
-function initializeFeesEarnedChart() {
-    const chartContainer = document.getElementById('fees-earned-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.Chart({
-        theme: config.charts.theme,
-        primaryXAxis: {
-            valueType: 'DateTime',
-            labelFormat: 'MMM dd',
-            majorGridLines: { width: 0 },
-            labelStyle: { color: '#94a3b8' }
-        },
-        primaryYAxis: {
-            labelFormat: '${value}',
-            majorGridLines: { color: 'rgba(255,255,255,0.1)' },
-            labelStyle: { color: '#94a3b8' }
-        },
-        series: [{
-            type: 'StepArea',
-            dataSource: [],
-            xName: 'date',
-            yName: 'fees',
-            name: 'Cumulative Fees',
-            fill: '#f59e0b',
-            border: { width: 2, color: '#f59e0b' }
-        }],
-        tooltip: {
-            enable: true,
-            format: '${point.y}',
-            textStyle: { color: '#ffffff' }
-        },
-        background: 'transparent',
-        margin: { top: 20, bottom: 20, left: 60, right: 20 }
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.feesEarned = chart;
-}
-
-function initializePnLDistributionChart() {
-    const chartContainer = document.getElementById('pnl-distribution-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.Chart({
-        theme: config.charts.theme,
-        primaryXAxis: {
-            valueType: 'Category',
-            majorGridLines: { width: 0 },
-            labelStyle: { color: '#94a3b8' }
-        },
-        primaryYAxis: {
-            labelFormat: '${value}',
-            majorGridLines: { color: 'rgba(255,255,255,0.1)' },
-            labelStyle: { color: '#94a3b8' }
-        },
-        series: [{
-            type: 'Column',
-            dataSource: [],
-            xName: 'position',
-            yName: 'pnl',
-            name: 'P&L',
-            pointColorMapping: 'color'
-        }],
-        tooltip: {
-            enable: true,
-            format: '${point.x}: ${point.y}',
-            textStyle: { color: '#ffffff' }
-        },
-        background: 'transparent',
-        margin: { top: 20, bottom: 20, left: 60, right: 20 }
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.pnlDistribution = chart;
-}
-
-function initializeUserAPYTrendsChart() {
-    const chartContainer = document.getElementById('apy-trends-chart');
-    if (!chartContainer) return;
-
-    const chart = new ej.charts.Chart({
-        theme: config.charts.theme,
-        primaryXAxis: {
-            valueType: 'DateTime',
-            labelFormat: 'MMM dd',
-            majorGridLines: { width: 0 },
-            labelStyle: { color: '#94a3b8' }
-        },
-        primaryYAxis: {
-            labelFormat: '{value}%',
-            majorGridLines: { color: 'rgba(255,255,255,0.1)' },
-            labelStyle: { color: '#94a3b8' }
-        },
-        series: [],
-        tooltip: {
-            enable: true,
-            shared: true,
-            textStyle: { color: '#ffffff' }
-        },
-        background: 'transparent',
-        margin: { top: 20, bottom: 20, left: 60, right: 20 }
-    });
-
-    chart.appendTo(chartContainer);
-    state.charts.userApyTrends = chart;
-}
-
-// ================================================
-// CHART UPDATES
-// ================================================
-function updateCharts() {
-    if (!state.currentData) return;
-
-    try {
-        updateTVLChart();
-        updateVolumeChart();
-        updatePoolDistributionChart();
-        updateAPYTrendsChart();
-    } catch (error) {
-        console.error('❌ Error updating charts:', error);
-    }
-}
-
-function updateManagementCharts() {
-    if (!state.currentData) return;
-
-    try {
-        updatePortfolioValueChart();
-        updateFeesEarnedChart();
-        updatePnLDistributionChart();
-        updateUserAPYTrendsChart();
-    } catch (error) {
-        console.error('❌ Error updating management charts:', error);
-    }
-}
-
-function updateTVLChart() {
-    if (!state.charts.tvl || !state.currentData?.analytics?.tvlHistory) return;
-
-    const data = state.currentData.analytics.tvlHistory.map(item => ({
-        date: new Date(item.date),
-        tvl: item.value
-    }));
-
-    state.charts.tvl.series[0].dataSource = data;
-    state.charts.tvl.refresh();
-}
-
-function updateVolumeChart() {
-    if (!state.charts.volume || !state.currentData?.analytics?.volumeHistory) return;
-
-    const data = state.currentData.analytics.volumeHistory.map(item => ({
-        date: new Date(item.date),
-        volume: item.value
-    }));
-
-    state.charts.volume.series[0].dataSource = data;
-    state.charts.volume.refresh();
-}
-
-function updatePoolDistributionChart() {
-    if (!state.charts.poolDistribution || !state.currentData?.pools) return;
-
-    const totalTVL = state.currentData.pools.reduce((sum, pool) => sum + pool.totalValueLocked, 0);
-    const data = state.currentData.pools.slice(0, 6).map(pool => ({
-        pool: `${pool.token1Symbol}/${pool.token2Symbol}`,
-        tvl: ((pool.totalValueLocked / totalTVL) * 100).toFixed(1),
-        y: (pool.totalValueLocked / totalTVL) * 100
-    }));
-
-    state.charts.poolDistribution.series[0].dataSource = data;
-    state.charts.poolDistribution.refresh();
-}
-
-function updateAPYTrendsChart() {
-    if (!state.charts.apyTrends || !state.currentData?.analytics?.apyTrends) return;
-
-    const series = state.currentData.analytics.apyTrends.map((poolTrend, index) => ({
-        type: 'Spline',
-        dataSource: poolTrend.data.map(item => ({
-            date: new Date(item.date),
-            apy: item.apy
-        })),
-        xName: 'date',
-        yName: 'apy',
-        name: poolTrend.poolName,
-        marker: { visible: true, size: 4 },
-        width: 2
-    }));
-
-    state.charts.apyTrends.series = series;
-    state.charts.apyTrends.refresh();
-}
-
-function updatePortfolioValueChart() {
-    if (!state.charts.portfolioValue || !state.currentData?.performance?.valueHistory) return;
-
-    const data = state.currentData.performance.valueHistory.map(item => ({
-        date: new Date(item.date),
-        value: item.totalValue
-    }));
-
-    state.charts.portfolioValue.series[0].dataSource = data;
-    state.charts.portfolioValue.refresh();
-}
-
-function updateFeesEarnedChart() {
-    if (!state.charts.feesEarned || !state.currentData?.performance?.feesHistory) return;
-
-    const data = state.currentData.performance.feesHistory.map(item => ({
-        date: new Date(item.date),
-        fees: item.cumulativeFees
-    }));
-
-    state.charts.feesEarned.series[0].dataSource = data;
-    state.charts.feesEarned.refresh();
-}
-
-function updatePnLDistributionChart() {
-    if (!state.charts.pnlDistribution || !state.currentData?.positions) return;
-
-    const data = state.currentData.positions.map(position => ({
-        position: `${position.token1Symbol}/${position.token2Symbol}`,
-        pnl: position.pnlAmount,
-        color: position.pnlAmount >= 0 ? '#10b981' : '#ef4444'
-    }));
-
-    state.charts.pnlDistribution.series[0].dataSource = data;
-    state.charts.pnlDistribution.refresh();
-}
-
-function updateUserAPYTrendsChart() {
-    if (!state.charts.userApyTrends || !state.currentData?.performance?.apyHistory) return;
-
-    const series = state.currentData.performance.apyHistory.map((positionApy, index) => ({
-        type: 'Spline',
-        dataSource: positionApy.data.map(item => ({
-            date: new Date(item.date),
-            apy: item.apy
-        })),
-        xName: 'date',
-        yName: 'apy',
-        name: positionApy.positionName,
-        marker: { visible: true, size: 4 },
-        width: 2
-    }));
-
-    state.charts.userApyTrends.series = series;
-    state.charts.userApyTrends.refresh();
-}
-
-// ================================================
-// EVENT HANDLERS
-// ================================================
-function handlePoolSearch() {
-    const searchInput = document.getElementById('pool-search');
-    if (!searchInput) return;
-
-    state.filters.poolSearch = searchInput.value.trim();
-    renderPoolsGrid();
-}
-
-function handleSortChange() {
-    const sortBy = document.getElementById('sort-by');
-    if (!sortBy) return;
-
-    state.filters.sortBy = sortBy.value;
-    renderPoolsGrid();
-}
-
-function handleDexFilter() {
-    const dexFilter = document.getElementById('dex-filter');
-    if (!dexFilter) return;
-
-    state.filters.dexFilter = dexFilter.value;
-    renderPoolsGrid();
-}
-
-function handleChartPeriodChange(button) {
-    // Remove active class from all period buttons in the same container
-    const container = button.closest('.chart-controls');
-    container.querySelectorAll('.chart-period').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // Add active class to clicked button
-    button.classList.add('active');
-
-    // Get chart container and period
-    const chartContainer = button.closest('.chart-container');
-    const period = button.dataset.period;
-
-    // Update chart data based on period
-    updateChartPeriod(chartContainer, period);
-}
-
-function handleTransactionFilter() {
-    const txType = document.getElementById('tx-type-filter')?.value || '';
-    const txPool = document.getElementById('tx-pool-filter')?.value || '';
-    const txDate = document.getElementById('tx-date-filter')?.value || '30d';
-
-    state.filters.txType = txType;
-    state.filters.txPool = txPool;
-    state.filters.txDate = txDate;
-
-    filterTransactionTable();
-}
-
-// ================================================
-// UTILITY FUNCTIONS
-// ================================================
-function filterTransactionTable() {
-    const rows = document.querySelectorAll('.transaction-row');
-
-    rows.forEach(row => {
-        let show = true;
-
-        // Filter by transaction type
-        if (state.filters.txType && row.dataset.txType !== state.filters.txType) {
-            show = false;
+    /**
+     * Initialize dashboard when DOM is loaded
+     */
+    initializeOnLoad() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initialize());
+        } else {
+            this.initialize();
         }
-
-        // Filter by pool
-        if (state.filters.txPool && row.dataset.pool !== state.filters.txPool) {
-            show = false;
-        }
-
-        // Show/hide row
-        row.style.display = show ? 'table-row' : 'none';
-    });
-}
-
-function updateChartPeriod(chartContainer, period) {
-    // This would typically reload chart data for the specified period
-    // For now, just refresh existing data
-    const chartId = chartContainer.querySelector('[id$="-chart"]')?.id;
-    if (chartId && state.charts[chartId.replace('-chart', '')]) {
-        const chart = state.charts[chartId.replace('-chart', '')];
-        chart.refresh();
     }
-}
 
-function animateCounters() {
-    const counters = document.querySelectorAll('.stat-value[data-value]');
+    /**
+     * Main initialization method
+     */
+    async initialize() {
+        try {
+            console.log('Initializing Liquidity Dashboard...');
 
-    counters.forEach(counter => {
-        const target = parseFloat(counter.dataset.value) || 0;
-        const format = counter.dataset.format || 'number';
-        const duration = 1000; // 1 second
-        const increment = target / (duration / 16); // 60fps
-        let current = 0;
+            // Get initial data from ViewBag
+            this.initialData = this.getInitialData();
 
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-                current = target;
-                clearInterval(timer);
+            // Initialize UI components
+            this.initializeCharts();
+            this.initializeFilters();
+            this.initializePoolCards();
+            this.initializeStatCards();
+            this.initializeRefreshHandlers();
+            this.initializeWalletConnection();
+
+            // Start periodic refresh
+            this.startPeriodicRefresh();
+
+            console.log('Liquidity Dashboard initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize dashboard:', error);
+            this.showErrorMessage('Failed to initialize dashboard');
+        }
+    }
+
+    /**
+     * Get initial data from server-side ViewBag
+     */
+    getInitialData() {
+        try {
+            // Try to get from ViewBag.JsonData first
+            const jsonDataElement = document.querySelector('script[data-json="liquidity-data"]');
+            if (jsonDataElement) {
+                return JSON.parse(jsonDataElement.textContent);
             }
 
-            let displayValue = '';
-            switch (format) {
-                case 'currency':
-                    displayValue = `${Math.round(current).toLocaleString()}`;
-                    break;
-                case 'percentage':
-                    displayValue = `${current.toFixed(2)}%`;
-                    break;
-                default:
-                    displayValue = Math.round(current).toLocaleString();
+            // Fallback to global variable if set
+            if (typeof window.liquidityInitialData !== 'undefined') {
+                return window.liquidityInitialData;
             }
 
-            counter.textContent = displayValue;
-        }, 16);
-    });
-}
-
-function setupAutoRefresh() {
-    // Clear existing timer
-    if (state.refreshTimer) {
-        clearInterval(state.refreshTimer);
-    }
-
-    // Set up new refresh timer
-    state.refreshTimer = setInterval(() => {
-        if (document.visibilityState === 'visible') {
-            refreshData();
+            console.warn('No initial data found, using empty object');
+            return {};
+        } catch (error) {
+            console.warn('Could not parse initial data:', error);
+            return {};
         }
-    }, config.charts.refreshInterval);
-}
-
-function refreshData() {
-    console.log('🔄 Auto-refreshing liquidity data...');
-
-    if (state.connectedWallet) {
-        loadUserPositions(state.connectedWallet);
-    } else {
-        loadDashboardData();
     }
-}
 
-// ================================================
-// WALLET FUNCTIONS
-// ================================================
-async function connectWallet(walletType) {
-    showLoading('Connecting wallet...');
+    /**
+     * Initialize Syncfusion charts
+     */
+    initializeCharts() {
+        this.initializeTVLChart();
+        this.initializeVolumeChart();
+        this.initializeAPYChart();
+        this.initializeDexDistributionChart();
+    }
 
-    try {
-        let provider;
+    /**
+     * Initialize TVL trend chart
+     */
+    initializeTVLChart() {
+        const container = document.getElementById('tvl-chart');
+        if (!container) return;
 
-        switch (walletType) {
-            case 'metamask':
-                if (typeof window.ethereum !== 'undefined') {
-                    provider = window.ethereum;
+        try {
+            const chartData = this.prepareTVLChartData();
+
+            this.charts.tvl = new ej.charts.Chart({
+                primaryXAxis: {
+                    valueType: 'DateTime',
+                    title: 'Date',
+                    labelFormat: 'MMM dd',
+                    intervalType: 'Days'
+                },
+                primaryYAxis: {
+                    title: 'Total Value Locked (USD)',
+                    labelFormat: '${value}',
+                    minimum: 0
+                },
+                series: [{
+                    dataSource: chartData,
+                    xName: 'date',
+                    yName: 'tvl',
+                    name: 'TVL',
+                    type: 'Line',
+                    marker: { visible: true, width: 6, height: 6 },
+                    fill: '#00d4ff',
+                    width: 3
+                }],
+                title: 'Total Value Locked Trend',
+                theme: 'Material3Dark',
+                background: 'transparent',
+                tooltip: {
+                    enable: true,
+                    format: 'Date: ${point.x}<br/>TVL: $${point.y}'
+                },
+                height: '300px'
+            });
+
+            this.charts.tvl.appendTo(container);
+        } catch (error) {
+            console.error('Failed to initialize TVL chart:', error);
+        }
+    }
+
+    /**
+     * Initialize volume chart
+     */
+    initializeVolumeChart() {
+        const container = document.getElementById('volume-chart');
+        if (!container) return;
+
+        try {
+            const chartData = this.prepareVolumeChartData();
+
+            this.charts.volume = new ej.charts.Chart({
+                primaryXAxis: {
+                    valueType: 'DateTime',
+                    title: 'Date',
+                    labelFormat: 'MMM dd'
+                },
+                primaryYAxis: {
+                    title: '24h Volume (USD)',
+                    labelFormat: '${value}',
+                    minimum: 0
+                },
+                series: [{
+                    dataSource: chartData,
+                    xName: 'date',
+                    yName: 'volume',
+                    name: 'Volume',
+                    type: 'Column',
+                    fill: '#ff6b35'
+                }],
+                title: '24h Volume Trend',
+                theme: 'Material3Dark',
+                background: 'transparent',
+                tooltip: {
+                    enable: true,
+                    format: 'Date: ${point.x}<br/>Volume: $${point.y}'
+                },
+                height: '300px'
+            });
+
+            this.charts.volume.appendTo(container);
+        } catch (error) {
+            console.error('Failed to initialize volume chart:', error);
+        }
+    }
+
+    /**
+     * Initialize APY distribution chart
+     */
+    initializeAPYChart() {
+        const container = document.getElementById('apy-chart');
+        if (!container) return;
+
+        try {
+            const chartData = this.prepareAPYChartData();
+
+            this.charts.apy = new ej.charts.Chart({
+                primaryXAxis: {
+                    valueType: 'Category',
+                    title: 'Pools'
+                },
+                primaryYAxis: {
+                    title: 'APY (%)',
+                    minimum: 0
+                },
+                series: [{
+                    dataSource: chartData,
+                    xName: 'pool',
+                    yName: 'apy',
+                    name: 'APY',
+                    type: 'Column',
+                    fill: '#4ade80'
+                }],
+                title: 'Pool APY Distribution',
+                theme: 'Material3Dark',
+                background: 'transparent',
+                tooltip: {
+                    enable: true,
+                    format: 'Pool: ${point.x}<br/>APY: ${point.y}%'
+                },
+                height: '300px'
+            });
+
+            this.charts.apy.appendTo(container);
+        } catch (error) {
+            console.error('Failed to initialize APY chart:', error);
+        }
+    }
+
+    /**
+     * Initialize DEX distribution pie chart
+     */
+    initializeDexDistributionChart() {
+        const container = document.getElementById('dex-distribution-chart');
+        if (!container) return;
+
+        try {
+            const chartData = this.prepareDexDistributionData();
+
+            this.charts.dexDistribution = new ej.charts.AccumulationChart({
+                series: [{
+                    dataSource: chartData,
+                    xName: 'dex',
+                    yName: 'tvl',
+                    name: 'TVL Distribution',
+                    type: 'Pie',
+                    dataLabel: {
+                        visible: true,
+                        name: 'percentage',
+                        position: 'Outside'
+                    }
+                }],
+                title: 'TVL Distribution by DEX',
+                theme: 'Material3Dark',
+                background: 'transparent',
+                tooltip: {
+                    enable: true,
+                    format: 'DEX: ${point.x}<br/>TVL: $${point.y}<br/>Share: ${point.percentage}%'
+                },
+                height: '300px'
+            });
+
+            this.charts.dexDistribution.appendTo(container);
+        } catch (error) {
+            console.error('Failed to initialize DEX distribution chart:', error);
+        }
+    }
+
+    /**
+     * Initialize filter controls
+     */
+    initializeFilters() {
+        // DEX filter
+        const dexFilter = document.getElementById('dex-filter');
+        if (dexFilter) {
+            dexFilter.addEventListener('change', (e) => {
+                this.currentFilters.dex = e.target.value;
+                this.applyFilters();
+            });
+        }
+
+        // TVL filter
+        const tvlFilter = document.getElementById('min-tvl-filter');
+        if (tvlFilter) {
+            tvlFilter.addEventListener('input', (e) => {
+                this.currentFilters.minTvl = parseFloat(e.target.value) || 0;
+                this.applyFilters();
+            });
+        }
+
+        // APY filter
+        const apyFilter = document.getElementById('min-apy-filter');
+        if (apyFilter) {
+            apyFilter.addEventListener('input', (e) => {
+                this.currentFilters.minApy = parseFloat(e.target.value) || 0;
+                this.applyFilters();
+            });
+        }
+
+        // Sort controls
+        const sortSelect = document.getElementById('sort-by');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                this.currentFilters.sortBy = e.target.value;
+                this.applyFilters();
+            });
+        }
+
+        const sortDirection = document.getElementById('sort-direction');
+        if (sortDirection) {
+            sortDirection.addEventListener('change', (e) => {
+                this.currentFilters.sortDirection = e.target.value;
+                this.applyFilters();
+            });
+        }
+
+        // Clear filters button
+        const clearFilters = document.getElementById('clear-filters');
+        if (clearFilters) {
+            clearFilters.addEventListener('click', () => this.clearFilters());
+        }
+    }
+
+    /**
+     * Initialize pool cards and interactions
+     */
+    initializePoolCards() {
+        // Add liquidity buttons
+        document.querySelectorAll('.add-liquidity-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const poolId = e.target.dataset.poolId;
+                this.redirectToAddLiquidity(poolId);
+            });
+        });
+
+        // Pool detail buttons
+        document.querySelectorAll('.view-pool-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const poolId = e.target.dataset.poolId;
+                this.showPoolDetails(poolId);
+            });
+        });
+
+        // Compare pools functionality
+        document.querySelectorAll('.compare-pool-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updatePoolComparison());
+        });
+    }
+
+    /**
+     * Initialize statistics cards
+     */
+    initializeStatCards() {
+        // Refresh stats button
+        const refreshStatsBtn = document.getElementById('refresh-stats');
+        if (refreshStatsBtn) {
+            refreshStatsBtn.addEventListener('click', () => this.refreshStats());
+        }
+
+        // Initialize stat card animations
+        this.animateStatCards();
+    }
+
+    /**
+     * Initialize refresh handlers
+     */
+    initializeRefreshHandlers() {
+        // Auto-refresh toggle
+        const autoRefreshToggle = document.getElementById('auto-refresh');
+        if (autoRefreshToggle) {
+            autoRefreshToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.startPeriodicRefresh();
                 } else {
-                    throw new Error('MetaMask not found. Please install MetaMask.');
+                    this.stopPeriodicRefresh();
                 }
-                break;
-
-            case 'walletconnect':
-                // WalletConnect integration would go here
-                throw new Error('WalletConnect integration coming soon.');
-
-            case 'coinbase':
-                // Coinbase Wallet integration would go here
-                throw new Error('Coinbase Wallet integration coming soon.');
-
-            case 'trust':
-                // Trust Wallet integration would go here
-                throw new Error('Trust Wallet integration coming soon.');
-
-            default:
-                throw new Error('Unsupported wallet type.');
+            });
         }
 
-        // Request account access
-        const accounts = await provider.request({ method: 'eth_requestAccounts' });
-        const walletAddress = accounts[0];
-
-        // Update UI
-        updateWalletStatus(walletAddress);
-
-        // Load user data
-        state.connectedWallet = walletAddress;
-        loadUserPositions(walletAddress);
-
-        showSuccess('Wallet connected successfully!');
-    } catch (error) {
-        console.error('❌ Wallet connection error:', error);
-        showError(error.message || 'Failed to connect wallet.');
-    } finally {
-        hideLoading();
-    }
-}
-
-function updateWalletStatus(address) {
-    const walletStatus = document.getElementById('wallet-status');
-    const walletAddressSpan = document.getElementById('wallet-address');
-
-    if (walletStatus && walletAddressSpan) {
-        walletAddressSpan.textContent = `${address.substring(0, 6)}...${address.substring(38)}`;
-        walletStatus.style.display = 'block';
+        // Manual refresh button
+        const refreshBtn = document.getElementById('refresh-dashboard');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.refreshDashboard());
+        }
     }
 
-    // Hide wallet connection options
-    const walletConnect = document.getElementById('wallet-connect');
-    if (walletConnect) {
-        walletConnect.style.display = 'none';
-    }
-}
+    /**
+     * Initialize wallet connection
+     */
+    initializeWalletConnection() {
+        const connectBtn = document.getElementById('connect-wallet');
+        if (connectBtn) {
+            connectBtn.addEventListener('click', () => this.connectWallet());
+        }
 
-function loadManualWallet() {
-    const addressInput = document.getElementById('manual-wallet-address');
-    if (!addressInput) return;
-
-    const address = addressInput.value.trim();
-
-    // Basic address validation
-    if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
-        showError('Please enter a valid Ethereum address.');
-        return;
+        const disconnectBtn = document.getElementById('disconnect-wallet');
+        if (disconnectBtn) {
+            disconnectBtn.addEventListener('click', () => this.disconnectWallet());
+        }
     }
 
-    // Redirect to manage page with address
-    window.location.href = `/liquidity/manage?walletAddress=${address}`;
-}
+    /**
+     * Apply current filters to pool display
+     */
+    async applyFilters() {
+        if (this.isLoading) return;
 
-// ================================================
-// POSITION MANAGEMENT FUNCTIONS
-// ================================================
-async function viewPosition(positionId) {
-    showLoading('Loading position details...');
+        try {
+            this.showLoadingState();
 
-    try {
-        const response = await fetch(`/liquidity/position/${positionId}`);
-        if (!response.ok) throw new Error('Failed to load position details');
+            const pools = this.initialData.liquidityPools || [];
+            let filteredPools = [...pools];
 
-        const positionData = await response.json();
-        showPositionDetails(positionData);
-    } catch (error) {
-        console.error('❌ Error loading position:', error);
-        showError('Failed to load position details.');
-    } finally {
-        hideLoading();
+            // Apply DEX filter
+            if (this.currentFilters.dex) {
+                filteredPools = filteredPools.filter(pool =>
+                    pool.dexName.toLowerCase() === this.currentFilters.dex.toLowerCase()
+                );
+            }
+
+            // Apply TVL filter
+            if (this.currentFilters.minTvl > 0) {
+                filteredPools = filteredPools.filter(pool =>
+                    pool.totalValueLocked >= this.currentFilters.minTvl
+                );
+            }
+
+            // Apply APY filter
+            if (this.currentFilters.minApy > 0) {
+                filteredPools = filteredPools.filter(pool =>
+                    pool.apy >= this.currentFilters.minApy
+                );
+            }
+
+            // Apply sorting
+            filteredPools.sort((a, b) => {
+                const sortField = this.currentFilters.sortBy;
+                const direction = this.currentFilters.sortDirection === 'ASC' ? 1 : -1;
+
+                const aValue = this.getPoolSortValue(a, sortField);
+                const bValue = this.getPoolSortValue(b, sortField);
+
+                return (aValue - bValue) * direction;
+            });
+
+            this.updatePoolDisplay(filteredPools);
+            this.hideLoadingState();
+        } catch (error) {
+            console.error('Error applying filters:', error);
+            this.hideLoadingState();
+        }
     }
-}
 
-async function addToPosition(positionId) {
-    // Redirect to add liquidity page with pre-selected pool
-    const positionRow = document.querySelector(`[data-position-id="${positionId}"]`);
-    if (positionRow) {
-        const poolName = positionRow.querySelector('.pool-name')?.textContent;
-        window.location.href = `/liquidity/add?poolId=${positionId}&action=add`;
+    /**
+     * Clear all filters
+     */
+    clearFilters() {
+        this.currentFilters = {
+            dex: '',
+            minTvl: 0,
+            minApy: 0,
+            sortBy: 'TotalValueLocked',
+            sortDirection: 'DESC'
+        };
+
+        // Reset filter UI
+        const dexFilter = document.getElementById('dex-filter');
+        if (dexFilter) dexFilter.value = '';
+
+        const tvlFilter = document.getElementById('min-tvl-filter');
+        if (tvlFilter) tvlFilter.value = '';
+
+        const apyFilter = document.getElementById('min-apy-filter');
+        if (apyFilter) apyFilter.value = '';
+
+        const sortSelect = document.getElementById('sort-by');
+        if (sortSelect) sortSelect.value = 'TotalValueLocked';
+
+        const sortDirection = document.getElementById('sort-direction');
+        if (sortDirection) sortDirection.value = 'DESC';
+
+        this.applyFilters();
     }
-}
 
-async function removePosition(positionId) {
-    showRemoveLiquidityModal(positionId);
-}
-
-async function claimFees(positionId) {
-    showLoading('Preparing fee claim...');
-
-    try {
-        // Get DEX URL for fee claiming
-        const response = await fetch(`/liquidity/dex-url?action=claim&positionId=${positionId}`);
-        if (!response.ok) throw new Error('Failed to get DEX URL');
-
-        const data = await response.json();
-        window.open(data.url, '_blank');
-
-        showSuccess('Redirected to DEX for fee claiming.');
-    } catch (error) {
-        console.error('❌ Error claiming fees:', error);
-        showError('Failed to redirect to DEX for fee claiming.');
-    } finally {
-        hideLoading();
+    /**
+     * Get pool value for sorting
+     */
+    getPoolSortValue(pool, field) {
+        switch (field) {
+            case 'TotalValueLocked':
+                return pool.totalValueLocked || 0;
+            case 'APY':
+                return pool.apy || 0;
+            case 'Volume24h':
+                return pool.volume24h || 0;
+            case 'FeePercentage':
+                return pool.feePercentage || 0;
+            default:
+                return 0;
+        }
     }
-}
 
-function refreshPositions() {
-    if (state.connectedWallet) {
-        loadUserPositions(state.connectedWallet);
-    } else {
-        loadDashboardData();
-    }
-}
+    /**
+     * Update pool cards display
+     */
+    updatePoolDisplay(pools) {
+        const container = document.getElementById('pools-container');
+        if (!container) return;
 
-// ================================================
-// MODAL FUNCTIONS
-// ================================================
-function showPositionDetails(positionData) {
-    const modal = document.getElementById('position-details-modal');
-    const modalBody = document.getElementById('position-details-body');
+        // Clear existing content
+        container.innerHTML = '';
 
-    if (!modal || !modalBody) return;
-
-    modalBody.innerHTML = `
-            <div class="position-details-content">
-                <div class="position-summary">
-                    <h4>${positionData.token1Symbol}/${positionData.token2Symbol} Position</h4>
-                    <p>DEX: ${positionData.dexName} | Fee Tier: ${(positionData.feeTier * 100)}%</p>
-                </div>
-                
-                <div class="position-metrics">
-                    <div class="metric-row">
-                        <span>Current Value:</span>
-                        <span>${positionData.currentValue.toFixed(2)}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span>Initial Value:</span>
-                        <span>${positionData.initialValue.toFixed(2)}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span>P&L:</span>
-                        <span class="${positionData.pnlAmount >= 0 ? 'positive' : 'negative'}">
-                            ${positionData.pnlAmount >= 0 ? '+' : ''}${positionData.pnlAmount.toFixed(2)}
-                        </span>
-                    </div>
-                    <div class="metric-row">
-                        <span>Fees Earned:</span>
-                        <span>${positionData.feesEarned.toFixed(2)}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span>Current APY:</span>
-                        <span>${positionData.currentApy.toFixed(2)}%</span>
+        if (pools.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No pools match your current filters. Try adjusting your criteria.
                     </div>
                 </div>
-                
-                <div class="position-actions">
-                    <button class="btn-primary" onclick="addToPosition(${positionData.id})">Add Liquidity</button>
-                    <button class="btn-danger" onclick="removePosition(${positionData.id})">Remove Liquidity</button>
-                    ${positionData.unclaimedFees > 0 ? `<button class="btn-secondary" onclick="claimFees(${positionData.id})">Claim Fees</button>` : ''}
+            `;
+            return;
+        }
+
+        // Generate pool cards
+        pools.forEach(pool => {
+            const poolCard = this.createPoolCard(pool);
+            container.appendChild(poolCard);
+        });
+
+        // Reinitialize pool interactions
+        this.initializePoolCards();
+    }
+
+    /**
+     * Create a pool card element
+     */
+    createPoolCard(pool) {
+        const col = document.createElement('div');
+        col.className = 'col-lg-4 col-md-6 mb-4';
+
+        const pnlClass = pool.apy >= 50 ? 'high-yield' : pool.apy >= 20 ? 'medium-yield' : 'low-yield';
+        const statusClass = pool.isActive ? 'active' : 'inactive';
+        const featuredBadge = pool.isFeatured ? '<span class="badge bg-warning">Featured</span>' : '';
+
+        col.innerHTML = `
+            <div class="pool-card glass-card ${statusClass}" data-pool-id="${pool.id}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">${pool.name}</h5>
+                    ${featuredBadge}
+                </div>
+                <div class="card-body">
+                    <div class="pool-pair mb-3">
+                        <span class="token-pair">${pool.tokenPair}</span>
+                        <small class="text-muted d-block">${pool.dexName}</small>
+                    </div>
+                    
+                    <div class="pool-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">APY</span>
+                            <span class="metric-value ${pnlClass}">${pool.apyDisplay}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">TVL</span>
+                            <span class="metric-value">${pool.totalValueLockedDisplay}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">24h Volume</span>
+                            <span class="metric-value">${pool.volume24hDisplay}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Fees</span>
+                            <span class="metric-value">${pool.feeDisplay}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-sm add-liquidity-btn flex-grow-1" 
+                                data-pool-id="${pool.id}">
+                            <i class="fas fa-plus me-1"></i>Add Liquidity
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm view-pool-btn" 
+                                data-pool-id="${pool.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <input type="checkbox" class="btn-check compare-pool-checkbox" 
+                               id="compare-${pool.id}" data-pool-id="${pool.id}">
+                        <label class="btn btn-outline-info btn-sm" for="compare-${pool.id}">
+                            <i class="fas fa-balance-scale"></i>
+                        </label>
+                    </div>
                 </div>
             </div>
         `;
 
-    modal.style.display = 'block';
-}
-
-function showRemoveLiquidityModal(positionId) {
-    const modal = document.getElementById('remove-liquidity-modal');
-    if (!modal) return;
-
-    // Store position ID for later use
-    modal.dataset.positionId = positionId;
-
-    // Reset form
-    const slider = document.getElementById('removal-slider');
-    if (slider) {
-        slider.value = 0;
-        updateRemovalPreview(0);
+        return col;
     }
 
-    modal.style.display = 'block';
-}
+    /**
+     * Show pool details modal
+     */
+    async showPoolDetails(poolId) {
+        try {
+            this.showLoadingState();
 
-function updateRemovalPreview(percentage) {
-    const percentageDisplay = document.getElementById('removal-percentage');
-    const proceedBtn = document.getElementById('proceed-removal-btn');
+            const response = await fetch(`/liquidity/pool/${poolId}`);
+            if (!response.ok) throw new Error('Failed to load pool details');
 
-    if (percentageDisplay) {
-        percentageDisplay.textContent = percentage;
+            const pool = await response.json();
+            this.displayPoolModal(pool);
+
+            this.hideLoadingState();
+        } catch (error) {
+            console.error('Error loading pool details:', error);
+            this.showErrorMessage('Failed to load pool details');
+            this.hideLoadingState();
+        }
     }
 
-    if (proceedBtn) {
-        proceedBtn.disabled = percentage === 0;
+    /**
+     * Display pool details in modal
+     */
+    displayPoolModal(pool) {
+        const modalContent = `
+            <div class="modal fade" id="poolDetailsModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${pool.name} Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Pool Information</h6>
+                                    <table class="table table-sm">
+                                        <tr><td>Trading Pair:</td><td>${pool.tokenPair}</td></tr>
+                                        <tr><td>Exchange:</td><td>${pool.dexName}</td></tr>
+                                        <tr><td>Pool Address:</td><td class="font-monospace small">${pool.poolAddress}</td></tr>
+                                        <tr><td>Fee Percentage:</td><td>${pool.feeDisplay}</td></tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Performance Metrics</h6>
+                                    <table class="table table-sm">
+                                        <tr><td>Current APY:</td><td class="text-success">${pool.apyDisplay}</td></tr>
+                                        <tr><td>Total Value Locked:</td><td>${pool.totalValueLockedDisplay}</td></tr>
+                                        <tr><td>24h Volume:</td><td>${pool.volume24hDisplay}</td></tr>
+                                        <tr><td>Current Price:</td><td>${pool.currentPriceDisplay}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="liquidityDashboard.redirectToAddLiquidity('${pool.id}')">
+                                Add Liquidity
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove existing modal
+        const existingModal = document.getElementById('poolDetailsModal');
+        if (existingModal) existingModal.remove();
+
+        // Add new modal
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('poolDetailsModal'));
+        modal.show();
     }
 
-    // Update estimated receive amounts
-    // This would calculate based on current position data
-    const modal = document.getElementById('remove-liquidity-modal');
-    const positionId = modal?.dataset.positionId;
-
-    if (positionId) {
-        calculateRemovalAmounts(positionId, percentage);
-    }
-}
-
-async function calculateRemovalAmounts(positionId, percentage) {
-    try {
-        const response = await fetch('/liquidity/calculate-remove', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                positionId: parseInt(positionId),
-                percentage: percentage
-            })
+    /**
+     * Update pool comparison
+     */
+    updatePoolComparison() {
+        const selectedPools = [];
+        document.querySelectorAll('.compare-pool-checkbox:checked').forEach(checkbox => {
+            selectedPools.push(parseInt(checkbox.dataset.poolId));
         });
 
-        if (!response.ok) throw new Error('Calculation failed');
+        const compareBtn = document.getElementById('compare-pools-btn');
+        if (compareBtn) {
+            compareBtn.disabled = selectedPools.length < 2;
+            compareBtn.textContent = `Compare Pools (${selectedPools.length})`;
+        }
 
-        const data = await response.json();
-
-        // Update UI with calculated amounts
-        const token1Amount = document.getElementById('receive-token1-amount');
-        const token2Amount = document.getElementById('receive-token2-amount');
-        const totalValue = document.getElementById('receive-total-value');
-
-        if (token1Amount) token1Amount.textContent = data.token1Amount.toFixed(4);
-        if (token2Amount) token2Amount.textContent = data.token2Amount.toFixed(4);
-        if (totalValue) totalValue.textContent = data.totalValue.toFixed(2);
-
-    } catch (error) {
-        console.error('❌ Error calculating removal amounts:', error);
-    }
-}
-
-async function proceedToRemoval() {
-    const modal = document.getElementById('remove-liquidity-modal');
-    const positionId = modal?.dataset.positionId;
-    const percentage = document.getElementById('removal-slider')?.value;
-
-    if (!positionId || !percentage) return;
-
-    showLoading('Preparing removal...');
-
-    try {
-        const response = await fetch(`/liquidity/dex-url?action=remove&positionId=${positionId}&percentage=${percentage}`);
-        if (!response.ok) throw new Error('Failed to get DEX URL');
-
-        const data = await response.json();
-        window.open(data.url, '_blank');
-
-        closeModal('remove-liquidity-modal');
-        showSuccess('Redirected to DEX for liquidity removal.');
-    } catch (error) {
-        console.error('❌ Error proceeding to removal:', error);
-        showError('Failed to redirect to DEX for liquidity removal.');
-    } finally {
-        hideLoading();
-    }
-}
-
-function setRemovalPercentage(percentage) {
-    const slider = document.getElementById('removal-slider');
-    if (slider) {
-        slider.value = percentage;
-        updateRemovalPreview(percentage);
-    }
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-// ================================================
-// PAGINATION FUNCTIONS
-// ================================================
-function updatePaginationControls() {
-    const currentPageSpan = document.getElementById('current-page');
-    const totalPagesSpan = document.getElementById('total-pages');
-    const prevBtn = document.getElementById('prev-page');
-    const nextBtn = document.getElementById('next-page');
-
-    if (currentPageSpan) currentPageSpan.textContent = state.pagination.currentPage;
-    if (totalPagesSpan) totalPagesSpan.textContent = state.pagination.totalPages;
-
-    if (prevBtn) {
-        prevBtn.disabled = state.pagination.currentPage <= 1;
-    }
-
-    if (nextBtn) {
-        nextBtn.disabled = state.pagination.currentPage >= state.pagination.totalPages;
-    }
-}
-
-function loadPreviousPage() {
-    if (state.pagination.currentPage > 1) {
-        state.pagination.currentPage--;
-        if (state.connectedWallet) {
-            loadUserTransactions(state.connectedWallet);
+        if (selectedPools.length >= 2) {
+            this.showPoolComparison(selectedPools);
         }
     }
-}
 
-function loadNextPage() {
-    if (state.pagination.currentPage < state.pagination.totalPages) {
-        state.pagination.currentPage++;
-        if (state.connectedWallet) {
-            loadUserTransactions(state.connectedWallet);
+    /**
+     * Show pool comparison
+     */
+    async showPoolComparison(poolIds) {
+        try {
+            // Get pools from initial data instead of API call
+            const pools = this.initialData.liquidityPools || [];
+            const selectedPools = pools.filter(pool => poolIds.includes(pool.id));
+
+            this.displayPoolComparison(selectedPools);
+        } catch (error) {
+            console.error('Error comparing pools:', error);
+            this.showErrorMessage('Failed to compare pools');
         }
     }
-}
 
-// ================================================
-// UTILITY FUNCTIONS
-// ================================================
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
+    /**
+     * Display pool comparison table
+     */
+    displayPoolComparison(pools) {
+        const container = document.getElementById('pool-comparison');
+        if (!container) return;
 
-function cacheData(key, data) {
-    try {
-        const cacheItem = {
-            data: data,
-            timestamp: Date.now(),
-            expires: Date.now() + config.cache.duration
-        };
-        sessionStorage.setItem(key, JSON.stringify(cacheItem));
-    } catch (error) {
-        console.warn('⚠️ Failed to cache data:', error);
-    }
-}
+        let comparisonHtml = `
+            <div class="card glass-card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Pool Comparison</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Pool</th>
+                                    <th>Exchange</th>
+                                    <th>APY</th>
+                                    <th>TVL</th>
+                                    <th>24h Volume</th>
+                                    <th>Fees</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        `;
 
-function getCachedData(key) {
-    try {
-        const cacheItem = JSON.parse(sessionStorage.getItem(key));
-        if (cacheItem && cacheItem.expires > Date.now()) {
-            return cacheItem.data;
-        }
-    } catch (error) {
-        console.warn('⚠️ Failed to retrieve cached data:', error);
-    }
-    return null;
-}
-
-function loadFallbackData() {
-    console.log('📦 Loading fallback data...');
-
-    // Provide fallback data structure
-    state.currentData = {
-        stats: {
-            totalValueLocked: 0,
-            volume24h: 0,
-            averageApy: 0,
-            activePools: 0
-        },
-        pools: [],
-        analytics: {
-            tvlHistory: [],
-            volumeHistory: [],
-            apyTrends: []
-        }
-    };
-
-    renderDashboard();
-    showError('Using cached data. Some information may be outdated.');
-}
-
-function initializeWalletConnection() {
-    // Set up wallet connection UI
-    const walletOptions = document.querySelectorAll('.wallet-option');
-    walletOptions.forEach(option => {
-        option.addEventListener('click', function () {
-            const walletType = this.dataset.wallet;
-            connectWallet(walletType);
+        pools.forEach(pool => {
+            comparisonHtml += `
+                <tr>
+                    <td>
+                        <strong>${pool.name}</strong><br>
+                        <small class="text-muted">${pool.tokenPair}</small>
+                    </td>
+                    <td>${pool.dexName}</td>
+                    <td class="text-success">${pool.apyDisplay}</td>
+                    <td>${pool.totalValueLockedDisplay}</td>
+                    <td>${pool.volume24hDisplay}</td>
+                    <td>${pool.feeDisplay}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm add-liquidity-btn" data-pool-id="${pool.id}">
+                            Add Liquidity
+                        </button>
+                    </td>
+                </tr>
+            `;
         });
-    });
-}
 
-function initializeFilters() {
-    // Set up any additional filter functionality
-    const filterElements = document.querySelectorAll('[data-filter]');
-    filterElements.forEach(element => {
-        element.addEventListener('change', function () {
-            const filterType = this.dataset.filter;
-            const filterValue = this.value;
-            applyFilter(filterType, filterValue);
-        });
-    });
-}
+        comparisonHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
 
-function applyFilter(filterType, filterValue) {
-    state.filters[filterType] = filterValue;
+        container.innerHTML = comparisonHtml;
 
-    // Apply the appropriate filter
-    switch (filterType) {
-        case 'poolSearch':
-            renderPoolsGrid();
-            break;
-        case 'sortBy':
-            renderPoolsGrid();
-            break;
-        case 'dexFilter':
-            renderPoolsGrid();
-            break;
-        default:
-            console.warn('Unknown filter type:', filterType);
-    }
-}
-
-// ================================================
-// EXTERNAL FUNCTIONS FOR VIEWS
-// ================================================
-function viewPoolDetails(poolId) {
-    console.log('👁️ Viewing pool details for:', poolId);
-
-    // Redirect to pool details page or show modal
-    window.location.href = `/liquidity/pool/${poolId}`;
-}
-
-// ================================================
-// UI FEEDBACK FUNCTIONS
-// ================================================
-function showLoading(message = 'Loading...') {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-        const messageElement = overlay.querySelector('p');
-        if (messageElement) {
-            messageElement.textContent = message;
-        }
-        overlay.style.display = 'flex';
-    }
-}
-
-function hideLoading() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-    }
-}
-
-function showError(message) {
-    const errorToast = document.getElementById('error-message');
-    const errorText = document.getElementById('error-text');
-
-    if (errorToast && errorText) {
-        errorText.textContent = message;
-        errorToast.style.display = 'flex';
-        errorToast.classList.add('show');
-
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            hideError();
-        }, 5000);
+        // Reinitialize buttons
+        this.initializePoolCards();
     }
 
-    console.error('🚨 Error:', message);
-}
-
-function hideError() {
-    const errorToast = document.getElementById('error-message');
-    if (errorToast) {
-        errorToast.classList.remove('show');
-        setTimeout(() => {
-            errorToast.style.display = 'none';
-        }, 300);
-    }
-}
-
-function showSuccess(message) {
-    const successToast = document.getElementById('success-message');
-    const successText = document.getElementById('success-text');
-
-    if (successToast && successText) {
-        successText.textContent = message;
-        successToast.style.display = 'flex';
-        successToast.classList.add('show');
-
-        // Auto-hide after 3 seconds
-        setTimeout(() => {
-            hideSuccess();
-        }, 3000);
+    /**
+     * Redirect to add liquidity page
+     */
+    redirectToAddLiquidity(poolId) {
+        window.location.href = `/liquidity/add?poolId=${poolId}&step=1`;
     }
 
-    console.log('✅ Success:', message);
-}
-
-function hideSuccess() {
-    const successToast = document.getElementById('success-message');
-    if (successToast) {
-        successToast.classList.remove('show');
-        setTimeout(() => {
-            successToast.style.display = 'none';
-        }, 300);
-    }
-}
-
-// ================================================
-// CLEANUP
-// ================================================
-function cleanup() {
-    // Clear timers
-    if (state.refreshTimer) {
-        clearInterval(state.refreshTimer);
-        state.refreshTimer = null;
-    }
-
-    // Dispose charts
-    Object.values(state.charts).forEach(chart => {
-        if (chart && typeof chart.destroy === 'function') {
-            chart.destroy();
-        }
-    });
-    state.charts = {};
-
-    console.log('🧹 Liquidity Dashboard cleaned up');
-}
-
-// ================================================
-// GLOBAL FUNCTIONS (exposed to window)
-// ================================================
-window.viewPoolDetails = viewPoolDetails;
-window.viewPosition = viewPosition;
-window.addToPosition = addToPosition;
-window.removePosition = removePosition;
-window.claimFees = claimFees;
-window.refreshPositions = refreshPositions;
-window.loadManualWallet = loadManualWallet;
-window.setRemovalPercentage = setRemovalPercentage;
-window.proceedToRemoval = proceedToRemoval;
-window.updateRemovalPreview = updateRemovalPreview;
-window.closeModal = closeModal;
-window.loadPreviousPage = loadPreviousPage;
-window.loadNextPage = loadNextPage;
-window.hideError = hideError;
-window.hideSuccess = hideSuccess;
-
-// Handle page visibility changes for auto-refresh
-document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && state.refreshTimer) {
-        // Resume auto-refresh when page becomes visible
-        setupAutoRefresh();
-    }
-});
-
-// Handle page unload cleanup
-window.addEventListener('beforeunload', cleanup);
-
-// ================================================
-// PUBLIC API
-// ================================================
-return {
-    init: init,
-    initManagement: initManagement,
-    refreshData: refreshData,
-    connectWallet: connectWallet,
-    viewPoolDetails: viewPoolDetails,
-    cleanup: cleanup,
-
-    // Expose state for debugging (development only)
-    getState: () => ({ ...state }),
-    getConfig: () => ({ ...config })
-};
-
-}) ();
-
-// ================================================
-// ADDITIONAL UTILITY FUNCTIONS
-// ================================================
-
-// Format numbers for display
-function formatCurrency(amount, decimals = 2) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-    }).format(amount);
-}
-
-function formatPercentage(value, decimals = 2) {
-    return `${value.toFixed(decimals)}%`;
-}
-
-function formatAddress(address) {
-    if (!address || address.length < 10) return address;
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-}
-
-// Date formatting
-function formatDate(date, format = 'short') {
-    const options = {
-        short: { month: 'short', day: 'numeric' },
-        long: { year: 'numeric', month: 'long', day: 'numeric' },
-        time: { hour: '2-digit', minute: '2-digit' }
-    };
-
-    return new Intl.DateTimeFormat('en-US', options[format] || options.short).format(new Date(date));
-}
-
-// Animation helpers
-function animateValue(element, start, end, duration = 1000) {
-    if (!element) return;
-
-    const startTime = performance.now();
-    const startValue = start;
-    const endValue = end;
-    const totalChange = endValue - startValue;
-
-    function updateValue(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // Easing function (ease-out)
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-        const currentValue = startValue + (totalChange * easedProgress);
-        element.textContent = Math.round(currentValue).toLocaleString();
-
-        if (progress < 1) {
-            requestAnimationFrame(updateValue);
-        }
-    }
-
-    requestAnimationFrame(updateValue);
-}
-
-// Error boundary for chart operations
-function safeChartOperation(operation, chartName) {
-    try {
-        return operation();
-    } catch (error) {
-        console.error(`❌ Chart operation failed for ${chartName}:`, error);
-        return null;
-    }
-}
-
-// Network detection
-function detectNetwork() {
-    if (typeof window.ethereum !== 'undefined') {
-        return window.ethereum.networkVersion || window.ethereum.chainId;
-    }
-    return null;
-}
-
-// Console startup message
-console.log(`
-🎓 TeachToken Liquidity Dashboard
-📊 Version: 1.0.0
-🚀 Initialized: ${new Date().toISOString()}
-🔗 Network: ${detectNetwork() || 'Unknown'}
-`);
-
-// Export for module systems (if needed)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = window.LiquidityDashboard;
-}// ================================================
-// LIQUIDITY DASHBOARD - MAIN JAVASCRIPT
-// Following TeachToken patterns established in analytics/tokenomics
-// ================================================
-
-window.LiquidityDashboard = (function () {
-    'use strict';
-
-    // ================================================
-    // CONFIGURATION & STATE
-    // ================================================
-    const config = {
-        endpoints: {
-            data: '/liquidity/data',
-            stats: '/liquidity/stats',
-            pools: '/liquidity/pools',
-            userPositions: '/liquidity/user/{address}/positions',
-            userTransactions: '/liquidity/user/{address}/transactions',
-            userPerformance: '/liquidity/user/{address}/performance',
-            calculate: '/liquidity/calculate',
-            comparePoolsEndpoint: '/liquidity/compare-pools',
-            dexUrl: '/liquidity/dex-url'
-        },
-        charts: {
-            theme: 'Material3Dark',
-            colors: ['#4f46e5', '#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
-            refreshInterval: 30000 // 30 seconds
-        },
-        cache: {
-            duration: 5 * 60 * 1000, // 5 minutes
-            keys: {
-                pools: 'liquidity_pools',
-                stats: 'liquidity_stats',
-                userPositions: 'user_positions'
-            }
-        }
-    };
-
-    let state = {
-        currentData: null,
-        charts: {},
-        filters: {
-            poolSearch: '',
-            sortBy: 'apy',
-            dexFilter: '',
-            txType: '',
-            txPool: '',
-            txDate: '30d'
-        },
-        pagination: {
-            currentPage: 1,
-            totalPages: 1,
-            pageSize: 20
-        },
-        connectedWallet: null,
-        refreshTimer: null
-    };
-
-    // ================================================
-    // INITIALIZATION
-    // ================================================
-    function init(initialData) {
-        console.log('🚀 Initializing Liquidity Dashboard...');
+    /**
+     * Refresh dashboard data
+     */
+    async refreshDashboard() {
+        if (this.isLoading) return;
 
         try {
-            // Store initial data
-            if (initialData && Object.keys(initialData).length > 0) {
-                state.currentData = initialData;
-                console.log('✅ Initial data loaded:', initialData);
-            }
+            this.showLoadingState();
 
-            // Initialize components
-            initializeEventListeners();
-            initializeCharts();
-            initializeFilters();
-            setupAutoRefresh();
+            const response = await fetch('/liquidity/data');
+            if (!response.ok) throw new Error('Failed to refresh data');
 
-            // Load data if not provided initially
-            if (!state.currentData) {
-                loadDashboardData();
-            } else {
-                renderDashboard();
-            }
+            const data = await response.json();
+            this.initialData = data;
 
-            console.log('✅ Liquidity Dashboard initialized successfully');
+            // Update UI components
+            this.updateStatCards(data.stats);
+            this.updateCharts(data);
+            this.applyFilters();
+
+            this.hideLoadingState();
+            this.showSuccessMessage('Dashboard refreshed successfully');
         } catch (error) {
-            console.error('❌ Error initializing Liquidity Dashboard:', error);
-            showError('Failed to initialize dashboard. Please refresh the page.');
+            console.error('Error refreshing dashboard:', error);
+            this.showErrorMessage('Failed to refresh dashboard');
+            this.hideLoadingState();
         }
     }
 
-    function initManagement(initialData, walletAddress) {
-        console.log('🚀 Initializing Liquidity Management Dashboard...');
-
+    /**
+     * Refresh statistics
+     */
+    async refreshStats() {
         try {
-            state.connectedWallet = walletAddress;
+            const response = await fetch('/liquidity/stats');
+            if (!response.ok) throw new Error('Failed to refresh stats');
 
-            if (initialData && Object.keys(initialData).length > 0) {
-                state.currentData = initialData;
-            }
+            const stats = await response.json();
+            this.updateStatCards(stats);
 
-            initializeEventListeners();
-            initializeManagementCharts();
-            initializeTransactionFilters();
-
-            if (walletAddress) {
-                loadUserPositions(walletAddress);
-            } else {
-                initializeWalletConnection();
-            }
-
-            console.log('✅ Liquidity Management Dashboard initialized successfully');
+            this.showSuccessMessage('Statistics updated');
         } catch (error) {
-            console.error('❌ Error initializing Management Dashboard:', error);
-            showError('Failed to initialize management dashboard.');
+            console.error('Error refreshing stats:', error);
+            this.showErrorMessage('Failed to refresh statistics');
         }
     }
 
-    // ================================================
-    // EVENT LISTENERS
-    // ================================================
-    function initializeEventListeners() {
-        // Pool search and filters
-        const poolSearch = document.getElementById('pool-search');
-        if (poolSearch) {
-            poolSearch.addEventListener('input', debounce(handlePoolSearch, 300));
+    /**
+     * Update statistics cards
+     */
+    updateStatCards(stats) {
+        if (!stats) return;
+
+        // Update TVL
+        const tvlElement = document.getElementById('total-tvl');
+        if (tvlElement) {
+            tvlElement.textContent = stats.totalValueLockedDisplay;
+            this.animateValue(tvlElement, stats.totalValueLocked);
         }
 
-        const sortBy = document.getElementById('sort-by');
-        if (sortBy) {
-            sortBy.addEventListener('change', handleSortChange);
+        // Update Volume
+        const volumeElement = document.getElementById('total-volume');
+        if (volumeElement) {
+            volumeElement.textContent = stats.volume24hDisplay;
+            this.animateValue(volumeElement, stats.volume24h);
         }
 
-        const dexFilter = document.getElementById('dex-filter');
-        if (dexFilter) {
-            dexFilter.addEventListener('change', handleDexFilter);
+        // Update Pools
+        const poolsElement = document.getElementById('active-pools');
+        if (poolsElement) {
+            poolsElement.textContent = stats.activePools;
         }
 
-        // Chart period controls
-        document.addEventListener('click', function (e) {
-            if (e.target.classList.contains('chart-period')) {
-                handleChartPeriodChange(e.target);
+        // Update Users
+        const usersElement = document.getElementById('total-users');
+        if (usersElement) {
+            usersElement.textContent = stats.totalUsers;
+        }
+
+        // Update TEACH price
+        const priceElement = document.getElementById('teach-price');
+        if (priceElement) {
+            priceElement.textContent = stats.teachCurrentPriceDisplay;
+        }
+
+        // Update price change
+        const changeElement = document.getElementById('teach-change');
+        if (changeElement) {
+            changeElement.textContent = stats.teachPriceChange24hDisplay;
+            changeElement.className = `price-change ${stats.teachPriceClass}`;
+        }
+    }
+
+    /**
+     * Update charts with new data
+     */
+    updateCharts(data) {
+        try {
+            // Update TVL chart
+            if (this.charts.tvl) {
+                const tvlData = this.prepareTVLChartData(data);
+                this.charts.tvl.series[0].dataSource = tvlData;
+                this.charts.tvl.refresh();
             }
+
+            // Update volume chart
+            if (this.charts.volume) {
+                const volumeData = this.prepareVolumeChartData(data);
+                this.charts.volume.series[0].dataSource = volumeData;
+                this.charts.volume.refresh();
+            }
+
+            // Update APY chart
+            if (this.charts.apy) {
+                const apyData = this.prepareAPYChartData(data);
+                this.charts.apy.series[0].dataSource = apyData;
+                this.charts.apy.refresh();
+            }
+
+            // Update DEX distribution chart
+            if (this.charts.dexDistribution) {
+                const dexData = this.prepareDexDistributionData(data);
+                this.charts.dexDistribution.series[0].dataSource = dexData;
+                this.charts.dexDistribution.refresh();
+            }
+        } catch (error) {
+            console.error('Error updating charts:', error);
+        }
+    }
+
+    /**
+     * Prepare TVL chart data
+     */
+    prepareTVLChartData(data = null) {
+        const sourceData = data || this.initialData;
+        const stats = sourceData.stats || {};
+
+        // Generate sample data if none provided
+        if (!stats.tvlHistory || !stats.historyDates) {
+            return this.generateSampleTVLData();
+        }
+
+        return stats.historyDates.map((date, index) => ({
+            date: new Date(date),
+            tvl: stats.tvlHistory[index] || 0
+        }));
+    }
+
+    /**
+     * Prepare volume chart data
+     */
+    prepareVolumeChartData(data = null) {
+        const sourceData = data || this.initialData;
+        const stats = sourceData.stats || {};
+
+        if (!stats.volumeHistory || !stats.historyDates) {
+            return this.generateSampleVolumeData();
+        }
+
+        return stats.historyDates.map((date, index) => ({
+            date: new Date(date),
+            volume: stats.volumeHistory[index] || 0
+        }));
+    }
+
+    /**
+     * Prepare APY chart data
+     */
+    prepareAPYChartData(data = null) {
+        const sourceData = data || this.initialData;
+        const pools = sourceData.liquidityPools || [];
+
+        return pools
+            .sort((a, b) => b.apy - a.apy)
+            .slice(0, 10)
+            .map(pool => ({
+                pool: pool.name,
+                apy: pool.apy
+            }));
+    }
+
+    /**
+     * Prepare DEX distribution data
+     */
+    prepareDexDistributionData(data = null) {
+        const sourceData = data || this.initialData;
+        const pools = sourceData.liquidityPools || [];
+
+        const dexTVL = {};
+        pools.forEach(pool => {
+            if (!dexTVL[pool.dexName]) {
+                dexTVL[pool.dexName] = 0;
+            }
+            dexTVL[pool.dexName] += pool.totalValueLocked;
         });
 
-        // Pool card clicks
-        document.addEventListener('click', function (e) {
-            if (e.target.classList.contains('pool-btn') || e.target.closest('.pool-card')) {
-                const poolId = e.target.closest('[data-pool-id]')?.dataset.poolId;
-                if (poolId && e.target.textContent.includes('View Details')) {
-                    viewPoolDetails(poolId);
-                }
-            }
-        });
+        const totalTVL = Object.values(dexTVL).reduce((a, b) => a + b, 0);
+        if (totalTVL === 0) return [];
 
-        // Wallet connection
-        const walletOptions = document.querySelectorAll('.wallet-option');
-        walletOptions.forEach(option => {
-            option.addEventListener('click', function () {
-                const walletType = this.dataset.wallet;
-                connectWallet(walletType);
+        return Object.entries(dexTVL).map(([dex, tvl]) => ({
+            dex,
+            tvl,
+            percentage: ((tvl / totalTVL) * 100).toFixed(1)
+        }));
+    }
+
+    /**
+     * Generate sample TVL data for fallback
+     */
+    generateSampleTVLData() {
+        const data = [];
+        const now = new Date();
+
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(now);
+            date.setDate(date.getDate() - i);
+
+            data.push({
+                date,
+                tvl: Math.random() * 1000000 + 500000
             });
+        }
+
+        return data;
+    }
+
+    /**
+     * Generate sample volume data for fallback
+     */
+    generateSampleVolumeData() {
+        const data = [];
+        const now = new Date();
+
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(now);
+            date.setDate(date.getDate() - i);
+
+            data.push({
+                date,
+                volume: Math.random() * 100000 + 10000
+            });
+        }
+
+        return data;
+    }
+
+    /**
+     * Animate statistics cards
+     */
+    animateStatCards() {
+        const cards = document.querySelectorAll('.stat-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('animate-in');
+            }, index * 100);
         });
     }
 
-    function initializeTransactionFilters() {
-        const txTypeFilter = document.getElementById('tx-type-filter');
-        const txPoolFilter = document.getElementById('tx-pool-filter');
-        const txDateFilter = document.getElementById('tx-date-filter');
-
-        if (txTypeFilter) {
-            txTypeFilter.addEventListener('change', handleTransactionFilter);
-        }
-        if (txPoolFilter) {
-            txPoolFilter.addEventListener('change', handleTransactionFilter);
-        }
-        if (txDateFilter) {
-            txDateFilter.addEventListener('change', handleTransactionFilter);
-        }
+    /**
+     * Animate value changes
+     */
+    animateValue(element, targetValue) {
+        element.classList.add('value-updating');
+        setTimeout(() => {
+            element.classList.remove('value-updating');
+        }, 500);
     }
 
-    // ================================================
-    // DATA LOADING
-    // ================================================
-    async function loadDashboardData() {
-        showLoading('Loading liquidity data...');
-
+    /**
+     * Connect wallet functionality
+     */
+    async connectWallet() {
         try {
-            const response = await fetch(config.endpoints.data, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            if (typeof window.ethereum === 'undefined') {
+                this.showErrorMessage('Please install MetaMask or another Web3 wallet');
+                return;
+            }
+
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (accounts.length > 0) {
+                const walletAddress = accounts[0];
+                this.updateWalletUI(walletAddress);
+                this.loadUserPositions(walletAddress);
+                this.showSuccessMessage('Wallet connected successfully');
             }
-
-            const data = await response.json();
-            state.currentData = data;
-
-            // Cache the data
-            cacheData(config.cache.keys.pools, data);
-
-            renderDashboard();
-            console.log('✅ Dashboard data loaded successfully');
         } catch (error) {
-            console.error('❌ Error loading dashboard data:', error);
-            showError('Failed to load liquidity data. Please try again.');
-            loadFallbackData();
-        } finally {
-            hideLoading();
+            console.error('Error connecting wallet:', error);
+            this.showErrorMessage('Failed to connect wallet');
         }
     }
 
-    async function loadUserPositions(walletAddress) {
-        if (!walletAddress) return;
+    /**
+     * Disconnect wallet
+     */
+    disconnectWallet() {
+        this.updateWalletUI(null);
+        this.clearUserPositions();
+        this.showSuccessMessage('Wallet disconnected');
+    }
 
-        showLoading('Loading your positions...');
+    /**
+     * Update wallet UI
+     */
+    updateWalletUI(walletAddress) {
+        const connectBtn = document.getElementById('connect-wallet');
+        const disconnectBtn = document.getElementById('disconnect-wallet');
+        const walletInfo = document.getElementById('wallet-info');
 
+        if (walletAddress) {
+            if (connectBtn) connectBtn.style.display = 'none';
+            if (disconnectBtn) disconnectBtn.style.display = 'block';
+            if (walletInfo) {
+                walletInfo.textContent = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+                walletInfo.style.display = 'block';
+            }
+        } else {
+            if (connectBtn) connectBtn.style.display = 'block';
+            if (disconnectBtn) disconnectBtn.style.display = 'none';
+            if (walletInfo) walletInfo.style.display = 'none';
+        }
+    }
+
+    /**
+     * Load user positions
+     */
+    async loadUserPositions(walletAddress) {
         try {
-            const url = config.endpoints.userPositions.replace('{address}', walletAddress);
-            const response = await fetch(url);
+            const response = await fetch(`/liquidity/user/${walletAddress}/positions`);
+            if (!response.ok) return;
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            state.currentData = data;
-
-            renderManagementDashboard();
-            loadUserTransactions(walletAddress);
-            console.log('✅ User positions loaded successfully');
+            const positions = await response.json();
+            this.displayUserPositions(positions);
         } catch (error) {
-            console.error('❌ Error loading user positions:', error);
-            showError('Failed to load your positions. Please try again.');
-        } finally {
-            hideLoading();
+            console.error('Error loading user positions:', error);
         }
     }
 
-    async function loadUserTransactions(walletAddress) {
-        if (!walletAddress) return;
+    /**
+     * Display user positions
+     */
+    displayUserPositions(positions) {
+        const container = document.getElementById('user-positions');
+        if (!container) return;
 
-        try {
-            const url = config.endpoints.userTransactions.replace('{address}', walletAddress);
-            const response = await fetch(`${url}?page=${state.pagination.currentPage}&pageSize=${state.pagination.pageSize}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            renderTransactionHistory(data);
-        } catch (error) {
-            console.error('❌ Error loading transactions:', error);
-            showError('Failed to load transaction history.');
-        }
-    }
-
-    // ================================================
-    // RENDERING
-    // ================================================
-    function renderDashboard() {
-        if (!state.currentData) {
-            console.warn('⚠️ No data available for rendering');
+        if (!positions || positions.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You don't have any liquidity positions yet. Start by adding liquidity to a pool!
+                </div>
+            `;
             return;
         }
 
-        try {
-            renderQuickStats();
-            renderPoolsGrid();
-            renderTopPoolsTable();
-            updateCharts();
-            animateCounters();
-        } catch (error) {
-            console.error('❌ Error rendering dashboard:', error);
-            showError('Error displaying dashboard data.');
+        let positionsHtml = `
+            <div class="card glass-card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Your Positions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Pool</th>
+                                    <th>Current Value</th>
+                                    <th>P&L</th>
+                                    <th>Fees Earned</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        `;
+
+        positions.forEach(position => {
+            positionsHtml += `
+                <tr>
+                    <td>
+                        <strong>${position.poolName}</strong><br>
+                        <small class="text-muted">${position.tokenPair}</small>
+                    </td>
+                    <td>${position.currentValueDisplay}</td>
+                    <td class="${position.pnLClass}">${position.pnLDisplay}</td>
+                    <td>${position.feesEarnedDisplay}</td>
+                    <td>
+                        <a href="/liquidity/manage?walletAddress=${position.walletAddress}" 
+                           class="btn btn-primary btn-sm">
+                            Manage
+                        </a>
+                    </td>
+                </tr>
+            `;
+        });
+
+        positionsHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = positionsHtml;
+    }
+
+    /**
+     * Clear user positions display
+     */
+    clearUserPositions() {
+        const container = document.getElementById('user-positions');
+        if (container) {
+            container.innerHTML = '';
         }
     }
 
-    function renderManagementDashboard() {
-        if (!state.currentData) return;
+    /**
+     * Start periodic refresh
+     */
+    startPeriodicRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+        }
 
-        try {
-            renderPortfolioOverview();
-            renderPositionsTable();
-            updateManagementCharts();
-            animateCounters();
-        } catch (error) {
-            console.error('❌ Error rendering management dashboard:', error);
-            showError('Error displaying positions data.');
+        this.refreshInterval = setInterval(() => {
+            this.refreshStats();
+        }, 60000); // Refresh every minute
+    }
+
+    /**
+     * Stop periodic refresh
+     */
+    stopPeriodicRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+            this.refreshInterval = null;
         }
     }
 
-    function renderQuickStats() {
-        const statsContainer = document.getElementById('quick-stats');
-        if (!statsContainer || !state.currentData?.stats) return;
+    /**
+     * Show loading state
+     */
+    showLoadingState() {
+        this.isLoading = true;
+        const spinner = document.getElementById('loading-spinner');
+        if (spinner) spinner.style.display = 'block';
+    }
 
-        const stats = state.currentData.stats;
-        const statCards = statsContainer.querySelectorAll('.stat-card');
+    /**
+     * Hide loading state
+     */
+    hideLoadingState() {
+        this.isLoading = false;
+        const spinner = document.getElementById('loading-spinner');
+        if (spinner) spinner.style.display = 'none';
+    }
 
-        statCards.forEach((card, index) => {
-            const valueElement = card.querySelector('.stat-value');
-            if (!valueElement) return;
+    /**
+     * Show success message
+     */
+    showSuccessMessage(message) {
+        this.showToast(message, 'success');
+    }
 
-            const dataValue = valueElement.dataset.value;
-            const dataFormat = valueElement.dataset.format;
+    /**
+     * Show error message
+     */
+    showErrorMessage(message) {
+        this.showToast(message, 'error');
+    }
 
-            if (dataValue && dataFormat) {
-                const numValue = parseFloat(dataValue);
-                let formattedValue = '';
+    /**
+     * Show toast notification
+     */
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
 
-                switch (dataFormat) {
-                    case 'currency':
-                        formattedValue = `$${numValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-                        break;
-                    case 'percentage':
-                        formattedValue = `${numValue.toFixed(2)}%`;
-                        break;
-                    default:
-                        formattedValue = numValue.toLocaleString('en-US');
-                }
+        const container = document.getElementById('toast-container') || document.body;
+        container.appendChild(toast);
 
-                valueElement.textContent = formattedValue;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+
+    /**
+     * Cleanup when page unloads
+     */
+    cleanup() {
+        this.stopPeriodicRefresh();
+
+        // Dispose charts
+        Object.values(this.charts).forEach(chart => {
+            if (chart && chart.destroy) {
+                chart.destroy();
             }
         });
     }
+}
 
-    function renderPoolsGrid() {
-        const poolsGrid = document.getElementById('pools-grid');
-        if (!poolsGrid || !state.currentData?.pools) return;
+// Initialize dashboard when page loads
+const liquidityDashboard = new LiquidityDashboard();
 
-        // Apply filters
-        let filteredPools = [...state.currentData.pools];
-
-        // Search filter
-        if (state.filters.poolSearch) {
-            const searchTerm = state.filters.poolSearch.toLowerCase();
-            filteredPools = filteredPools.filter(pool =>
-                pool.token1Symbol.toLowerCase().includes(searchTerm) ||
-                pool.token2Symbol.toLowerCase().includes(searchTerm) ||
-                pool.dexName.toLowerCase().includes(searchTerm)
-            );
-        }
-
-        // DEX filter
-        if (state.filters.dexFilter) {
-            filteredPools = filteredPools.filter(pool =>
-                pool.dexName.toLowerCase() === state.filters.dexFilter
-            );
-        }
-
-        // Sort
-        filteredPools.sort((a, b) => {
-            switch (state.filters.sortBy) {
-                case 'apy':
-                    return b.apy - a.apy;
-                case 'tvl':
-                    return b.totalValueLocked - a.totalValueLocked;
-                case 'volume':
-                    return b.volume24h - a.volume24h;
-                default:
-                    return b.apy - a.apy;
-            }
-        });
-
-        // Update grid
-        const existingCards = poolsGrid.querySelectorAll('.pool-card');
-        existingCards.forEach(card => {
-            if (!filteredPools.find(pool => pool.id == card.dataset.poolId)) {
-                card.style.display = 'none';
-            } else {
-                card.style.display = 'block';
-            }
-        });
-    }
-
-    function renderTopPoolsTable() {
-        const tableBody = document.getElementById('pools-table-body');
-        if (!tableBody || !state.currentData?.pools) return;
-
-        // Table is already rendered server-side, just ensure it's visible
-        const table = document.getElementById('pools-table');
-        if (table) {
-            table.style.display = 'table';
-        }
-    }
-
-    function renderPositionsTable() {
-        // Positions table is rendered server-side
-        // Add any client-side enhancements here
-        const positionRows = document.querySelectorAll('.position-row');
-        positionRows.forEach(row => {
-            row.addEventListener('click', function (e) {
-                if (!e.target.closest('button') && !e.target.closest('a')) {
-                    const positionId = this.dataset.positionId;
-                    viewPosition(positionId);
-                }
-            });
-        });
-    }
-
-    function renderTransactionHistory(data) {
-        const tableBody = document.getElementById('transactions-table-body');
-        if (!tableBody || !data?.transactions) return;
-
-        // Update pagination
-        state.pagination.totalPages = data.totalPages || 1;
-        updatePaginationControls();
-
-        // Transactions are rendered server-side initially
-        // This function handles AJAX updates
-    }
-
-    // ================================================
-    // CHARTS INITIALIZATION
-    // ================================================
-    function initializeCharts() {
-        try {
-            // TVL Trend Chart
-            initializeTVLChart();
-
-            // Volume Chart
-            initializeVolumeChart();
-
-            // Pool Distribution Chart
-            initializePoolDistributionChart();
-
-            // APY Trends Chart
-            initializeAPYTrendsChart();
-
-        } catch (error) {
-            console.error('❌ Error initializing charts:', error);
-        }
-    }
-
-    function initializeMan
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    liquidityDashboard.cleanup();
+});
