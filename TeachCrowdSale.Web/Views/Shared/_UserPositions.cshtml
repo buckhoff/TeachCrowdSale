@@ -1,209 +1,170 @@
 ﻿@model TeachCrowdSale.Core.Models.UserStakingInfoModel
 
-<div class="user-positions">
-    <div class="positions-header">
-        <h3 class="positions-title">Your Staking Positions</h3>
-        <div class="positions-actions">
-            <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.refreshUserData()">
-                <span class="btn-icon">🔄</span>
-                <span class="btn-text">Refresh</span>
-            </button>
-            <button class="btn btn-primary btn-sm" onclick="StakingDashboard.openStakeDialog()">
-                <span class="btn-icon">➕</span>
-                <span class="btn-text">New Position</span>
-            </button>
+@if (Model?.StakePositions?.Any() == true)
+{
+    <div class="positions-summary">
+        <div class="summary-stats">
+            <div class="summary-stat">
+                <span class="stat-label">Total Staked</span>
+                <span class="stat-value">$@(Model.TotalStaked.ToString("N2"))</span>
+            </div>
+            <div class="summary-stat">
+                <span class="stat-label">Claimable Rewards</span>
+                <span class="stat-value highlight">$@(Model.ClaimableRewards.ToString("N2"))</span>
+            </div>
+            <div class="summary-stat">
+                <span class="stat-label">Total Earned</span>
+                <span class="stat-value">$@(Model.TotalRewards.ToString("N2"))</span>
+            </div>
+            <div class="summary-stat">
+                <span class="stat-label">Monthly Projection</span>
+                <span class="stat-value">$@(Model.ProjectedMonthlyRewards.ToString("N2"))</span>
+            </div>
         </div>
+
+        @if (Model.ClaimableRewards > 0)
+        {
+            <div class="claim-rewards-section">
+                <button class="btn btn-primary claim-all-btn" onclick="StakingDashboard.claimAllRewards()">
+                    <span class="btn-icon">💰</span>
+                    <span class="btn-text">Claim All Rewards ($@(Model.ClaimableRewards.ToString("N2")))</span>
+                </button>
+            </div>
+        }
     </div>
 
-    @if (Model?.StakePositions?.Any() == true)
-    {
-        <div class="positions-summary">
-            <div class="summary-stats">
-                <div class="summary-stat">
-                    <span class="stat-label">Total Staked</span>
-                    <span class="stat-value">$@(Model.TotalStaked.ToString("N2"))</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-label">Claimable Rewards</span>
-                    <span class="stat-value highlight">$@(Model.ClaimableRewards.ToString("N2"))</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-label">Total Earned</span>
-                    <span class="stat-value">$@(Model.TotalRewards.ToString("N2"))</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-label">Monthly Projection</span>
-                    <span class="stat-value">$@(Model.ProjectedMonthlyRewards.ToString("N2"))</span>
-                </div>
-            </div>
-
-            @if (Model.ClaimableRewards > 0)
-            {
-                <div class="claim-rewards-section">
-                    <button class="btn btn-primary claim-all-btn" onclick="StakingDashboard.claimAllRewards()">
-                        <span class="btn-icon">💰</span>
-                        <span class="btn-text">Claim All Rewards ($@(Model.ClaimableRewards.ToString("N2")))</span>
-                    </button>
-                </div>
-            }
-        </div>
-
-        <div class="positions-list">
-            @foreach (var position in Model.StakePositions)
-            {
-                <div class="position-card @(position.IsActive ? "active" : "completed")" data-position-id="@position.Id">
-                    <div class="position-header">
-                        <div class="position-info">
-                            <h4 class="position-pool">@position.PoolName</h4>
-                            <span class="position-status @(position.IsActive ? "active" : "completed")">
-                                @(position.IsActive ? "Active" : "Completed")
-                            </span>
-                        </div>
-                        <div class="position-amount">
-                            <span class="amount-value">@position.StakedAmount.ToString("N0") TEACH</span>
-                            <span class="amount-usd">$@position.StakedAmountUSD.ToString("N2")</span>
-                        </div>
+    <div class="positions-list">
+        @foreach (var position in Model.StakePositions)
+        {
+            <div class="position-card @(position.IsActive ? "active" : "completed")" data-position-id="@position.Id">
+                <div class="position-header">
+                    <div class="position-info">
+                        <h4 class="position-pool">@position.PoolName</h4>
+                        <span class="position-status @(position.IsActive ? "active" : "completed")">
+                            @(position.IsActive ? "Active" : "Completed")
+                        </span>
                     </div>
-
-                    <div class="position-details">
-                        <div class="detail-row">
-                            <div class="detail-item">
-                                <span class="detail-label">APY</span>
-                                <span class="detail-value">@position.CurrentAPY.ToString("F1")%</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Lock Period</span>
-                                <span class="detail-value">@position.DaysRemaining days</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Started</span>
-                                <span class="detail-value">@position.StakeDate.ToString("MMM dd, yyyy")</span>
-                            </div>
-                        </div>
-
-                        @if (position.IsActive)
-                        {
-                            <div class="detail-row">
-                                <div class="detail-item">
-                                    <span class="detail-label">Unlock Date</span>
-                                    <span class="detail-value">@position.UnlockDate.ToString("MMM dd, yyyy")</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Time Remaining</span>
-                                    <span class="detail-value countdown" data-unlock-date="@position.UnlockDate.ToString("yyyy-MM-ddTHH:mm:ssZ")">
-                                        @((position.UnlockDate - DateTime.UtcNow).Days) days
-                                    </span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Progress</span>
-                                    <div class="progress-container">
-                                        @{
-                                            var progressPercent = Math.Min(100, (DateTime.UtcNow - position.StakeDate).TotalDays / position.LockPeriodDays * 100);
-                                        }
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: @progressPercent.ToString("F1")%"></div>
-                                        </div>
-                                        <span class="progress-text">@progressPercent.ToString("F0")%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        }
+                    <div class="position-amount">
+                        <span class="amount-value">@position.StakedAmount.ToString("N0") TEACH</span>
+                        <span class="amount-usd">$@position.StakedAmountUSD.ToString("N2")</span>
                     </div>
+                </div>
 
-                    <div class="position-rewards">
-                        <div class="rewards-row">
-                            <div class="reward-item">
-                                <span class="reward-label">Accrued Rewards</span>
-                                <span class="reward-value">$@position.AccruedRewards.ToString("N2")</span>
-                            </div>
-                            <div class="reward-item">
-                                <span class="reward-label">Your Share (50%)</span>
-                                <span class="reward-value">$@((position.AccruedRewards * 0.5m).ToString("N2"))</span>
-                            </div>
-                            <div class="reward-item">
-                                <span class="reward-label">School Share (50%)</span>
-                                <span class="reward-value education-impact">$@((position.AccruedRewards * 0.5m).ToString("N2"))</span>
-                            </div>
+                <div class="position-details">
+                    <div class="detail-row">
+                        <div class="detail-item">
+                            <span class="detail-label">APY</span>
+                            <span class="detail-value">@position.CurrentAPY.ToString("F1")%</span>
                         </div>
-
-                        @if (position.ClaimableRewards > 0)
-                        {
-                            <div class="rewards-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.claimPositionRewards('@position.Id')">
-                                    <span class="btn-icon">💰</span>
-                                    <span class="btn-text">Claim $@position.ClaimableRewards.ToString("N2")</span>
-                                </button>
-                            </div>
-                        }
+                        <div class="detail-item">
+                            <span class="detail-label">Lock Period</span>
+                            <span class="detail-value">@position.LockPeriodDays days</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Started</span>
+                            <span class="detail-value">@position.StakeDate.ToString("MMM dd, yyyy")</span>
+                        </div>
                     </div>
 
                     @if (position.IsActive)
                     {
-                        <div class="position-actions">
-                            <button class="btn btn-outline btn-sm" onclick="StakingDashboard.viewPositionDetails('@position.Id')">
-                                <span class="btn-icon">📊</span>
-                                <span class="btn-text">Details</span>
-                            </button>
-
-                            @if (position.CanCompound)
-                            {
-                                <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.compoundRewards('@position.Id')">
-                                    <span class="btn-icon">🔄</span>
-                                    <span class="btn-text">Compound</span>
-                                </button>
-                            }
-
-                            @if (position.CanWithdrawEarly)
-                            {
-                                <button class="btn btn-warning btn-sm" onclick="StakingDashboard.earlyWithdraw('@position.Id')">
-                                    <span class="btn-icon">⚠️</span>
-                                    <span class="btn-text">Early Withdraw</span>
-                                </button>
-                            }
-                        </div>
-                    }
-
-                    @if (position.SchoolBeneficiary != null)
-                    {
-                        <div class="position-school">
-                            <div class="school-beneficiary">
-                                <span class="school-icon">🏫</span>
-                                <div class="school-info">
-                                    <span class="school-name">@position.SchoolBeneficiary.Name</span>
-                                    <span class="school-impact">$@((position.AccruedRewards * 0.5m).ToString("N2")) contributed</span>
+                        <div class="detail-row">
+                            <div class="detail-item">
+                                <span class="detail-label">Unlock Date</span>
+                                <span class="detail-value">@position.UnlockDate.ToString("MMM dd, yyyy")</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Time Remaining</span>
+                                <span class="detail-value countdown" data-unlock-date="@position.UnlockDate.ToString("yyyy-MM-ddTHH:mm:ssZ")">
+                                    @position.DaysRemaining days
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Progress</span>
+                                <div class="progress-container">
+                                    @{
+                                        var progressPercent = Math.Min(100, (DateTime.UtcNow - position.StakeDate).TotalDays / position.LockPeriodDays * 100);
+                                    }
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: @progressPercent.ToString("F1")%"></div>
+                                    </div>
+                                    <span class="progress-text">@progressPercent.ToString("F0")%</span>
                                 </div>
                             </div>
                         </div>
                     }
                 </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="positions-empty">
-            <div class="empty-state">
-                <div class="empty-icon">📊</div>
-                <h4 class="empty-title">No Staking Positions Yet</h4>
-                <p class="empty-description">
-                    Start staking TEACH tokens to earn rewards and support education.
-                    Choose from multiple pools with different lock periods and APY rates.
-                </p>
-                <div class="empty-actions">
-                    <button class="btn btn-primary" onclick="StakingDashboard.openStakeDialog()">
-                        <span class="btn-icon">⚡</span>
-                        <span class="btn-text">Start Staking</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="StakingDashboard.scrollToPools()">
-                        <span class="btn-icon">👀</span>
-                        <span class="btn-text">View Pools</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    }
 
-    @if (Model?.RewardHistory?.Any() == true)
+                <div class="position-rewards">
+                    <div class="rewards-row">
+                        <div class="reward-item">
+                            <span class="reward-label">Accrued Rewards</span>
+                            <span class="reward-value">$@position.AccruedRewards.ToString("N2")</span>
+                        </div>
+                        <div class="reward-item">
+                            <span class="reward-label">Your Share (50%)</span>
+                            <span class="reward-value">$@((position.AccruedRewards * 0.5m).ToString("N2"))</span>
+                        </div>
+                        <div class="reward-item">
+                            <span class="reward-label">School Share (50%)</span>
+                            <span class="reward-value education-impact">$@((position.AccruedRewards * 0.5m).ToString("N2"))</span>
+                        </div>
+                    </div>
+
+                    @if (position.ClaimableRewards > 0)
+                    {
+                        <div class="rewards-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.claimPositionRewards('@position.Id')">
+                                <span class="btn-icon">💰</span>
+                                <span class="btn-text">Claim $@position.ClaimableRewards.ToString("N2")</span>
+                            </button>
+                        </div>
+                    }
+                </div>
+
+                @if (position.IsActive)
+                {
+                    <div class="position-actions">
+                        <button class="btn btn-outline btn-sm" onclick="StakingDashboard.viewPositionDetails('@position.Id')">
+                            <span class="btn-icon">📊</span>
+                            <span class="btn-text">Details</span>
+                        </button>
+
+                        @if (position.CanCompound)
+                        {
+                            <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.compoundRewards('@position.Id')">
+                                <span class="btn-icon">🔄</span>
+                                <span class="btn-text">Compound</span>
+                            </button>
+                        }
+
+                        @if (position.CanWithdrawEarly)
+                        {
+                            <button class="btn btn-warning btn-sm" onclick="StakingDashboard.earlyWithdraw('@position.Id')">
+                                <span class="btn-icon">⚠️</span>
+                                <span class="btn-text">Early Withdraw</span>
+                            </button>
+                        }
+                    </div>
+                }
+
+                @if (position.SchoolBeneficiary != null)
+                {
+                    <div class="position-school">
+                        <div class="school-beneficiary">
+                            <span class="school-icon">🏫</span>
+                            <div class="school-info">
+                                <span class="school-name">@position.SchoolBeneficiary.Name</span>
+                                <span class="school-impact">$@((position.AccruedRewards * 0.5m).ToString("N2")) contributed</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @if (Model.RewardHistory?.Any() == true)
     {
         <div class="rewards-history">
             <div class="history-header">
@@ -230,4 +191,27 @@
             </div>
         </div>
     }
-</div>
+}
+else
+{
+    <div class="positions-empty">
+        <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <h4 class="empty-title">No Staking Positions Yet</h4>
+            <p class="empty-description">
+                Start staking TEACH tokens to earn rewards and support education.
+                Choose from multiple pools with different lock periods and APY rates.
+            </p>
+            <div class="empty-actions">
+                <button class="btn btn-primary" onclick="StakingDashboard.openStakeDialog()">
+                    <span class="btn-icon">⚡</span>
+                    <span class="btn-text">Start Staking</span>
+                </button>
+                <button class="btn btn-secondary" onclick="StakingDashboard.scrollToPools()">
+                    <span class="btn-icon">👀</span>
+                    <span class="btn-text">View Pools</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}

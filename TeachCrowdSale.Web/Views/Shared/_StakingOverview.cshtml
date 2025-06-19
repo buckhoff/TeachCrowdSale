@@ -1,120 +1,148 @@
 ﻿@model TeachCrowdSale.Core.Models.StakingStatsModel
 
-<div class="staking-overview">
-    <div class="overview-header">
-        <h3 class="overview-title">Staking Overview</h3>
-        <button class="btn btn-secondary btn-sm refresh-btn" onclick="StakingDashboard.refreshOverview()">
-            <span class="btn-icon">🔄</span>
-            <span class="btn-text">Refresh</span>
-        </button>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <h3 class="stat-label">Total Value Locked</h3>
+            <span class="stat-icon">🏦</span>
+        </div>
+        <div class="stat-value" data-metric="totalValueLocked" data-value="@(Model?.TotalValueLocked ?? 0)" data-formatter="currency">
+            $@((Model?.TotalValueLocked ?? 0).ToString("N0"))
+        </div>
+        <div class="stat-description">Across all staking pools</div>
     </div>
 
-    <div class="overview-stats">
-        <div class="stat-row">
-            <div class="stat-item">
-                <span class="stat-label">Total Value Locked</span>
-                <span class="stat-value highlight" data-metric="totalValueLocked" data-value="@(Model?.TotalValueLocked ?? 0)">
-                    $@((Model?.TotalValueLocked ?? 0).ToString("N0"))
-                </span>
-                <span class="stat-change positive">
-                    <span class="change-icon">↗</span>
-                    <span class="change-text">+5.2% this week</span>
-                </span>
-            </div>
-
-            <div class="stat-item">
-                <span class="stat-label">Average APY</span>
-                <span class="stat-value" data-metric="averageAPY" data-value="@(Model?.AverageAPY ?? 0)">
-                    @((Model?.AverageAPY ?? 0).ToString("F1"))%
-                </span>
-                <span class="stat-description">Weighted by TVL</span>
-            </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <h3 class="stat-label">Average APY</h3>
+            <span class="stat-icon">📈</span>
         </div>
-
-        <div class="stat-row">
-            <div class="stat-item">
-                <span class="stat-label">Active Stakers</span>
-                <span class="stat-value" data-metric="activeStakers" data-value="@(Model?.ActiveStakers ?? 0)">
-                    @((Model?.ActiveStakers ?? 0).ToString("N0"))
-                </span>
-                <span class="stat-change positive">
-                    <span class="change-icon">↗</span>
-                    <span class="change-text">+12 today</span>
-                </span>
-            </div>
-
-            <div class="stat-item">
-                <span class="stat-label">Total Rewards Distributed</span>
-                <span class="stat-value" data-metric="totalRewards" data-value="@(Model?.TotalRewardsDistributed ?? 0)">
-                    $@((Model?.TotalRewardsDistributed ?? 0).ToString("N0"))
-                </span>
-                <span class="stat-description">All-time</span>
-            </div>
+        <div class="stat-value" data-metric="averageAPY" data-value="@(Model?.AverageAPY ?? 0)" data-formatter="percentage">
+            @((Model?.AverageAPY ?? 0).ToString("F1"))%
         </div>
-
-        <div class="stat-row">
-            <div class="stat-item">
-                <span class="stat-label">Schools Supported</span>
-                <span class="stat-value education-impact" data-metric="schoolsSupported" data-value="@(Model?.SchoolsSupported ?? 0)">
-                    @((Model?.SchoolsSupported ?? 0).ToString("N0"))
-                </span>
-                <span class="stat-description">Educational institutions</span>
-            </div>
-
-            <div class="stat-item">
-                <span class="stat-label">School Funding</span>
-                <span class="stat-value education-impact" data-metric="schoolFunding" data-value="@(Model?.TotalSchoolFunding ?? 0)">
-                    $@((Model?.TotalSchoolFunding ?? 0).ToString("N0"))
-                </span>
-                <span class="stat-description">50% of all rewards</span>
-            </div>
-        </div>
-
-        <div class="stat-row">
-            <div class="stat-item full-width">
-                <span class="stat-label">Staking Participation Rate</span>
-                <div class="participation-meter">
-                    <div class="meter-bar">
-                        <div class="meter-fill" style="width: @((Model?.StakingParticipation ?? 0).ToString("F1"))%"></div>
-                    </div>
-                    <span class="meter-value">@((Model?.StakingParticipation ?? 0).ToString("F1"))%</span>
-                </div>
-                <span class="stat-description">Of circulating supply staked</span>
-            </div>
-        </div>
+        <div class="stat-description">Weighted by pool size</div>
     </div>
 
+    <div class="stat-card">
+        <div class="stat-header">
+            <h3 class="stat-label">Active Stakers</h3>
+            <span class="stat-icon">👥</span>
+        </div>
+        <div class="stat-value" data-metric="activeStakers" data-value="@(Model?.ActiveStakers ?? 0)" data-formatter="number">
+            @((Model?.ActiveStakers ?? 0).ToString("N0"))
+        </div>
+        <div class="stat-description">Currently staking</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <h3 class="stat-label">Schools Supported</h3>
+            <span class="stat-icon">🏫</span>
+        </div>
+        <div class="stat-value" data-metric="schoolsSupported" data-value="@(Model?.SchoolsSupported ?? 0)" data-formatter="number">
+            @((Model?.SchoolsSupported ?? 0).ToString("N0"))
+        </div>
+        <div class="stat-description">Through staking rewards</div>
+        <div class="stat-additional">
+            <span class="additional-text">$@((Model?.TotalSchoolFunding ?? 0).ToString("N0")) distributed</span>
+        </div>
+    </div>
+</div>
+
+<div class="overview-details">
     <div class="overview-highlights">
         <div class="highlight-card">
             <div class="highlight-icon">🎯</div>
             <div class="highlight-content">
                 <h4>Education First</h4>
                 <p>50% of all staking rewards automatically support your chosen school</p>
+                <div class="highlight-stat">
+                    <span class="highlight-value">$@((Model?.TotalSchoolFunding ?? 0).ToString("N0"))</span>
+                    <span class="highlight-label">Total Distributed</span>
+                </div>
             </div>
         </div>
 
         <div class="highlight-card">
             <div class="highlight-icon">🔒</div>
             <div class="highlight-content">
-                <h4>Flexible Options</h4>
-                <p>Multiple lock periods from 30 days to 1 year with increasing rewards</p>
+                <h4>Flexible Staking</h4>
+                <p>Multiple lock periods and reward structures available</p>
+                <div class="highlight-stat">
+                    <span class="highlight-value">@((Model?.AverageAPY ?? 0).ToString("F1"))%</span>
+                    <span class="highlight-label">Average APY</span>
+                </div>
             </div>
         </div>
 
         <div class="highlight-card">
             <div class="highlight-icon">⚡</div>
             <div class="highlight-content">
-                <h4>Auto-Compound</h4>
-                <p>Rewards can be automatically restaked to maximize your returns</p>
+                <h4>Growing Community</h4>
+                <p>Join thousands of users supporting education through staking</p>
+                <div class="highlight-stat">
+                    <span class="highlight-value">@((Model?.ActiveStakers ?? 0).ToString("N0"))</span>
+                    <span class="highlight-label">Active Stakers</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overview-metrics">
+        <div class="metrics-row">
+            <div class="metric-item">
+                <span class="metric-label">Total Rewards Distributed</span>
+                <span class="metric-value">$@((Model?.TotalRewardsDistributed ?? 0).ToString("N0"))</span>
+                <span class="metric-description">All-time</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">Staking Participation</span>
+                <div class="participation-meter">
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: @((Model?.StakingParticipation ?? 0).ToString("F1"))%"></div>
+                    </div>
+                    <span class="meter-value">@((Model?.StakingParticipation ?? 0).ToString("F1"))%</span>
+                </div>
+                <span class="metric-description">Of circulating supply</span>
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metric-item">
+                <span class="metric-label">Yearly School Funding</span>
+                <span class="metric-value">$@((Model?.YearlySchoolFunding ?? 0).ToString("N0"))</span>
+                <span class="metric-description">This year</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">Platform Status</span>
+                <div class="health-indicator excellent">
+                    <span class="health-dot"></span>
+                    <span class="health-text">Active</span>
+                </div>
+                <span class="metric-description">System operational</span>
             </div>
         </div>
     </div>
 
     <div class="overview-footer">
         <div class="next-reward-distribution">
-            <span class="distribution-label">Next Reward Distribution:</span>
-            <span class="distribution-time" id="next-distribution-time">Loading...</span>
-            <span class="distribution-countdown" id="distribution-countdown"></span>
+            <div class="distribution-info">
+                <span class="distribution-label">Platform Impact:</span>
+                <span class="distribution-time">
+                    Supporting @((Model?.SchoolsSupported ?? 0).ToString("N0")) schools worldwide
+                </span>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="btn btn-outline btn-sm" onclick="StakingDashboard.refreshOverview()" id="refresh-overview-btn">
+                <span class="btn-icon">🔄</span>
+                <span class="btn-text">Refresh</span>
+            </button>
+            <button class="btn btn-link btn-sm" onclick="StakingDashboard.viewDetailedStats()">
+                <span class="btn-text">Detailed Stats</span>
+                <span class="btn-icon">📊</span>
+            </button>
         </div>
     </div>
 </div>

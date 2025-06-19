@@ -129,7 +129,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "liquidity_manage",
-    pattern: "liquidity/manage/{action=Index}/{id?}",
+    pattern: "liquidity/manage/{action}/{id?}",
     defaults: new { controller = "Liquidity", action = "Manage" });
 
 app.MapStaticAssets();

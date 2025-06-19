@@ -1,233 +1,269 @@
 ﻿@model TeachCrowdSale.Core.Models.UserStakingInfoModel
+@{
+    var stakingPools = ViewBag.StakingPools as List<TeachCrowdSale.Core.Models.StakingPoolDisplayModel> ?? new List<TeachCrowdSale.Core.Models.StakingPoolDisplayModel>();
+}
 
-<div class="user-positions">
-    <div class="positions-header">
-        <h3 class="positions-title">Your Staking Positions</h3>
-        <div class="positions-actions">
-            <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.refreshUserData()">
-                <span class="btn-icon">🔄</span>
-                <span class="btn-text">Refresh</span>
+<div class="calculator-container">
+    <div class="calculator-inputs">
+        <div class="input-group">
+            <label for="calc-amount">Stake Amount (TEACH)</label>
+            <input type="number" id="calc-amount" class="form-input" placeholder="0" min="0" step="1" oninput="StakingDashboard.updateCalculator()">
+            <div class="input-help">
+                <span class="help-text">Enter the amount of TEACH tokens you want to stake</span>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="calc-pool">Staking Pool</label>
+            <select id="calc-pool" class="form-select" onchange="StakingDashboard.updateCalculator()">
+                <option value="">Select a pool</option>
+                @foreach (var pool in stakingPools)
+                {
+                    <option value="@pool.Id"
+                            data-apy="@(pool.BaseAPY + pool.BonusAPY)"
+                            data-lock-days="@pool.LockPeriodDays"
+                            data-min="@pool.MinStakeAmount"
+                            data-max="@pool.MaxStakeAmount"
+                            data-name="@pool.Name">
+                        @pool.Name (@(pool.BaseAPY + pool.BonusAPY)% APY - @pool.LockPeriodDays days)
+                    </option>
+                }
+            </select>
+            <div class="input-help">
+                <span class="help-text">Choose the staking pool that matches your investment strategy</span>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="calc-price">TEACH Price (USD)</label>
+            <input type="number" id="calc-price" class="form-input" placeholder="0.00" min="0" step="0.001" value="0.075" oninput="StakingDashboard.updateCalculator()">
+            <div class="input-help">
+                <span class="help-text">Current or projected TEACH token price</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="calculator-results" id="calculator-results" style="display: none;">
+        <div class="results-header">
+            <h4 class="results-title">Projected Rewards</h4>
+            <div class="results-disclaimer">
+                <span class="disclaimer-icon">ⓘ</span>
+                <span class="disclaimer-text">Projections are estimates based on current rates and may vary</span>
+            </div>
+        </div>
+
+        <div class="results-grid">
+            <div class="result-card daily">
+                <h4>Daily Rewards</h4>
+                <div class="result-split">
+                    <div class="split-item">
+                        <span class="split-label">Your Share (50%)</span>
+                        <span class="split-value" id="daily-user-reward">$0</span>
+                        <span class="split-tokens" id="daily-user-tokens">0 TEACH</span>
+                    </div>
+                    <div class="split-item">
+                        <span class="split-label">School Share (50%)</span>
+                        <span class="split-value education-impact" id="daily-school-reward">$0</span>
+                        <span class="split-tokens" id="daily-school-tokens">0 TEACH</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card monthly">
+                <h4>Monthly Projection</h4>
+                <div class="result-split">
+                    <div class="split-item">
+                        <span class="split-label">Your Earnings</span>
+                        <span class="split-value" id="monthly-user-reward">$0</span>
+                        <span class="split-tokens" id="monthly-user-tokens">0 TEACH</span>
+                    </div>
+                    <div class="split-item">
+                        <span class="split-label">School Impact</span>
+                        <span class="split-value education-impact" id="monthly-school-reward">$0</span>
+                        <span class="split-tokens" id="monthly-school-tokens">0 TEACH</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card yearly">
+                <h4>Yearly Projection</h4>
+                <div class="result-split">
+                    <div class="split-item">
+                        <span class="split-label">Total Earnings</span>
+                        <span class="split-value" id="yearly-user-reward">$0</span>
+                        <span class="split-tokens" id="yearly-user-tokens">0 TEACH</span>
+                    </div>
+                    <div class="split-item">
+                        <span class="split-label">School Funding</span>
+                        <span class="split-value education-impact" id="yearly-school-reward">$0</span>
+                        <span class="split-tokens" id="yearly-school-tokens">0 TEACH</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculator-summary">
+            <div class="summary-item">
+                <span class="summary-label">Total APY:</span>
+                <span class="summary-value" id="calc-total-apy">0%</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Lock Period:</span>
+                <span class="summary-value" id="calc-lock-period">0 days</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Unlock Date:</span>
+                <span class="summary-value" id="calc-unlock-date">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Total Investment:</span>
+                <span class="summary-value" id="calc-total-investment">$0</span>
+            </div>
+        </div>
+
+        <div class="calculator-breakdown">
+            <h5 class="breakdown-title">Compound Interest Breakdown</h5>
+            <div class="breakdown-chart">
+                <div class="chart-container">
+                    <canvas id="rewards-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="breakdown-legend">
+                <div class="legend-item">
+                    <span class="legend-color user-rewards"></span>
+                    <span class="legend-label">Your Cumulative Rewards</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color school-impact"></span>
+                    <span class="legend-label">School Impact Cumulative</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculator-actions">
+            <button class="btn btn-primary" onclick="StakingDashboard.stakeWithCalculatedAmount()" id="calc-stake-btn" disabled>
+                <span class="btn-icon">⚡</span>
+                <span class="btn-text">Stake This Amount</span>
             </button>
-            <button class="btn btn-primary btn-sm" onclick="StakingDashboard.openStakeDialog()">
-                <span class="btn-icon">➕</span>
-                <span class="btn-text">New Position</span>
+            <button class="btn btn-secondary" onclick="StakingDashboard.saveCalculation()">
+                <span class="btn-icon">💾</span>
+                <span class="btn-text">Save Calculation</span>
+            </button>
+            <button class="btn btn-outline" onclick="StakingDashboard.shareCalculation()">
+                <span class="btn-icon">📤</span>
+                <span class="btn-text">Share</span>
             </button>
         </div>
     </div>
 
-    @if (Model?.StakePositions?.Any() == true)
-    {
-        <div class="positions-summary">
-            <div class="summary-stats">
-                <div class="summary-stat">
-                    <span class="stat-label">Total Staked</span>
-                    <span class="stat-value">$@(Model.TotalStaked.ToString("N2"))</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-label">Claimable Rewards</span>
-                    <span class="stat-value highlight">$@(Model.ClaimableRewards.ToString("N2"))</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-label">Total Earned</span>
-                    <span class="stat-value">$@(Model.TotalRewards.ToString("N2"))</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-label">Monthly Projection</span>
-                    <span class="stat-value">$@(Model.ProjectedMonthlyRewards.ToString("N2"))</span>
-                </div>
-            </div>
-
-            @if (Model.ClaimableRewards > 0)
-            {
-                <div class="claim-rewards-section">
-                    <button class="btn btn-primary claim-all-btn" onclick="StakingDashboard.claimAllRewards()">
-                        <span class="btn-icon">💰</span>
-                        <span class="btn-text">Claim All Rewards ($@(Model.ClaimableRewards.ToString("N2")))</span>
-                    </button>
-                </div>
-            }
-        </div>
-
-        <div class="positions-list">
-            @foreach (var position in Model.StakePositions)
-            {
-                <div class="position-card @(position.IsActive ? "active" : "completed")" data-position-id="@position.Id">
-                    <div class="position-header">
-                        <div class="position-info">
-                            <h4 class="position-pool">@position.PoolName</h4>
-                            <span class="position-status @(position.IsActive ? "active" : "completed")">
-                                @(position.IsActive ? "Active" : "Completed")
-                            </span>
-                        </div>
-                        <div class="position-amount">
-                            <span class="amount-value">@position.StakedAmount.ToString("N0") TEACH</span>
-                            <span class="amount-usd">$@position.StakedAmountUSD.ToString("N2")</span>
-                        </div>
+    <div class="calculator-help" id="calculator-help">
+        <div class="help-section">
+            <h4 class="help-title">How to Use the Calculator</h4>
+            <div class="help-steps">
+                <div class="help-step">
+                    <span class="step-number">1</span>
+                    <div class="step-content">
+                        <h5>Enter Stake Amount</h5>
+                        <p>Input the number of TEACH tokens you want to stake</p>
                     </div>
-
-                    <div class="position-details">
-                        <div class="detail-row">
-                            <div class="detail-item">
-                                <span class="detail-label">APY</span>
-                                <span class="detail-value">@position.APY.ToString("F1")%</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Lock Period</span>
-                                <span class="detail-value">@position.LockPeriodDays days</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Started</span>
-                                <span class="detail-value">@position.StakeDate.ToString("MMM dd, yyyy")</span>
-                            </div>
-                        </div>
-
-                        @if (position.IsActive)
-                        {
-                            <div class="detail-row">
-                                <div class="detail-item">
-                                    <span class="detail-label">Unlock Date</span>
-                                    <span class="detail-value">@position.UnlockDate.ToString("MMM dd, yyyy")</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Time Remaining</span>
-                                    <span class="detail-value countdown" data-unlock-date="@position.UnlockDate.ToString("yyyy-MM-ddTHH:mm:ssZ")">
-                                        @((position.UnlockDate - DateTime.UtcNow).Days) days
-                                    </span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Progress</span>
-                                    <div class="progress-container">
-                                        @{
-                                            var progressPercent = Math.Min(100, (DateTime.UtcNow - position.StakeDate).TotalDays / position.LockPeriodDays * 100);
-                                        }
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: @progressPercent.ToString("F1")%"></div>
-                                        </div>
-                                        <span class="progress-text">@progressPercent.ToString("F0")%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <div class="position-rewards">
-                        <div class="rewards-row">
-                            <div class="reward-item">
-                                <span class="reward-label">Accrued Rewards</span>
-                                <span class="reward-value">$@position.AccruedRewards.ToString("N2")</span>
-                            </div>
-                            <div class="reward-item">
-                                <span class="reward-label">Your Share (50%)</span>
-                                <span class="reward-value">$@((position.AccruedRewards * 0.5m).ToString("N2"))</span>
-                            </div>
-                            <div class="reward-item">
-                                <span class="reward-label">School Share (50%)</span>
-                                <span class="reward-value education-impact">$@((position.AccruedRewards * 0.5m).ToString("N2"))</span>
-                            </div>
-                        </div>
-
-                        @if (position.ClaimableRewards > 0)
-                        {
-                            <div class="rewards-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.claimPositionRewards('@position.Id')">
-                                    <span class="btn-icon">💰</span>
-                                    <span class="btn-text">Claim $@position.ClaimableRewards.ToString("N2")</span>
-                                </button>
-                            </div>
-                        }
-                    </div>
-
-                    @if (position.IsActive)
-                    {
-                        <div class="position-actions">
-                            <button class="btn btn-outline btn-sm" onclick="StakingDashboard.viewPositionDetails('@position.Id')">
-                                <span class="btn-icon">📊</span>
-                                <span class="btn-text">Details</span>
-                            </button>
-
-                            @if (position.CanCompound)
-                            {
-                                <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.compoundRewards('@position.Id')">
-                                    <span class="btn-icon">🔄</span>
-                                    <span class="btn-text">Compound</span>
-                                </button>
-                            }
-
-                            @if (position.CanWithdrawEarly)
-                            {
-                                <button class="btn btn-warning btn-sm" onclick="StakingDashboard.earlyWithdraw('@position.Id')">
-                                    <span class="btn-icon">⚠️</span>
-                                    <span class="btn-text">Early Withdraw</span>
-                                </button>
-                            }
-                        </div>
-                    }
-
-                    @if (position.SchoolBeneficiary != null)
-                    {
-                        <div class="position-school">
-                            <div class="school-beneficiary">
-                                <span class="school-icon">🏫</span>
-                                <div class="school-info">
-                                    <span class="school-name">@position.SchoolBeneficiary.Name</span>
-                                    <span class="school-impact">$@((position.AccruedRewards * 0.5m).ToString("N2")) contributed</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
                 </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="positions-empty">
-            <div class="empty-state">
-                <div class="empty-icon">📊</div>
-                <h4 class="empty-title">No Staking Positions Yet</h4>
-                <p class="empty-description">
-                    Start staking TEACH tokens to earn rewards and support education.
-                    Choose from multiple pools with different lock periods and APY rates.
-                </p>
-                <div class="empty-actions">
-                    <button class="btn btn-primary" onclick="StakingDashboard.openStakeDialog()">
-                        <span class="btn-icon">⚡</span>
-                        <span class="btn-text">Start Staking</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="StakingDashboard.scrollToPools()">
-                        <span class="btn-icon">👀</span>
-                        <span class="btn-text">View Pools</span>
-                    </button>
+                <div class="help-step">
+                    <span class="step-number">2</span>
+                    <div class="step-content">
+                        <h5>Select Pool</h5>
+                        <p>Choose a staking pool based on lock period and APY</p>
+                    </div>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">3</span>
+                    <div class="step-content">
+                        <h5>Adjust Price</h5>
+                        <p>Modify the TEACH price for different scenarios</p>
+                    </div>
+                </div>
+                <div class="help-step">
+                    <span class="step-number">4</span>
+                    <div class="step-content">
+                        <h5>Review Results</h5>
+                        <p>See your projected rewards and education impact</p>
+                    </div>
                 </div>
             </div>
         </div>
-    }
 
-    @if (Model?.RewardHistory?.Any() == true)
-    {
-        <div class="rewards-history">
-            <div class="history-header">
-                <h4 class="history-title">Recent Reward Claims</h4>
-                <button class="btn btn-link btn-sm" onclick="StakingDashboard.viewFullHistory()">
-                    <span class="btn-text">View All</span>
-                    <span class="btn-icon">→</span>
-                </button>
-            </div>
-            <div class="history-list">
-                @foreach (var reward in Model.RewardHistory.Take(5))
-                {
-                    <div class="history-item">
-                        <div class="history-info">
-                            <span class="history-amount">$@reward.ClaimedAmount.ToString("N2")</span>
-                            <span class="history-date">@reward.ClaimDate.ToString("MMM dd, yyyy")</span>
-                        </div>
-                        <div class="history-details">
-                            <span class="history-pool">@reward.PoolName</span>
-                            <span class="history-type">@reward.RewardType</span>
-                        </div>
+        <div class="help-section">
+            <h4 class="help-title">Understanding the 50/50 Model</h4>
+            <div class="model-explanation">
+                <div class="model-visual">
+                    <div class="pie-chart">
+                        <div class="pie-slice user-slice" style="--slice-size: 50%"></div>
+                        <div class="pie-slice school-slice" style="--slice-size: 50%"></div>
                     </div>
-                }
+                    <div class="pie-labels">
+                        <div class="pie-label user-label">50% You</div>
+                        <div class="pie-label school-label">50% Schools</div>
+                    </div>
+                </div>
+                <div class="model-details">
+                    <p><strong>Your 50%:</strong> Goes directly to your wallet as rewards</p>
+                    <p><strong>School 50%:</strong> Automatically supports your chosen educational institution</p>
+                    <p><strong>Impact:</strong> Every stake creates sustainable education funding</p>
+                </div>
             </div>
         </div>
-    }
+
+        <div class="help-section">
+            <h4 class="help-title">Risk Considerations</h4>
+            <div class="risk-warnings">
+                <div class="risk-item">
+                    <span class="risk-icon">⚠️</span>
+                    <div class="risk-content">
+                        <h5>Market Risk</h5>
+                        <p>Token prices can fluctuate, affecting the USD value of your rewards</p>
+                    </div>
+                </div>
+                <div class="risk-item">
+                    <span class="risk-icon">🔒</span>
+                    <div class="risk-content">
+                        <h5>Lock Period</h5>
+                        <p>Tokens are locked for the selected period and cannot be withdrawn early in most pools</p>
+                    </div>
+                </div>
+                <div class="risk-item">
+                    <span class="risk-icon">📊</span>
+                    <div class="risk-content">
+                        <h5>APY Variability</h5>
+                        <p>Actual APY may vary based on pool performance and market conditions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="calculator-presets">
+        <h4 class="presets-title">Quick Presets</h4>
+        <div class="presets-grid">
+            <button class="preset-btn" onclick="StakingDashboard.applyPreset('conservative')" data-preset="conservative">
+                <span class="preset-icon">🛡️</span>
+                <div class="preset-content">
+                    <h5>Conservative</h5>
+                    <p>1,000 TEACH • 30 days</p>
+                </div>
+            </button>
+            <button class="preset-btn" onclick="StakingDashboard.applyPreset('balanced')" data-preset="balanced">
+                <span class="preset-icon">⚖️</span>
+                <div class="preset-content">
+                    <h5>Balanced</h5>
+                    <p>5,000 TEACH • 90 days</p>
+                </div>
+            </button>
+            <button class="preset-btn" onclick="StakingDashboard.applyPreset('aggressive')" data-preset="aggressive">
+                <span class="preset-icon">🚀</span>
+                <div class="preset-content">
+                    <h5>Aggressive</h5>
+                    <p>10,000 TEACH • 365 days</p>
+                </div>
+            </button>
+        </div>
+    </div>
 </div>

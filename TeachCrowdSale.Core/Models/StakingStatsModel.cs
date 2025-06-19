@@ -32,5 +32,8 @@ namespace TeachCrowdSale.Core.Models
 
         [Range(0, 100)]
         public decimal StakingParticipation { get; set; }
+
+        [Range(0, 100)]
+        public decimal YearlySchoolFunding { get; set; }
     }
 }

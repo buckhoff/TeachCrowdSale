@@ -1,66 +1,97 @@
 ﻿@{
     var availableSchools = ViewBag.AvailableSchools as List<TeachCrowdSale.Core.Models.SchoolBeneficiaryModel> ?? new List<TeachCrowdSale.Core.Models.SchoolBeneficiaryModel>();
+    var userStakingInfo = ViewBag.UserStakingInfo as TeachCrowdSale.Core.Models.UserStakingInfoModel;
+    var currentSchool = userStakingInfo?.SelectedSchool;
 }
 
 <div class="school-selection">
-    <div class="selection-header">
-        <h3 class="selection-title">Choose Your School Beneficiary</h3>
-        <div class="selection-subtitle">
-            <span class="subtitle-text">50% of your staking rewards will support your chosen school</span>
-            <button class="btn btn-link btn-sm" onclick="StakingDashboard.refreshSchools()">
-                <span class="btn-icon">🔄</span>
-                <span class="btn-text">Refresh</span>
-            </button>
-        </div>
-    </div>
+    @if (currentSchool != null)
+    {
+        <div class="current-selection" id="current-selection">
+            <div class="current-school-card">
+                <div class="school-header">
+                    <div class="school-basic-info">
+                        <h4 class="school-name">@currentSchool.Name</h4>
+                        @if (currentSchool.IsVerified)
+                        {
+                            <div class="school-verification verified">
+                                <span class="verification-icon">✅</span>
+                                <span class="verification-text">Verified</span>
+                            </div>
+                        }
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.changeSchool()">
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-text">Change School</span>
+                    </button>
+                </div>
 
-    <div class="current-selection" id="current-selection" style="display: none;">
-        <div class="current-school-card">
-            <div class="school-header">
-                <div class="school-basic-info">
-                    <h4 class="school-name" id="current-school-name"></h4>
-                    <div class="school-verification">
-                        <span class="verification-icon">✅</span>
-                        <span class="verification-text" id="current-school-status">Verified</span>
+                <div class="school-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">📍</span>
+                        <span class="detail-text">@currentSchool.City, @currentSchool.State, @currentSchool.Country</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📖</span>
+                        <span class="detail-text">@currentSchool.Description</span>
                     </div>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="StakingDashboard.changeSchool()">
-                    <span class="btn-icon">🔄</span>
-                    <span class="btn-text">Change School</span>
+
+                <div class="impact-summary">
+                    <div class="impact-stats">
+                        <div class="impact-stat">
+                            <span class="stat-label">Your Total Impact</span>
+                            <span class="stat-value education-impact">$@((userStakingInfo?.TotalRewards ?? 0).ToString("N2"))</span>
+                        </div>
+                        <div class="impact-stat">
+                            <span class="stat-label">School Total Received</span>
+                            <span class="stat-value">$@currentSchool.TotalFundingReceived.ToString("N0")</span>
+                        </div>
+                        <div class="impact-stat">
+                            <span class="stat-label">Active Supporters</span>
+                            <span class="stat-value">@currentSchool.SupporterCount</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(currentSchool.Website))
+                {
+                    <div class="school-links">
+                        <a href="@currentSchool.Website" target="_blank" class="btn btn-outline btn-sm">
+                            <span class="btn-icon">🌐</span>
+                            <span class="btn-text">Visit Website</span>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-selection" id="no-selection">
+            <div class="no-school-card">
+                <div class="no-school-icon">🏫</div>
+                <h4 class="no-school-title">Choose Your School Beneficiary</h4>
+                <p class="no-school-description">
+                    Select a verified educational institution to support with 50% of your staking rewards.
+                    Your choice helps fund real educational programs and resources.
+                </p>
+                <button class="btn btn-primary" onclick="StakingDashboard.openSchoolSelector()">
+                    <span class="btn-icon">🎯</span>
+                    <span class="btn-text">Choose School</span>
                 </button>
             </div>
-
-            <div class="school-details">
-                <div class="detail-item">
-                    <span class="detail-icon">📍</span>
-                    <span class="detail-text" id="current-school-location"></span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-icon">📖</span>
-                    <span class="detail-text" id="current-school-description"></span>
-                </div>
-            </div>
-
-            <div class="impact-summary">
-                <div class="impact-stats">
-                    <div class="impact-stat">
-                        <span class="stat-label">Your Total Impact</span>
-                        <span class="stat-value education-impact" id="current-school-impact">$0</span>
-                    </div>
-                    <div class="impact-stat">
-                        <span class="stat-label">School Total Received</span>
-                        <span class="stat-value" id="current-school-total">$0</span>
-                    </div>
-                    <div class="impact-stat">
-                        <span class="stat-label">Active Supporters</span>
-                        <span class="stat-value" id="current-school-supporters">0</span>
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>
+    }
 
-    <div class="school-browser" id="school-browser">
+    <div class="school-browser" id="school-browser" style="display: none;">
+        <div class="browser-header">
+            <h4 class="browser-title">Select School Beneficiary</h4>
+            <button class="btn btn-outline btn-sm" onclick="StakingDashboard.closeSchoolBrowser()">
+                <span class="btn-text">Cancel</span>
+            </button>
+        </div>
+
         <div class="browser-controls">
             <div class="search-section">
                 <div class="search-input-wrapper">
@@ -78,9 +109,9 @@
                     <label for="location-filter">Location:</label>
                     <select id="location-filter" class="form-select-sm" onchange="StakingDashboard.filterByLocation(this.value)">
                         <option value="">All Locations</option>
-                        @foreach (var location in availableSchools.Select(s => s.Location).Distinct().OrderBy(l => l))
+                        @foreach (var country in availableSchools.Select(s => s.Country).Distinct().OrderBy(l => l))
                         {
-                            <option value="@location">@location</option>
+                            <option value="@country">@country</option>
                         }
                     </select>
                 </div>
@@ -104,22 +135,25 @@
                 <div class="school-card"
                      data-school-id="@school.Id"
                      data-name="@school.Name.ToLower()"
-                     data-location="@school.Location.ToLower()"
+                     data-location="@school.Country.ToLower()"
                      data-funding="@school.TotalFundingReceived"
-                     data-supporters="@school.ActiveStakers">
+                     data-supporters="@school.SupporterCount">
 
                     <div class="school-card-header">
                         <div class="school-info">
                             <h4 class="school-name">@school.Name</h4>
                             <div class="school-location">
                                 <span class="location-icon">📍</span>
-                                <span class="location-text">@school.Location</span>
+                                <span class="location-text">@school.City, @school.State, @school.Country</span>
                             </div>
                         </div>
-                        <div class="school-verification verified">
-                            <span class="verification-icon">✅</span>
-                            <span class="verification-text">@school.IsVerified.ToString()</span>
-                        </div>
+                        @if (school.IsVerified)
+                        {
+                            <div class="school-verification verified">
+                                <span class="verification-icon">✅</span>
+                                <span class="verification-text">Verified</span>
+                            </div>
+                        }
                     </div>
 
                     <div class="school-description">
@@ -134,8 +168,21 @@
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Active Supporters</span>
-                                <span class="stat-value">@school.ActiveStakers</span>
+                                <span class="stat-value">@school.SupporterCount</span>
                             </div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-item">
+                                <span class="stat-label">Students Served</span>
+                                <span class="stat-value">@school.StudentCount</span>
+                            </div>
+                            @if (school.IsSelected)
+                            {
+                                <div class="stat-item">
+                                    <span class="stat-label">Status</span>
+                                    <span class="stat-value">Currently Selected</span>
+                                </div>
+                            }
                         </div>
                     </div>
 
@@ -165,6 +212,12 @@
                             <span class="impact-icon">🎓</span>
                             <span class="impact-description">Your staking rewards will help fund educational programs and resources</span>
                         </div>
+                        @if (!string.IsNullOrEmpty(school.ImpactSummary))
+                        {
+                            <div class="impact-summary-text">
+                                <p>@school.ImpactSummary</p>
+                            </div>
+                        }
                     </div>
                 </div>
             }
@@ -225,7 +278,7 @@
             <div class="verification-card">
                 <div class="verification-header">
                     <span class="verification-icon">🛡️</span>
-                    <h5>School Verification</h5>
+                    <h5>School Verification Process</h5>
                 </div>
                 <div class="verification-details">
                     <p>All schools undergo rigorous verification:</p>
@@ -234,7 +287,37 @@
                         <li>Financial transparency requirements</li>
                         <li>Regular impact reporting</li>
                         <li>Community feedback integration</li>
+                        <li>Ongoing compliance monitoring</li>
                     </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="impact-info">
+            <div class="impact-card">
+                <div class="impact-header">
+                    <span class="impact-icon">🌍</span>
+                    <h5>Global Education Impact</h5>
+                </div>
+                <div class="impact-details">
+                    <div class="impact-stats-grid">
+                        <div class="impact-stat">
+                            <span class="stat-value">@availableSchools.Sum(s => s.StudentCount).ToString("N0")</span>
+                            <span class="stat-label">Students Served</span>
+                        </div>
+                        <div class="impact-stat">
+                            <span class="stat-value">@availableSchools.Count()</span>
+                            <span class="stat-label">Schools Available</span>
+                        </div>
+                        <div class="impact-stat">
+                            <span class="stat-value">@availableSchools.Select(s => s.Country).Distinct().Count()</span>
+                            <span class="stat-label">Countries</span>
+                        </div>
+                        <div class="impact-stat">
+                            <span class="stat-value">$@availableSchools.Sum(s => s.TotalFundingReceived).ToString("N0")</span>
+                            <span class="stat-label">Total Funding</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -249,10 +332,14 @@
                 <span class="btn-text">Request a School</span>
                 <span class="btn-icon">➕</span>
             </button>
+            <button class="btn btn-link" onclick="StakingDashboard.viewAllSchools()">
+                <span class="btn-text">View All Schools</span>
+                <span class="btn-icon">🌐</span>
+            </button>
         </div>
         <div class="footer-note">
             <span class="note-icon">ℹ️</span>
-            <span class="note-text">You can change your school beneficiary at any time</span>
+            <span class="note-text">You can change your school beneficiary at any time. Changes apply to future rewards only.</span>
         </div>
     </div>
 </div>

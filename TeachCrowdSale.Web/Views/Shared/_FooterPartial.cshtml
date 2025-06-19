@@ -1,0 +1,186 @@
+﻿<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>TeachToken</h4>
+                <p>Revolutionary education funding through blockchain technology</p>
+                <div class="footer-logo">
+                    <span class="brand-icon">🎓</span>
+                    <span class="brand-text">TEACH</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h4>Investment</h4>
+                <ul>
+                    <li><a href="/tokenomics">Tokenomics</a></li>
+                    <li><a href="/buy">Buy TEACH</a></li>
+                    <li><a href="/staking">Staking</a></li>
+                    <li><a href="/liquidity">Liquidity</a></li>
+                    <li><a href="#" target="_blank">Whitepaper</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="/analytics">Analytics</a></li>
+                    <li><a href="/roadmap">Roadmap</a></li>
+                    <li><a href="#" target="_blank">Documentation</a></li>
+                    <li><a href="#" target="_blank">API Docs</a></li>
+                    <li><a href="#" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="#" target="_blank" rel="noopener noreferrer">Discord</a></li>
+                    <li><a href="#" target="_blank" rel="noopener noreferrer">Telegram</a></li>
+                    <li><a href="#" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+                    <li><a href="#" target="_blank" rel="noopener noreferrer">Medium</a></li>
+                    <li><a href="#" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/help">Help Center</a></li>
+                    <li><a href="/contact">Contact Us</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                    <li><a href="#" target="_blank">Bug Reports</a></li>
+                    <li><a href="#" target="_blank">Feature Requests</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Newsletter Signup -->
+        <div class="footer-newsletter">
+            <div class="newsletter-content">
+                <h4>Stay Updated</h4>
+                <p>Get the latest updates on platform development, token metrics, and investment opportunities</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" class="newsletter-input" id="newsletter-email">
+                    <button class="btn-primary newsletter-btn" onclick="subscribeNewsletter()">
+                        Subscribe
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-left">
+                <p>&copy; 2024 TeachToken Foundation. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/legal">Legal</a>
+                    <a href="/security">Security</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom-right">
+                <div class="footer-social">
+                    <a href="#" class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                    <a href="#" class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+                        <i class="fab fa-telegram-plane"></i>
+                    </a>
+                    <a href="#" class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+                
+                <!-- Back to Top -->
+                <button class="back-to-top" onclick="scrollToTop()" aria-label="Back to top">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Token Info -->
+        <div class="footer-token-info">
+            <div class="token-info-grid">
+                <div class="token-info-item">
+                    <span class="token-label">Token Name:</span>
+                    <span class="token-value">TeacherSupport Token (TEACH)</span>
+                </div>
+                <div class="token-info-item">
+                    <span class="token-label">Total Supply:</span>
+                    <span class="token-value">5,000,000,000 TEACH</span>
+                </div>
+                <div class="token-info-item">
+                    <span class="token-label">Blockchain:</span>
+                    <span class="token-value">Polygon (MATIC)</span>
+                </div>
+                <div class="token-info-item">
+                    <span class="token-label">Contract:</span>
+                    <span class="token-value">
+                        <span class="contract-address" onclick="copyContract()">0x...coming soon</span>
+                        <i class="fas fa-copy copy-icon"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Footer JavaScript Functions -->
+<script>
+    function subscribeNewsletter() {
+        const email = document.getElementById('newsletter-email').value;
+        if (email && validateEmail(email)) {
+            // Newsletter subscription logic
+            console.log('Subscribing email:', email);
+            showToast('Thank you for subscribing!', 'success');
+            document.getElementById('newsletter-email').value = '';
+        } else {
+            showToast('Please enter a valid email address', 'error');
+        }
+    }
+
+    function validateEmail(email) {
+        const emailPattern = new RegExp(@Html.Raw("\"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$\""));
+        return emailPattern.test(email);
+    }
+
+    function copyContract() {
+        const contractAddress = '0x...coming soon';
+        navigator.clipboard.writeText(contractAddress).then(() => {
+            showToast('Contract address copied!', 'success');
+        });
+    }
+
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    function showToast(message, type) {
+        // Toast notification logic - implement based on your existing toast system
+        console.log(`${type}: ${message}`);
+    }
+
+    // Show/hide back to top button
+    window.addEventListener('scroll', function() {
+        const backToTop = document.querySelector('.back-to-top');
+        if (window.pageYOffset > 300) {
+            backToTop.style.display = 'flex';
+        } else {
+            backToTop.style.display = 'none';
+        }
+    });
+</script>);
+        
