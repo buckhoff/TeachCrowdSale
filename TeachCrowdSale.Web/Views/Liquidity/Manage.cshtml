@@ -1,4 +1,4 @@
-﻿@model TeachCrowdSale.Core.Models.Liquidity.UserLiquidityPositionModel?
+﻿@model TeachCrowdSale.Core.Models.Liquidity.UserLiquidityInfoModel?
 @{
     Layout = null;
 }
@@ -119,23 +119,62 @@
                         <p>Connected Wallet: <span class="wallet-address">@ViewBag.WalletAddress</span></p>
                     </div>
 
-                    <!-- Portfolio stats will be calculated by JavaScript from positions data -->
-                    <div class="positions-overview" id="portfolio-overview">
-                        <div class="position-card loading-card">
-                            <div class="loading-shimmer"></div>
-                        </div>
-                        <div class="position-card loading-card">
-                            <div class="loading-shimmer"></div>
-                        </div>
-                        <div class="position-card loading-card">
-                            <div class="loading-shimmer"></div>
-                        </div>
-                        <div class="position-card loading-card">
-                            <div class="loading-shimmer"></div>
-                        </div>
-                        <div class="position-card loading-card">
-                            <div class="loading-shimmer"></div>
-                        </div>
+                    <div class="positions-overview">
+                        @if (Model != null)
+                        {
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.TotalLiquidityValue">
+                                    $@Model.TotalLiquidityValue.ToString("N2")
+                                </div>
+                                <div class="position-label">Total Portfolio Value</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value @(Model.TotalPnL >= 0 ? "positive" : "negative")" data-value="@Model.TotalPnL">
+                                    @(Model.TotalPnL >= 0 ? "+" : "")$@Model.TotalPnL.ToString("N2")
+                                </div>
+                                <div class="position-label">Total P&L</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.TotalFeesEarned">
+                                    $@Model.TotalFeesEarned.ToString("N2")
+                                </div>
+                                <div class="position-label">Fees Earned</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.ActivePositions">
+                                    @Model.ActivePositions
+                                </div>
+                                <div class="position-label">Active Positions</div>
+                            </div>
+
+                            <div class="position-card">
+                                <div class="position-value" data-value="@Model.TotalPnLPercentage">
+                                    @Model.TotalPnLPercentage.ToString("F2")%
+                                </div>
+                                <div class="position-label">Total Return</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                            <div class="position-card loading-card">
+                                <div class="loading-shimmer"></div>
+                            </div>
+                        }
                     </div>
                 </div>
             </section>
@@ -148,13 +187,102 @@
                         <p>Manage your current liquidity positions</p>
                     </div>
 
-                    <!-- Positions will be loaded by JavaScript -->
-                    <div id="positions-container">
-                        <div class="positions-loading">
-                            <div class="loading-spinner"></div>
-                            <p>Loading your positions...</p>
+                    @if (Model?.Positions != null && Model.Positions.Any())
+                    {
+                        <div class="positions-table-container">
+                            <table class="positions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pool</th>
+                                        <th>DEX</th>
+                                        <th>Position Size</th>
+                                        <th>Current Value</th>
+                                        <th>P&L</th>
+                                        <th>APY</th>
+                                        <th>Fees Earned</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var position in Model.Positions.Where(p => p.IsActive))
+                                    {
+                                        <tr class="position-row" data-position-id="@position.Id">
+                                            <td>
+                                                <div class="pool-cell">
+                                                    <div class="token-pair-small">
+                                                        <img src="/images/tokens/@(position.Token0Symbol.ToLower()).png" alt="@position.Token0Symbol" class="token-icon-small" onerror="this.src='/images/tokens/default.png'">
+                                                        <img src="/images/tokens/@(position.Token1Symbol.ToLower()).png" alt="@position.Token1Symbol" class="token-icon-small" onerror="this.src='/images/tokens/default.png'">
+                                                    </div>
+                                                    <div class="pool-info">
+                                                        <span class="pool-name">@position.TokenPair</span>
+                                                        <span class="pool-dex">@position.DexName</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="dex-badge-small">@position.DexName</span></td>
+                                            <td>
+                                                <div class="position-size">
+                                                    <div>@position.Token0AmountDisplay</div>
+                                                    <div>@position.Token1AmountDisplay</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="current-value">@position.CurrentValueDisplay</span>
+                                            </td>
+                                            <td>
+                                                <span class="pnl-value @position.PnLClass">
+                                                    @position.PnLDisplay
+                                                    <small>(@position.PnLPercentageDisplay)</small>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="apy-value">@position.APYDisplay</span>
+                                            </td>
+                                            <td>
+                                                <div class="fees-earned">
+                                                    <span class="fee-amount">@position.FeesEarnedDisplay</span>
+                                                    @if (position.CanClaimFees)
+                                                    {
+                                                        <button class="claim-btn" onclick="claimFees(@position.Id)">
+                                                            Claim
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="position-actions">
+                                                    <button class="action-btn btn-secondary" onclick="viewPosition(@position.Id)">
+                                                        View
+                                                    </button>
+                                                    @if (position.CanAddMore)
+                                                    {
+                                                        <button class="action-btn btn-primary" onclick="addToPosition(@position.Id)">
+                                                            Add
+                                                        </button>
+                                                    }
+                                                    @if (position.CanRemove)
+                                                    {
+                                                        <button class="action-btn btn-danger" onclick="removePosition(@position.Id)">
+                                                            Remove
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="no-positions">
+                            <div class="no-positions-icon">🏊‍♂️</div>
+                            <h3>No Active Positions</h3>
+                            <p>You don't have any active liquidity positions yet.</p>
+                            <a href="/liquidity/add" class="btn-primary">Add Your First Position</a>
+                        </div>
+                    }
                 </div>
             </section>
 
@@ -237,7 +365,13 @@
                             <label for="tx-pool-filter">Pool</label>
                             <select id="tx-pool-filter">
                                 <option value="">All Pools</option>
-                                <!-- Options populated by JavaScript -->
+                                @if (Model?.Positions != null)
+                                {
+                                    @foreach (var position in Model.Positions.GroupBy(p => p.TokenPair))
+                                    {
+                                        <option value="@position.Key">@position.Key</option>
+                                    }
+                                }
                             </select>
                         </div>
                         <div class="filter-group">
@@ -252,13 +386,73 @@
                         </div>
                     </div>
 
-                    <!-- Transaction table will be populated by JavaScript -->
-                    <div id="transactions-container">
-                        <div class="transactions-loading">
-                            <div class="loading-spinner"></div>
-                            <p>Loading transaction history...</p>
+                    @if (Model?.RecentTransactions != null && Model.RecentTransactions.Any())
+                    {
+                        <div class="transactions-table-container">
+                            <table class="transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Pool</th>
+                                        <th>Value</th>
+                                        <th>Status</th>
+                                        <th>Transaction</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactions-table-body">
+                                    @foreach (var tx in Model.RecentTransactions.Take(20))
+                                    {
+                                        <tr class="transaction-row" data-tx-type="@tx.TransactionType.ToLower()" data-pool="@tx.PoolName">
+                                            <td>
+                                                <div class="tx-date">
+                                                    <span class="date">@tx.Timestamp.ToString("MMM dd, yyyy")</span>
+                                                    <span class="time">@tx.Timestamp.ToString("HH:mm")</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="tx-type tx-type-@tx.TransactionType.ToLower()">
+                                                    @tx.TransactionType
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="pool-cell">
+                                                    <span>@tx.TokenPair</span>
+                                                    <small class="text-muted">@tx.PoolName</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="tx-value">$@tx.ValueUsd.ToString("N2")</span>
+                                            </td>
+                                            <td>
+                                                <span class="tx-status @tx.StatusClass">@tx.Status</span>
+                                            </td>
+                                            <td>
+                                                <a href="https://etherscan.io/tx/@tx.TransactionHash" target="_blank" class="tx-hash">
+                                                    @tx.TransactionHash.Substring(0, 8)...
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+
+                        <div class="pagination" id="transactions-pagination">
+                            <button class="pagination-btn" id="prev-page" onclick="loadPreviousPage()" disabled>Previous</button>
+                            <span class="pagination-info">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+                            <button class="pagination-btn" id="next-page" onclick="loadNextPage()">Next</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-transactions">
+                            <div class="no-transactions-icon">📜</div>
+                            <h3>No Transaction History</h3>
+                            <p>No liquidity transactions found for this wallet.</p>
+                        </div>
+                    }
                 </div>
             </section>
         }
@@ -353,7 +547,8 @@
     <script data-json="manage-data" type="application/json">@Html.Raw(ViewBag.JsonData ?? "{}")</script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize management dashboard
+            // Initialize management dashboard with server data
+            const initialData = JSON.parse(document.querySelector('[data-json="manage-data"]').textContent || '{}');
             const walletAddress = '@ViewBag.WalletAddress';
             const errorMessage = '@ViewBag.ErrorMessage';
 
@@ -361,17 +556,15 @@
                 window.liquidityDashboard.showErrorMessage(errorMessage);
             }
 
-            if (walletAddress && window.liquidityDashboard) {
-                // Load user positions and populate the interface
-                window.liquidityDashboard.initManagement(walletAddress);
+            if (window.liquidityDashboard) {
+                window.liquidityDashboard.initManagement(initialData, walletAddress);
             }
         });
 
         // Management-specific functions
         function refreshPositions() {
-            const walletAddress = '@ViewBag.WalletAddress';
-            if (walletAddress && window.liquidityDashboard) {
-                window.liquidityDashboard.loadUserPositions(walletAddress);
+            if (window.liquidityDashboard) {
+                window.liquidityDashboard.refreshDashboard();
             }
         }
 
@@ -385,25 +578,23 @@
         }
 
         function viewPosition(positionId) {
-            if (window.liquidityDashboard) {
-                window.liquidityDashboard.showPositionDetails(positionId);
-            }
+            // Show position details modal
+            console.log('View position:', positionId);
         }
 
         function addToPosition(positionId) {
+            // Redirect to add liquidity with pre-selected pool
             window.location.href = `/liquidity/add?positionId=${positionId}`;
         }
 
         function removePosition(positionId) {
-            if (window.liquidityDashboard) {
-                window.liquidityDashboard.showRemovePositionModal(positionId);
-            }
+            // Show remove liquidity modal
+            console.log('Remove position:', positionId);
         }
 
         function claimFees(positionId) {
-            if (window.liquidityDashboard) {
-                window.liquidityDashboard.claimFees(positionId);
-            }
+            // Claim fees for position
+            console.log('Claim fees for position:', positionId);
         }
 
         function closeModal(modalId) {
@@ -413,27 +604,22 @@
         function setRemovalPercentage(percentage) {
             document.getElementById('removal-slider').value = percentage;
             document.getElementById('removal-percentage').textContent = percentage;
-            if (window.liquidityDashboard) {
-                window.liquidityDashboard.updateRemovalPreview(percentage);
-            }
+            // Update preview amounts
         }
 
         function proceedToRemoval() {
-            if (window.liquidityDashboard) {
-                window.liquidityDashboard.proceedToRemoval();
-            }
+            // Proceed to DEX for removal
+            console.log('Proceed to removal');
         }
 
         function loadPreviousPage() {
-            if (window.liquidityDashboard) {
-                window.liquidityDashboard.loadPreviousTransactionPage();
-            }
+            // Load previous page of transactions
+            console.log('Load previous page');
         }
 
         function loadNextPage() {
-            if (window.liquidityDashboard) {
-                window.liquidityDashboard.loadNextTransactionPage();
-            }
+            // Load next page of transactions
+            console.log('Load next page');
         }
     </script>
 </body>
