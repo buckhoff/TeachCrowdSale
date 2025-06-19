@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TeachCrowdSale.Core.Models.Liquidity;
 
-namespace TeachCrowdSale.Core.Models.Response
+namespace TeachCrowdSale.Core.Models.Liquidity
 {
-    /// <summary>
-    /// Response model for user liquidity info
-    /// </summary>
     public class UserLiquidityInfoModel
     {
         public string WalletAddress { get; set; } = string.Empty;
