@@ -10,7 +10,7 @@ using Nethereum.Contracts;
 using Nethereum.Util;
 using Nethereum.Hex.HexTypes;
 using TeachCrowdSale.Core.Models;
-using TeachCrowdSale.Infrastructure.Configuration;
+using TeachCrowdSale.Core.Models.Configuration;
 
 namespace TeachCrowdSale.Infrastructure.Web3
 {
@@ -93,6 +93,7 @@ namespace TeachCrowdSale.Infrastructure.Web3
                 StakingAddress = _settings.StakingAddress,
                 GovernanceAddress = _settings.GovernanceAddress,
                 MarketplaceAddress = _settings.MarketplaceAddress,
+            LiquidityManagerAddress = _settings.LiquidityManagerAddress, // Assuming this is the liquidity manager
                 RewardAddress = _settings.RewardAddress,
                 RegistryAddress = _settings.RegistryAddress,
                 NetworkId = _settings.NetworkId,

@@ -10,7 +10,7 @@ using System.Threading.RateLimiting;
 using TeachCrowdSale.Api.Converter;
 using TeachCrowdSale.Api.ModelBinding;
 using TeachCrowdSale.Api.Validator;
-using TeachCrowdSale.Infrastructure.Configuration;
+using TeachCrowdSale.Core.Models.Configuration;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using TeachCrowdSale.Infrastructure.Repositories;
 using TeachCrowdSale.Infrastructure.Services;
@@ -113,7 +113,17 @@ namespace TeachCrowdSale.Api.Extensions
                 options.ExpiryMinutes = int.Parse(jwtSection["ExpiryMinutes"] ?? "60");
                 options.RefreshExpiryDays = int.Parse(jwtSection["RefreshExpiryDays"] ?? "7");
             });
-
+            services.Configure<TokenSettings>(configuration.GetSection("TokenSettings"));
+            services.Configure<PresaleSettings>(configuration.GetSection("PresaleSettings"));
+            services.Configure<StakingSettings>(configuration.GetSection("Staking"));
+            services.Configure<LiquiditySettings>(configuration.GetSection("Liquidity"));
+            services.Configure<OracleSettings>(configuration.GetSection("Oracle"));
+            services.Configure<SecuritySettings>(configuration.GetSection("Security"));
+            services.Configure<GovernanceSettings>(configuration.GetSection("Governance"));
+            services.Configure<NotificationSettings>(configuration.GetSection("Notifications"));
+            services.Configure<FeatureSettings>(configuration.GetSection("Features"));
+            services.Configure<MonitoringSettings>(configuration.GetSection("Monitoring"));
+            services.Configure<CacheConfiguration>(configuration.GetSection("CacheSettings"));
             return services;
         }
 

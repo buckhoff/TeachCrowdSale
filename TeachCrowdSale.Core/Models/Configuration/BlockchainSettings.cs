@@ -1,4 +1,4 @@
-namespace TeachCrowdSale.Infrastructure.Configuration;
+namespace TeachCrowdSale.Core.Models.Configuration;
 
 public class BlockchainSettings
 {
@@ -13,6 +13,7 @@ public class BlockchainSettings
     public string GovernanceAddress { get; set; }
     public string MarketplaceAddress { get; set; }
     public string RewardAddress { get; set; }
+    public string LiquidityManagerAddress { get; set; }
     public string RegistryAddress { get; set; }
     public int GasLimit { get; set; } = 500000;
     public int GasPrice { get; set; } = 50; // Gwei

@@ -13,7 +13,7 @@ using TeachCrowdSale.Api.ModelBinding;
 using TeachCrowdSale.Api.Validator;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Models.Request;
-using TeachCrowdSale.Infrastructure.Configuration;
+using TeachCrowdSale.Core.Models.Configuration;
 using TeachCrowdSale.Infrastructure.Web3;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;

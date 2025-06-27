@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TeachCrowdSale.Infrastructure.Configuration
+namespace TeachCrowdSale.Core.Models.Configuration
 {
     public class ApiSettings
     {

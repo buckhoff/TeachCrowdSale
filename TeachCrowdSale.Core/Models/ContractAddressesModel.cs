@@ -34,6 +34,9 @@ public class ContractAddressesModel
     public string RewardAddress { get; set; } = string.Empty;
 
     [EthereumAddress]
+    public string LiquidityManagerAddress { get; set; } = string.Empty;
+
+    [EthereumAddress]
     public string RegistryAddress { get; set; } = string.Empty;
 
     [Range(1, int.MaxValue)]

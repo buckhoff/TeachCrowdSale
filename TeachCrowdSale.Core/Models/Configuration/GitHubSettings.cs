@@ -1,6 +1,6 @@
 ﻿// TeachCrowdSale.Infrastructure/Services/GitHubService.cs
 // TeachCrowdSale.Infrastructure/Configuration/GitHubSettings.cs
-namespace TeachCrowdSale.Infrastructure.Configuration
+namespace TeachCrowdSale.Core.Models.Configuration
 {
     public class GitHubSettings
     {

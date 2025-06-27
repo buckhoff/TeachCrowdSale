@@ -1,4 +1,4 @@
-namespace TeachCrowdSale.Infrastructure.Configuration;
+namespace TeachCrowdSale.Core.Models.Configuration;
 
 public class JwtSettings
 {

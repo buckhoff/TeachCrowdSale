@@ -4,7 +4,7 @@ using Nethereum.JsonRpc.Client;
 using TeachCrowdSale.Core.Interfaces;
 using TeachCrowdSale.Core.Interfaces.Repositories;
 using TeachCrowdSale.Core.Interfaces.Services;
-using TeachCrowdSale.Infrastructure.Configuration;
+using TeachCrowdSale.Core.Models.Configuration;
 using TeachCrowdSale.Infrastructure.Data.Context;
 using TeachCrowdSale.Infrastructure.Repositories;
 using TeachCrowdSale.Infrastructure.Services;
@@ -15,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
 builder.Services.Configure<CacheConfiguration>(builder.Configuration.GetSection("CacheSettings"));
 builder.Services.Configure<GitHubSettings>(builder.Configuration.GetSection("GitHub"));
+
 
 // Add MVC services
 builder.Services.AddControllersWithViews();
