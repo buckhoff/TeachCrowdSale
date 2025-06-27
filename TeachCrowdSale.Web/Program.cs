@@ -15,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
 builder.Services.Configure<CacheConfiguration>(builder.Configuration.GetSection("CacheSettings"));
 builder.Services.Configure<GitHubSettings>(builder.Configuration.GetSection("GitHub"));
+builder.Services.Configure<LiquiditySettings>(builder.Configuration.GetSection("LiquiditySync"));
+builder.Services.Configure<DexIntegrationSettings>(builder.Configuration.GetSection("DexIntegration"));
 
 
 // Add MVC services

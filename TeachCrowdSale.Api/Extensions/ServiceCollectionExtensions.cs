@@ -116,7 +116,8 @@ namespace TeachCrowdSale.Api.Extensions
             services.Configure<TokenSettings>(configuration.GetSection("TokenSettings"));
             services.Configure<PresaleSettings>(configuration.GetSection("PresaleSettings"));
             services.Configure<StakingSettings>(configuration.GetSection("Staking"));
-            services.Configure<LiquiditySettings>(configuration.GetSection("Liquidity"));
+            services.Configure<LiquiditySettings>(configuration.GetSection("LiquiditySync"));
+            services.Configure<DexIntegrationSettings>(configuration.GetSection("DexIntegration"));
             services.Configure<OracleSettings>(configuration.GetSection("Oracle"));
             services.Configure<SecuritySettings>(configuration.GetSection("Security"));
             services.Configure<GovernanceSettings>(configuration.GetSection("Governance"));
