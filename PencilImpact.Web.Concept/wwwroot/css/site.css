@@ -2630,3 +2630,914 @@ body {
         background: rgba(0, 0, 0, 0.1);
         border-radius: inherit;
     }
+
+/* PencilImpact - Vision Page Specific Styles */
+
+/* ================================================
+   VISION HERO SECTION
+================================================ */
+.vision-hero-section {
+    padding: 120px 0 80px;
+    background: var(--primary-bg);
+    position: relative;
+    overflow: hidden;
+}
+
+    .vision-hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-primary);
+        opacity: 0.15;
+        z-index: 0;
+    }
+
+.vision-hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.vision-statement {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin: 2rem 0;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    font-weight: 500;
+    font-style: italic;
+}
+
+.vision-highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.vision-highlight {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition-smooth);
+}
+
+    .vision-highlight:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+.vision-highlight-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.vision-highlight-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.vision-highlight-text {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ================================================
+   VISION METRICS SECTION
+================================================ */
+.vision-metrics-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.vision-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 2.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: var(--transition-smooth);
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+    .metric-card.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .metric-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+.metric-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.metric-label {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.metric-description {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* ================================================
+   PLATFORM FEATURES SECTION
+================================================ */
+.platform-features-section {
+    padding: var(--section-padding);
+    background: var(--primary-bg);
+}
+
+.features-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.features-carousel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.feature-slide {
+    display: none;
+    padding: 3rem;
+    text-align: center;
+}
+
+    .feature-slide.active {
+        display: block;
+        animation: fadeInSlide 0.5s ease-in-out;
+    }
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.feature-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.feature-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.feature-description {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.feature-points {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.feature-point {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: var(--transition-smooth);
+}
+
+    .feature-point.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+.feature-point-icon {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.feature-point-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Carousel Navigation */
+.carousel-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.carousel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .carousel-btn:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+.carousel-dots {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.carousel-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .carousel-dot.active {
+        background: var(--primary-color);
+        transform: scale(1.2);
+    }
+
+    .carousel-dot:hover {
+        background: var(--secondary-color);
+    }
+
+/* ================================================
+   TOKEN INTEGRATION SECTION
+================================================ */
+.token-integration-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.token-demo-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    margin-top: 3rem;
+}
+
+.token-demo-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.token-demo-btn {
+    flex: 1;
+    padding: 1rem 2rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    border-bottom: 3px solid transparent;
+}
+
+    .token-demo-btn:hover,
+    .token-demo-btn.active {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+        border-bottom-color: var(--primary-color);
+    }
+
+.token-demo-content {
+    padding: 3rem;
+    min-height: 300px;
+    transition: var(--transition-smooth);
+}
+
+    .token-demo-content.demo-update {
+        opacity: 0.7;
+        transform: translateY(10px);
+    }
+
+/* Token Demo Specific Styles */
+.demo-payment,
+.demo-governance,
+.demo-rewards,
+.demo-staking {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.payment-steps,
+.governance-example,
+.rewards-grid,
+.staking-example {
+    margin: 2rem 0;
+}
+
+.payment-step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .payment-step.active {
+        border-color: var(--primary-color);
+        background: rgba(79, 70, 229, 0.1);
+    }
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.step-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.demo-benefits {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.benefit {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+/* Governance Demo */
+.proposal {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.voting-options {
+    margin: 1.5rem 0;
+}
+
+.vote-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.option-name {
+    min-width: 120px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.vote-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.vote-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.vote-percentage {
+    min-width: 50px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-align: right;
+}
+
+.voting-power {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(79, 70, 229, 0.1);
+    border-radius: 0.5rem;
+    color: var(--primary-color);
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Rewards Demo */
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reward-icon {
+    font-size: 1.5rem;
+}
+
+.reward-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.reward-tiers {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .reward-tiers h5 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+.tier {
+    padding: 0.5rem;
+    color: var(--text-secondary);
+    border-left: 3px solid var(--primary-color);
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+}
+
+/* Staking Demo */
+.stake-info,
+.stake-benefits {
+    margin: 1.5rem 0;
+}
+
+.stake-info {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .stake-info h5 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .stake-info p {
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+.stake-benefits .benefit {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .stake-benefits .benefit:last-child {
+        border-bottom: none;
+    }
+
+/* ================================================
+   DEVELOPMENT TIMELINE SECTION
+================================================ */
+.development-timeline-section {
+    padding: var(--section-padding);
+    background: var(--primary-bg);
+}
+
+.timeline-container {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 3rem;
+    padding-left: 80px;
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: all 0.6s ease;
+}
+
+    .timeline-item.timeline-animate {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+.timeline-marker {
+    position: absolute;
+    left: -49px;
+    top: 0;
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.125rem;
+    border: 4px solid var(--primary-bg);
+    z-index: 1;
+}
+
+.timeline-item.completed .timeline-marker {
+    background: var(--success-color);
+}
+
+.timeline-item.current .timeline-marker {
+    background: var(--gradient-primary);
+    animation: pulse 2s infinite;
+}
+
+.timeline-content {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.timeline-date {
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.timeline-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ================================================
+   ROADMAP PREVIEW SECTION
+================================================ */
+.roadmap-preview-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.roadmap-item {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+    .roadmap-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        border-color: var(--primary-color);
+    }
+
+    .roadmap-item.expanded {
+        border-color: var(--primary-color);
+        background: rgba(79, 70, 229, 0.1);
+    }
+
+.roadmap-phase {
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.roadmap-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.roadmap-description {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.roadmap-features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+    .roadmap-features li {
+        color: var(--text-secondary);
+        padding: 0.25rem 0;
+        padding-left: 1.5rem;
+        position: relative;
+        font-size: 0.875rem;
+    }
+
+        .roadmap-features li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+/* ================================================
+   CALL TO ACTION SECTION
+================================================ */
+.vision-cta-section {
+    padding: var(--section-padding);
+    background: var(--primary-bg);
+    text-align: center;
+}
+
+.vision-cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.vision-cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+/* ================================================
+   RESPONSIVE DESIGN
+================================================ */
+@media (max-width: 968px) {
+    .vision-metrics {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .features-carousel {
+        margin: 0 1rem;
+    }
+
+    .token-demo-tabs {
+        flex-wrap: wrap;
+    }
+
+    .token-demo-btn {
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .vision-hero-section {
+        padding: 100px 0 60px;
+    }
+
+    .vision-statement {
+        font-size: 1.25rem;
+        padding: 1.5rem;
+    }
+
+    .vision-highlights {
+        grid-template-columns: 1fr;
+    }
+
+    .feature-points {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline-item {
+        padding-left: 60px;
+    }
+
+    .timeline-marker {
+        left: -39px;
+        width: 50px;
+        height: 50px;
+        font-size: 1rem;
+    }
+
+    .timeline-line {
+        left: 25px;
+    }
+
+    .roadmap-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vision-cta-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .metric-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .metric-value {
+        font-size: 2rem;
+    }
+
+    .feature-slide {
+        padding: 2rem 1.5rem;
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+    }
+
+    .token-demo-content {
+        padding: 2rem 1.5rem;
+    }
+
+    .token-demo-tabs {
+        flex-direction: column;
+    }
+
+    .payment-step {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .vote-option {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .rewards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ================================================
+   ANIMATION CLASSES
+================================================ */
+.animate-in {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .timeline-item,
+    .metric-card,
+    .roadmap-item {
+        transition: none;
+        animation: none;
+    }
+
+    .carousel-dot,
+    .carousel-btn {
+        transition: none;
+    }
+}
