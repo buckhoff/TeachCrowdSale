@@ -1,0 +1,131 @@
+﻿<!-- PencilImpact.Web.Concept/Views/Shared/_Layout.cshtml -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PencilImpact</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@ViewData["Title"] - PencilImpact" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/pencilimpact-og.jpg" />
+    <meta property="og:url" content="https://pencilimpact.org@(Context.Request.Path)" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@ViewData["Title"] - PencilImpact" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Page-specific CSS -->
+    @await RenderSectionAsync("Styles", required: false)
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    @await Html.PartialAsync("_NavigationPartial")
+
+    <!-- Main content -->
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>PencilImpact</h4>
+                    <p>Small tokens, big impacts. Revolutionizing education funding through community-driven support.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="Twitter">🐦</a>
+                        <a href="#" class="social-link" aria-label="Discord">💬</a>
+                        <a href="#" class="social-link" aria-label="Telegram">📱</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/vision">Vision</a></li>
+                        <li><a href="/demo">Interactive Demo</a></li>
+                        <li><a href="/roadmap">Development Roadmap</a></li>
+                        <li><a href="#waitlist">Join Waitlist</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>TEACH Token</h4>
+                    <ul>
+                        <li><a href="https://teachtoken.io" target="_blank">Token Sale</a></li>
+                        <li><a href="https://teachtoken.io/tokenomics" target="_blank">Tokenomics</a></li>
+                        <li><a href="https://teachtoken.io/staking" target="_blank">Staking</a></li>
+                        <li><a href="https://teachtoken.io/analytics" target="_blank">Analytics</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Updates Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p>&copy; 2025 PencilImpact. Building the future of education funding.</p>
+                </div>
+                <div class="footer-bottom-right">
+                    <p>Powered by <a href="https://teachtoken.io" target="_blank" class="footer-link">TEACH Token</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core JavaScript -->
+    <script src="~/js/platform-core.js" asp-append-version="true"></script>
+
+    <!-- Page-specific JavaScript -->
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Analytics tracking (concept site) -->
+    <script>
+        // Initialize platform analytics when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.PlatformAnalytics) {
+                window.PlatformAnalytics.init();
+            }
+        });
+    </script>
+</body>
+</html>

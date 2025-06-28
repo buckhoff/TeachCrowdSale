@@ -1,0 +1,560 @@
+﻿@model TeachCrowdSale.Core.Models.PlatformHomeModel
+@{
+    Layout = null;
+}
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "PencilImpact - Small Tokens, Big Impacts";
+    ViewData["Description"] = ViewData["Description"] ?? "Join the revolution in education funding. Use TEACH tokens to support teachers and students while earning governance rights and staking rewards.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PencilImpact - Small Tokens, Big Impacts" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/pencilimpact-og.jpg" />
+    <meta property="og:url" content="https://pencilimpact.org" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PencilImpact - Small Tokens, Big Impacts" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">
+                        <span class="brand-icon">✏️</span>
+                        <span class="brand-text">PencilImpact</span>
+                    </a>
+                </div>
+
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="/" class="nav-link active">Home</a></li>
+                    <li><a href="/vision" class="nav-link">Vision</a></li>
+                    <li><a href="/demo" class="nav-link">Demo</a></li>
+                    <li><a href="/roadmap" class="nav-link">Roadmap</a></li>
+                    <li>
+                        <a href="https://teachtoken.io" class="nav-link nav-link-external" target="_blank">
+                            TEACH Token <span class="external-icon">↗</span>
+                        </a>
+                    </li>
+                    <li><a href="#waitlist" class="nav-cta">Join Waitlist</a></li>
+                </ul>
+
+                <div class="nav-toggle" id="navToggle">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main role="main" class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-background">
+                <div class="hero-particles"></div>
+            </div>
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-main">
+                        <h1 class="hero-title">
+                            <span class="hero-title-primary">@Model.Hero.MainHeadline</span>
+                            <span class="hero-title-gradient">Education Funding</span>
+                        </h1>
+                        <p class="hero-subtitle">@Model.Hero.SubHeadline</p>
+
+                        <div class="hero-benefits">
+                            @foreach (var benefit in Model.Hero.Benefits)
+                            {
+                                <div class="hero-benefit">
+                                    <span class="benefit-icon">@benefit.Icon</span>
+                                    <span class="benefit-text">@benefit.Text</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="hero-actions">
+                            <a href="#waitlist" class="btn btn-primary btn-lg hero-cta">
+                                @Model.Hero.CtaText
+                                <span class="btn-icon">✨</span>
+                            </a>
+                            <a href="/demo" class="btn btn-secondary btn-lg hero-cta-secondary">
+                                @Model.Hero.SecondaryCtaText
+                                <span class="btn-icon">🎮</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="hero-visual">
+                        <div class="hero-stats-card">
+                            <h3>Live Token Sale</h3>
+                            <div class="stat-row">
+                                <span class="stat-label">Raised:</span>
+                                <span class="stat-value">$@(Model.TokenIntegration.TotalRaised.ToString("N0"))</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Price:</span>
+                                <span class="stat-value">$@(Model.TokenIntegration.CurrentPrice.ToString("F4"))</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Holders:</span>
+                                <span class="stat-value">@(Model.TokenIntegration.TotalHolders.ToString("N0"))</span>
+                            </div>
+                            @if (Model.TokenIntegration.IsSaleActive)
+                            {
+                                <div class="sale-status active">
+                                    <span class="status-indicator"></span>
+                                    Sale Active
+                                </div>
+                            }
+                            <a href="https://teachtoken.io" target="_blank" class="btn btn-outline btn-sm">
+                                View Token Sale ↗
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Platform Vision Section -->
+        <section class="vision-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Platform Vision</h2>
+                    <p class="section-subtitle">@Model.Vision.VisionStatement</p>
+                </div>
+
+                <div class="vision-metrics">
+                    @foreach (var metric in Model.Vision.Metrics)
+                    {
+                        <div class="metric-card">
+                            <div class="metric-icon">@metric.Icon</div>
+                            <div class="metric-value">@metric.Value</div>
+                            <div class="metric-label">@metric.Label</div>
+                        </div>
+                    }
+                </div>
+
+                <div class="vision-features">
+                    @foreach (var feature in Model.Vision.Features)
+                    {
+                        <div class="feature-card @(feature.ComingSoon ? "coming-soon" : "")">
+                            @if (feature.ComingSoon)
+                            {
+                                <div class="coming-soon-badge">Coming Soon</div>
+                            }
+                            <div class="feature-icon">@feature.Icon</div>
+                            <h3 class="feature-title">@feature.Title</h3>
+                            <p class="feature-description">@feature.Description</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="vision-cta">
+                    <a href="/vision" class="btn btn-primary">
+                        Explore Full Vision
+                        <span class="btn-icon">🚀</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Projects Section -->
+        <section class="featured-projects-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Featured Projects</h2>
+                    <p class="section-subtitle">See how your donations will make a real difference in classrooms across the country</p>
+                </div>
+
+                <div class="projects-grid">
+                    @foreach (var project in Model.FeaturedProjects.Take(3))
+                    {
+                        <div class="project-card @(project.IsUrgent ? "urgent" : "")">
+                            @if (project.IsUrgent)
+                            {
+                                <div class="urgent-badge">Urgent</div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(project.ImageUrl))
+                            {
+                                <div class="project-image">
+                                    <img src="@project.ImageUrl" alt="@project.Title" loading="lazy" />
+                                </div>
+                            }
+
+                            <div class="project-content">
+                                <div class="project-category">@project.Category</div>
+                                <h3 class="project-title">@project.Title</h3>
+                                <p class="project-description">@project.ShortDescription</p>
+
+                                <div class="project-meta">
+                                    <div class="project-school">
+                                        <span class="meta-icon">🏫</span>
+                                        @project.SchoolName, @project.Location
+                                    </div>
+                                    <div class="project-teacher">
+                                        <span class="meta-icon">👩‍🏫</span>
+                                        @project.TeacherName
+                                    </div>
+                                    <div class="project-students">
+                                        <span class="meta-icon">🎓</span>
+                                        @project.StudentsImpacted students impacted
+                                    </div>
+                                </div>
+
+                                <div class="project-funding">
+                                    <div class="funding-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: @(project.FundingProgress)%"></div>
+                                        </div>
+                                        <div class="funding-stats">
+                                            <span class="current">$@(project.CurrentFunding.ToString("N0"))</span>
+                                            <span class="goal">of $@(project.FundingGoal.ToString("N0"))</span>
+                                        </div>
+                                    </div>
+                                    <div class="project-urgency">@project.UrgencyText</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="projects-cta">
+                    <a href="/demo" class="btn btn-primary">
+                        Explore All Projects
+                        <span class="btn-icon">📚</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pencil Drive Section -->
+        <section class="pencil-drive-section">
+            <div class="container">
+                <div class="drive-header">
+                    <div class="drive-info">
+                        <h2 class="section-title">@Model.PencilDrive.Title</h2>
+                        <p class="section-subtitle">
+                            Join our community-wide initiative to provide 2 million pencils to schools in need.
+                            TEACH token holders can participate and earn special NFT rewards.
+                        </p>
+                    </div>
+                    <div class="drive-status">
+                        <div class="drive-timer">
+                            <span class="timer-value">@Model.PencilDrive.DaysRemaining</span>
+                            <span class="timer-label">Days Remaining</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="drive-progress">
+                    <div class="progress-header">
+                        <h3>Drive Progress</h3>
+                        <div class="progress-stats">
+                            <span class="current-count">@(Model.PencilDrive.PencilsSecured.ToString("N0"))</span>
+                            <span class="total-goal">of @(Model.PencilDrive.TotalPencilGoal.ToString("N0")) pencils secured</span>
+                        </div>
+                    </div>
+
+                    <div class="drive-progress-bar">
+                        <div class="progress-fill" style="width: @(Model.PencilDrive.ProgressPercentage)%">
+                            <div class="progress-glow"></div>
+                        </div>
+                        <div class="progress-percentage">@(Model.PencilDrive.ProgressPercentage.ToString("F1"))%</div>
+                    </div>
+
+                    <div class="drive-contributions">
+                        @foreach (var contribution in Model.PencilDrive.Contributions)
+                        {
+                            <div class="contribution-item @(contribution.IsDynamic ? "dynamic" : "")">
+                                <div class="contribution-source">@contribution.Source</div>
+                                <div class="contribution-amount">@(contribution.Amount.ToString("N0")) pencils</div>
+                                <div class="contribution-description">@contribution.Description</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="drive-participation">
+                    <div class="participation-card">
+                        <h4>Participate with TEACH Tokens</h4>
+                        <p>$10 worth of TEACH tokens = 125 pencils for schools</p>
+                        <ul class="participation-benefits">
+                            <li>Lower platform fees</li>
+                            <li>Exclusive NFT rewards</li>
+                            <li>Governance voting rights</li>
+                            <li>Direct school impact</li>
+                        </ul>
+                        <a href="/demo#pencil-drive" class="btn btn-secondary">
+                            Learn More About Drive
+                            <span class="btn-icon">✏️</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TEACH Token Integration Section -->
+        <section class="token-integration-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Powered by TEACH Token</h2>
+                    <p class="section-subtitle">Enhanced benefits and governance rights for token holders</p>
+                </div>
+
+                <div class="token-benefits-grid">
+                    @foreach (var benefit in Model.TokenIntegration.Benefits)
+                    {
+                        <div class="benefit-card">
+                            <div class="benefit-icon">@benefit.Icon</div>
+                            <h3 class="benefit-title">@benefit.Title</h3>
+                            <p class="benefit-description">@benefit.Description</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="token-stats">
+                    <div class="token-stat">
+                        <div class="stat-value">$@(Model.TokenIntegration.CurrentPrice.ToString("F4"))</div>
+                        <div class="stat-label">Current Price</div>
+                    </div>
+                    <div class="token-stat">
+                        <div class="stat-value">@(Model.TokenIntegration.TotalHolders.ToString("N0"))</div>
+                        <div class="stat-label">Token Holders</div>
+                    </div>
+                    <div class="token-stat">
+                        <div class="stat-value">$@(Model.TokenIntegration.TotalRaised.ToString("N0"))</div>
+                        <div class="stat-label">Total Raised</div>
+                    </div>
+                </div>
+
+                <div class="token-cta">
+                    <a href="https://teachtoken.io" target="_blank" class="btn btn-primary btn-lg">
+                        Get TEACH Tokens
+                        <span class="btn-icon">🪙</span>
+                    </a>
+                    <a href="/demo#token-benefits" class="btn btn-outline btn-lg">
+                        See Token Benefits
+                        <span class="btn-icon">💡</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Waitlist Section -->
+        <section class="waitlist-section" id="waitlist">
+            <div class="container">
+                <div class="waitlist-content">
+                    <div class="waitlist-info">
+                        <h2 class="section-title">Join the Movement</h2>
+                        <p class="section-subtitle">
+                            Be the first to know when PencilImpact launches. Join thousands of educators,
+                            donors, and TEACH token holders building the future of education funding.
+                        </p>
+
+                        <div class="waitlist-benefits">
+                            <div class="waitlist-benefit">
+                                <span class="benefit-icon">⚡</span>
+                                <span>Early access to the platform</span>
+                            </div>
+                            <div class="waitlist-benefit">
+                                <span class="benefit-icon">🎁</span>
+                                <span>Exclusive founder benefits</span>
+                            </div>
+                            <div class="waitlist-benefit">
+                                <span class="benefit-icon">📈</span>
+                                <span>TEACH token integration updates</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="waitlist-form-container">
+                        <form id="waitlistForm" class="waitlist-form">
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" required
+                                       placeholder="your.email@example.com" class="form-input" />
+                                <div class="field-error" id="emailError"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="userType">I am a...</label>
+                                <select id="userType" name="userType" required class="form-select">
+                                    <option value="">Select your role</option>
+                                    @foreach (var userType in Model.WaitlistForm.UserTypes)
+                                    {
+                                        <option value="@userType.Value" data-description="@userType.Description">
+                                            @userType.Label
+                                        </option>
+                                    }
+                                </select>
+                                <div class="field-error" id="userTypeError"></div>
+                                <div class="field-description" id="userTypeDescription"></div>
+                            </div>
+
+                            <div class="form-group conditional-field" id="educatorFields" style="display: none;">
+                                <label for="schoolDistrict">School District (Optional)</label>
+                                <input type="text" id="schoolDistrict" name="schoolDistrict"
+                                       placeholder="Your school district" class="form-input" />
+
+                                <label for="teachingSubject">Teaching Subject (Optional)</label>
+                                <select id="teachingSubject" name="teachingSubject" class="form-select">
+                                    <option value="">Select subject</option>
+                                    @foreach (var subject in Model.WaitlistForm.TeachingSubjects)
+                                    {
+                                        <option value="@subject.Value">@subject.Label</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="interestedInTokens" name="interestedInTokens" class="form-checkbox" />
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-text">I'm interested in TEACH token benefits</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="subscribeToUpdates" name="subscribeToUpdates"
+                                           checked class="form-checkbox" />
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-text">Send me platform updates and launch notifications</span>
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg btn-full" id="submitButton">
+                                <span class="btn-text">Join the Waitlist</span>
+                                <span class="btn-icon">🚀</span>
+                                <div class="btn-spinner" style="display: none;"></div>
+                            </button>
+
+                            <div class="form-success" id="formSuccess" style="display: none;">
+                                <div class="success-icon">✅</div>
+                                <div class="success-message">
+                                    <strong>Welcome aboard!</strong> Check your email for confirmation.
+                                </div>
+                            </div>
+
+                            <div class="form-error" id="formError" style="display: none;"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>PencilImpact</h4>
+                    <p>Small tokens, big impacts. Revolutionizing education funding through community-driven support.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="Twitter">🐦</a>
+                        <a href="#" class="social-link" aria-label="Discord">💬</a>
+                        <a href="#" class="social-link" aria-label="Telegram">📱</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/vision">Vision</a></li>
+                        <li><a href="/demo">Interactive Demo</a></li>
+                        <li><a href="/roadmap">Development Roadmap</a></li>
+                        <li><a href="#waitlist">Join Waitlist</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>TEACH Token</h4>
+                    <ul>
+                        <li><a href="https://teachtoken.io" target="_blank">Token Sale</a></li>
+                        <li><a href="https://teachtoken.io/tokenomics" target="_blank">Tokenomics</a></li>
+                        <li><a href="https://teachtoken.io/staking" target="_blank">Staking</a></li>
+                        <li><a href="https://teachtoken.io/analytics" target="_blank">Analytics</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Updates Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p>&copy; 2025 PencilImpact. Building the future of education funding.</p>
+                </div>
+                <div class="footer-bottom-right">
+                    <p>Powered by <a href="https://teachtoken.io" target="_blank" class="footer-link">TEACH Token</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core JavaScript -->
+    <script src="~/js/platform-core.js" asp-append-version="true"></script>
+    <script src="~/js/platform-home.js" asp-append-version="true"></script>
+
+    <script>
+        // Pass server data to JavaScript
+        window.PlatformData = @Html.Raw(Model.AnalyticsData);
+
+        // Initialize platform analytics when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.PlatformAnalytics) {
+                window.PlatformAnalytics.init();
+            }
+        });
+    </script>
+</body>
+</html>

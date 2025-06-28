@@ -1,0 +1,533 @@
+﻿@model TeachCrowdSale.Core.Models.PlatformVisionDetailModel
+@{
+    Layout = null;
+}
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Platform Vision - PencilImpact";
+    ViewData["Description"] = ViewData["Description"] ?? "Discover how PencilImpact will revolutionize education funding with transparent, community-driven support powered by TEACH tokens.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Platform Vision - PencilImpact" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/pencilimpact-vision-og.jpg" />
+    <meta property="og:url" content="https://pencilimpact.org/vision" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Platform Vision - PencilImpact" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">
+                        <span class="brand-icon">✏️</span>
+                        <span class="brand-text">PencilImpact</span>
+                    </a>
+                </div>
+
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/vision" class="nav-link active">Vision</a></li>
+                    <li><a href="/demo" class="nav-link">Demo</a></li>
+                    <li><a href="/roadmap" class="nav-link">Roadmap</a></li>
+                    <li>
+                        <a href="https://teachtoken.io" class="nav-link nav-link-external" target="_blank">
+                            TEACH Token <span class="external-icon">↗</span>
+                        </a>
+                    </li>
+                    <li><a href="/#waitlist" class="nav-cta">Join Waitlist</a></li>
+                </ul>
+
+                <div class="nav-toggle" id="navToggle">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main role="main" class="main-content">
+        <!-- Vision Hero Section -->
+        <section class="vision-hero-section">
+            <div class="container">
+                <div class="vision-hero-content">
+                    <h1 class="section-title">Our Vision for Education</h1>
+                    <div class="vision-statement-card">
+                        <div class="statement-icon">🌟</div>
+                        <blockquote class="vision-statement">
+                            "@Model.VisionStatement"
+                        </blockquote>
+                        <div class="statement-attribution">— The PencilImpact Team</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Impact Projection Section -->
+        <section class="impact-projection-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Platform Impact Projections</h2>
+                    <p class="section-subtitle">
+                        Our data-driven projections for the transformative impact PencilImpact will have on education funding
+                    </p>
+                </div>
+
+                <div class="impact-metrics-grid">
+                    @foreach (var metric in Model.Metrics)
+                    {
+                        <div class="impact-metric-card" data-animate="counter">
+                            <div class="metric-visual">
+                                <div class="metric-icon-large">@metric.Icon</div>
+                                <div class="metric-progress-ring">
+                                    <svg class="progress-ring" width="100" height="100">
+                                        <circle class="progress-ring-circle"
+                                                stroke-width="8"
+                                                fill="transparent"
+                                                r="42"
+                                                cx="50"
+                                                cy="50" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-value" data-target="@metric.Value">@metric.Value</div>
+                                <div class="metric-label">@metric.Label</div>
+                                <div class="metric-description">
+                                    @switch (metric.Label)
+                                    {
+                                        case "Schools Supported":
+                                            <p>Verified educational institutions across all 50 states participating in the platform</p>
+                                            break;
+                                        case "Annual Funding":
+                                            <p>Total educational project funding facilitated through the platform each year</p>
+                                            break;
+                                        case "Students Impacted":
+                                            <p>Students who will benefit from funded projects and educational improvements</p>
+                                            break;
+                                        case "Platform Launch":
+                                            <p>Expected timeline for full platform launch with all core features</p>
+                                            break;
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Platform Features Deep Dive -->
+        <section class="features-deep-dive-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Revolutionary Platform Features</h2>
+                    <p class="section-subtitle">
+                        How PencilImpact will transform education funding through innovation and transparency
+                    </p>
+                </div>
+
+                <div class="features-showcase">
+                    @foreach (var feature in Model.Features)
+                    {
+                        <div class="feature-showcase-item @(feature.ComingSoon ? "coming-soon" : "")">
+                            <div class="feature-visual">
+                                <div class="feature-icon-container">
+                                    <div class="feature-icon-large">@feature.Icon</div>
+                                    @if (feature.ComingSoon)
+                                    {
+                                        <div class="coming-soon-overlay">
+                                            <span class="coming-soon-text">Coming Soon</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="feature-content">
+                                <h3 class="feature-title">@feature.Title</h3>
+                                <p class="feature-description">@feature.Description</p>
+
+                                <div class="feature-benefits">
+                                    @switch (feature.Title)
+                                    {
+                                        case "AI-Powered Matching":
+                                            <ul class="benefit-list">
+                                                <li>Personalized project recommendations based on donor interests</li>
+                                                <li>Smart impact optimization for maximum educational benefit</li>
+                                                <li>Automated fraud detection and project verification</li>
+                                                <li>Predictive analytics for project success rates</li>
+                                            </ul>
+                                            break;
+                                        case "Real-Time Impact":
+                                            <ul class="benefit-list">
+                                                <li>Live photo and video updates from funded projects</li>
+                                                <li>Transparent fund allocation and spending tracking</li>
+                                                <li>Student achievement metrics and progress reports</li>
+                                                <li>Community impact dashboards for donors</li>
+                                            </ul>
+                                            break;
+                                        case "School Verification":
+                                            <ul class="benefit-list">
+                                                <li>NCES database integration for official school verification</li>
+                                                <li>Teacher credential validation through state databases</li>
+                                                <li>501(c)(3) status confirmation for tax-deductible donations</li>
+                                                <li>Regular compliance audits and re-verification</li>
+                                            </ul>
+                                            break;
+                                        case "Annual Pencil Drive":
+                                            <ul class="benefit-list">
+                                                <li>Community-wide initiative providing 2M+ pencils annually</li>
+                                                <li>TEACH token holder exclusive participation benefits</li>
+                                                <li>NFT rewards for drive contributors and participants</li>
+                                                <li>Corporate partnership integration for scale</li>
+                                            </ul>
+                                            break;
+                                    }
+                                </div>
+
+                                @if (!feature.ComingSoon)
+                                {
+                                    <div class="feature-status available">
+                                        <span class="status-indicator"></span>
+                                        Available at Launch
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="feature-status planned">
+                                        <span class="status-indicator"></span>
+                                        Planned for Future Release
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- TEACH Token Integration Vision -->
+        <section class="token-integration-vision-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">TEACH Token: The Heart of Our Ecosystem</h2>
+                    <p class="section-subtitle">
+                        Discover how TEACH tokens create a sustainable, community-driven education funding ecosystem
+                    </p>
+                </div>
+
+                <div class="token-ecosystem-visual">
+                    <div class="ecosystem-center">
+                        <div class="token-logo">
+                            <span class="token-icon">🪙</span>
+                            <span class="token-name">TEACH</span>
+                        </div>
+                    </div>
+
+                    <div class="ecosystem-connections">
+                        <div class="ecosystem-node" data-node="donors">
+                            <div class="node-icon">❤️</div>
+                            <div class="node-title">Donors</div>
+                            <div class="node-benefits">
+                                <ul>
+                                    <li>Reduced platform fees</li>
+                                    <li>Governance voting rights</li>
+                                    <li>Enhanced impact tracking</li>
+                                    <li>Exclusive NFT rewards</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="ecosystem-node" data-node="schools">
+                            <div class="node-icon">🏫</div>
+                            <div class="node-title">Schools</div>
+                            <div class="node-benefits">
+                                <ul>
+                                    <li>Staking reward distributions</li>
+                                    <li>Priority project featuring</li>
+                                    <li>Direct community support</li>
+                                    <li>Enhanced funding opportunities</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="ecosystem-node" data-node="platform">
+                            <div class="node-icon">⚙️</div>
+                            <div class="node-title">Platform</div>
+                            <div class="node-benefits">
+                                <ul>
+                                    <li>Sustainable revenue model</li>
+                                    <li>Community governance</li>
+                                    <li>Automated operations</li>
+                                    <li>Transparent fund management</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="ecosystem-node" data-node="community">
+                            <div class="node-icon">🤝</div>
+                            <div class="node-title">Community</div>
+                            <div class="node-benefits">
+                                <ul>
+                                    <li>Collective decision making</li>
+                                    <li>Shared impact outcomes</li>
+                                    <li>Network effect benefits</li>
+                                    <li>Educational advocacy</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="token-stats-showcase">
+                    <div class="token-stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <div class="stat-value">$@(Model.TokenIntegration.CurrentPrice.ToString("F4"))</div>
+                            <div class="stat-label">Current Token Price</div>
+                            <div class="stat-trend positive">↗ Growing with platform adoption</div>
+                        </div>
+                    </div>
+
+                    <div class="token-stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <div class="stat-value">@(Model.TokenIntegration.TotalHolders.ToString("N0"))</div>
+                            <div class="stat-label">Token Holders</div>
+                            <div class="stat-trend positive">↗ Building strong community</div>
+                        </div>
+                    </div>
+
+                    <div class="token-stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <div class="stat-value">$@(Model.TokenIntegration.TotalRaised.ToString("N0"))</div>
+                            <div class="stat-label">Total Raised</div>
+                            <div class="stat-trend positive">↗ Funding platform development</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Development Philosophy Section -->
+        <section class="philosophy-section">
+            <div class="container">
+                <div class="philosophy-content">
+                    <div class="philosophy-text">
+                        <h2 class="section-title">Our Development Philosophy</h2>
+                        <div class="philosophy-principles">
+                            <div class="principle-item">
+                                <div class="principle-icon">🔍</div>
+                                <div class="principle-content">
+                                    <h3>Transparency First</h3>
+                                    <p>Every donation, every decision, every line of code is open and transparent. Our community deserves to see exactly how their contributions are making a difference.</p>
+                                </div>
+                            </div>
+
+                            <div class="principle-item">
+                                <div class="principle-icon">🎯</div>
+                                <div class="principle-content">
+                                    <h3>Impact Driven</h3>
+                                    <p>We measure success not by profits, but by the number of students whose educational experience is improved through our platform.</p>
+                                </div>
+                            </div>
+
+                            <div class="principle-item">
+                                <div class="principle-icon">🤝</div>
+                                <div class="principle-content">
+                                    <h3>Community Governed</h3>
+                                    <p>TEACH token holders have a real voice in platform decisions, ensuring the community's needs always come first.</p>
+                                </div>
+                            </div>
+
+                            <div class="principle-item">
+                                <div class="principle-icon">🚀</div>
+                                <div class="principle-content">
+                                    <h3>Innovation Focused</h3>
+                                    <p>We leverage cutting-edge technology like AI and blockchain to solve real problems in education funding.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="philosophy-visual">
+                        <div class="vision-timeline">
+                            <h3>Development Timeline</h3>
+                            @foreach (var timelineItem in Model.Timeline)
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">@timelineItem</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action Section -->
+        <section class="vision-cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="section-title">Join Us in Revolutionizing Education</h2>
+                    <p class="section-subtitle">
+                        This vision becomes reality with community support. Be part of the movement that transforms
+                        how we fund education and support teachers and students across the country.
+                    </p>
+
+                    <div class="cta-stats-grid">
+                        <div class="cta-stat">
+                            <div class="stat-icon">⏰</div>
+                            <div class="stat-content">
+                                <div class="stat-value">Q2 2026</div>
+                                <div class="stat-label">Expected MVP Launch</div>
+                            </div>
+                        </div>
+                        <div class="cta-stat">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-content">
+                                <div class="stat-value">1,000+</div>
+                                <div class="stat-label">Educators in Waitlist Goal</div>
+                            </div>
+                        </div>
+                        <div class="cta-stat">
+                            <div class="stat-icon">💡</div>
+                            <div class="stat-content">
+                                <div class="stat-value">$100M+</div>
+                                <div class="stat-label">Annual Impact Potential</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cta-actions">
+                        <a href="/#waitlist" class="btn btn-primary btn-lg">
+                            Join Our Waitlist
+                            <span class="btn-icon">🚀</span>
+                        </a>
+                        <a href="/demo" class="btn btn-secondary btn-lg">
+                            Experience the Demo
+                            <span class="btn-icon">🎮</span>
+                        </a>
+                        <a href="https://teachtoken.io" target="_blank" class="btn btn-outline btn-lg">
+                            Get TEACH Tokens
+                            <span class="btn-icon">🪙</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>PencilImpact</h4>
+                    <p>Small tokens, big impacts. Revolutionizing education funding through community-driven support.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="Twitter">🐦</a>
+                        <a href="#" class="social-link" aria-label="Discord">💬</a>
+                        <a href="#" class="social-link" aria-label="Telegram">📱</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/vision">Vision</a></li>
+                        <li><a href="/demo">Interactive Demo</a></li>
+                        <li><a href="/roadmap">Development Roadmap</a></li>
+                        <li><a href="/#waitlist">Join Waitlist</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>TEACH Token</h4>
+                    <ul>
+                        <li><a href="https://teachtoken.io" target="_blank">Token Sale</a></li>
+                        <li><a href="https://teachtoken.io/tokenomics" target="_blank">Tokenomics</a></li>
+                        <li><a href="https://teachtoken.io/staking" target="_blank">Staking</a></li>
+                        <li><a href="https://teachtoken.io/analytics" target="_blank">Analytics</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Updates Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <p>&copy; 2025 PencilImpact. Building the future of education funding.</p>
+                </div>
+                <div class="footer-bottom-right">
+                    <p>Powered by <a href="https://teachtoken.io" target="_blank" class="footer-link">TEACH Token</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="~/js/platform-core.js" asp-append-version="true"></script>
+    <script src="~/js/platform-vision.js" asp-append-version="true"></script>
+
+    <script>
+        // Initialize platform analytics when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.PlatformAnalytics) {
+                window.PlatformAnalytics.init();
+            }
+        });
+    </script>
+</body>
+</html>

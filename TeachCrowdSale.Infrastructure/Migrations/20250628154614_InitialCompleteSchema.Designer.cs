@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TeachCrowdSale.Infrastructure.Data.Context;
 
@@ -11,9 +12,11 @@ using TeachCrowdSale.Infrastructure.Data.Context;
 namespace TeachCrowdSale.Infrastructure.Migrations
 {
     [DbContext(typeof(TeachCrowdSaleDbContext))]
-    partial class TeachCrowdSaleDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250628154614_InitialCompleteSchema")]
+    partial class InitialCompleteSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

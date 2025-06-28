@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeachCrowdSale.Infrastructu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeachCrowdSale.Web", "TeachCrowdSale.Web\TeachCrowdSale.Web.csproj", "{24F6046D-97BD-46EF-98BF-210AA65B4E10}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PencilImpact.Web.Concept", "PencilImpact.Web.Concept\PencilImpact.Web.Concept.csproj", "{99D943F3-BC68-474F-92C7-1CEA8A5EFABD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,12 @@ Global
 		{24F6046D-97BD-46EF-98BF-210AA65B4E10}.Production|Any CPU.Build.0 = Production|Any CPU
 		{24F6046D-97BD-46EF-98BF-210AA65B4E10}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24F6046D-97BD-46EF-98BF-210AA65B4E10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99D943F3-BC68-474F-92C7-1CEA8A5EFABD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99D943F3-BC68-474F-92C7-1CEA8A5EFABD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99D943F3-BC68-474F-92C7-1CEA8A5EFABD}.Production|Any CPU.ActiveCfg = Release|Any CPU
+		{99D943F3-BC68-474F-92C7-1CEA8A5EFABD}.Production|Any CPU.Build.0 = Release|Any CPU
+		{99D943F3-BC68-474F-92C7-1CEA8A5EFABD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99D943F3-BC68-474F-92C7-1CEA8A5EFABD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

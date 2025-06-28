@@ -1312,11 +1312,9 @@ const TokenomicsApp = {
             TokenomicsState.isLoaded = true;
 
             console.log('Tokenomics page initialized successfully');
-            Utils.showNotification('Tokenomics page loaded successfully', 'success', 3000);
 
         } catch (error) {
             console.error('Error initializing Tokenomics page:', error);
-            Utils.showNotification('Error initializing page. Some features may not work correctly.', 'error');
         }
     },
 

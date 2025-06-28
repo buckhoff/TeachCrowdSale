@@ -1,0 +1,210 @@
+﻿@model TeachCrowdSale.Core.Models.PlatformRoadmapModel
+@{
+    Layout = null;
+}
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Development Roadmap - PencilImpact";
+    ViewData["Description"] = ViewData["Description"] ?? "Follow our journey from concept to the most comprehensive education funding platform. See milestones, timelines, and how you can be involved.";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Development Roadmap - PencilImpact" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:image" content="/images/pencilimpact-roadmap-og.jpg" />
+    <meta property="og:url" content="https://pencilimpact.org/roadmap" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Development Roadmap - PencilImpact" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Syncfusion CSS -->
+    <link href="https://cdn.syncfusion.com/ej2/material3-dark.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">
+                        <span class="brand-icon">✏️</span>
+                        <span class="brand-text">PencilImpact</span>
+                    </a>
+                </div>
+
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/vision" class="nav-link">Vision</a></li>
+                    <li><a href="/demo" class="nav-link">Demo</a></li>
+                    <li><a href="/roadmap" class="nav-link active">Roadmap</a></li>
+                    <li><a href="https://teachtoken.io" class="nav-link nav-link-external" target="_blank">
+                        TEACH Token <span class="external-icon">↗</span>
+                    </a></li>
+                    <li><a href="/#waitlist" class="nav-cta">Join Waitlist</a></li>
+                </ul>
+
+                <div class="nav-toggle" id="navToggle">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main role="main" class="main-content">
+        <!-- Roadmap Hero Section -->
+        <section class="roadmap-hero-section">
+            <div class="container">
+                <div class="roadmap-hero-content">
+                    <h1 class="section-title">Development Roadmap</h1>
+                    <p class="section-subtitle">
+                        Follow our journey from concept to the most comprehensive education funding platform. 
+                        See exactly what we're building, when we're building it, and how you can be involved.
+                    </p>
+                    
+                    <div class="current-phase-indicator">
+                        <div class="phase-label">Current Phase:</div>
+                        <div class="phase-name">@Model.CurrentPhase</div>
+                        <div class="phase-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                            <span class="progress-text">65% Complete</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Development Phases Section -->
+        <section class="development-phases-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Development Phases</h2>
+                    <p class="section-subtitle">
+                        Our strategic approach to building a revolutionary education funding platform
+                    </p>
+                </div>
+
+                <div class="phases-timeline">
+                    @for (int i = 0; i < Model.Phases.Count; i++)
+                    {
+                        var phase = Model.Phases[i];
+                        var isActive = phase.Status == "In Progress";
+                        var isCompleted = phase.Status == "Completed";
+                        var phaseNumber = i + 1;
+                        
+                        <div class="phase-card @(isActive ? "active" : "") @(isCompleted ? "completed" : "")">
+                            <div class="phase-header">
+                                <div class="phase-number">
+                                    @if (isCompleted)
+                                    {
+                                        <span class="phase-check">✅</span>
+                                    }
+                                    else if (isActive)
+                                    {
+                                        <span class="phase-spinner">⚡</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="phase-num">@phaseNumber</span>
+                                    }
+                                </div>
+                                <div class="phase-title-section">
+                                    <h3 class="phase-title">@phase.Name</h3>
+                                    <div class="phase-timeline-text">@phase.Timeline</div>
+                                    <div class="phase-status @phase.Status.Replace(" ", "").ToLower()">
+                                        @phase.Status
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="phase-content">
+                                <p class="phase-description">@phase.Description</p>
+                                
+                                <div class="phase-deliverables">
+                                    <h4>Key Deliverables:</h4>
+                                    <ul class="deliverables-list">
+                                        @foreach (var deliverable in phase.Deliverables)
+                                        {
+                                            <li class="deliverable-item">
+                                                <span class="deliverable-icon">🎯</span>
+                                                <span class="deliverable-text">@deliverable</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                                
+                                @if (isActive)
+                                {
+                                    <div class="phase-progress-detail">
+                                        <div class="progress-label">Phase Progress</div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 65%"></div>
+                                        </div>
+                                        <div class="progress-details">
+                                            <span>65% Complete</span>
+                                            <span>Est. completion: August 2025</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            
+                            @if (i < Model.Phases.Count - 1)
+                            {
+                                <div class="phase-connector">
+                                    <div class="connector-line"></div>
+                                    <div class="connector-arrow">→</div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Milestones Section -->
+        <section class="milestones-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Key Milestones</h2>
+                    <p class="section-subtitle">
+                        Critical achievements and targets that mark our progress toward revolutionizing education funding
+                    </p>
+                </div>
+
+                <div class="milestones-grid">
+                    @foreach (var milestone in Model.Milestones)
+                    {
+                        var statusClass = milestone.Status.ToLower().Replace(" ", "");
+                        
+                        <div class="milestone-card @statusClass">
+                            <div class="milestone-header">
+                                <div class="milestone-status-indicator">
+                                    @switch (milestone.Status.ToLower())
+                                    {
+                                        case "completed":

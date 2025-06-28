@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TeachCrowdSale.Core.Data.Entities;
 
 namespace TeachCrowdSale.Infrastructure.Data.Context
@@ -12,47 +7,47 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
     {
         public TeachCrowdSaleDbContext(DbContextOptions<TeachCrowdSaleDbContext> options) : base(options) { }
 
-        // Home
+        // Basic Transaction Entities (3)
         public DbSet<PurchaseTransaction> PurchaseTransactions { get; set; }
         public DbSet<ClaimTransaction> ClaimTransactions { get; set; }
         public DbSet<UserBalance> UserBalances { get; set; }
 
-
-        // Live Metrics
+        // Live Metrics Entities (3)
         public DbSet<TokenMetricsSnapshot> TokenMetricsSnapshots { get; set; }
         public DbSet<PriceHistoryEntry> PriceHistory { get; set; }
         public DbSet<VolumeHistoryEntry> VolumeHistory { get; set; }
 
-        // Supply Management
+        // Supply Management Entities (2)
         public DbSet<SupplySnapshot> SupplySnapshots { get; set; }
         public DbSet<TokenAllocation> TokenAllocations { get; set; }
 
-        // Vesting
+        // Vesting Entities (3)
         public DbSet<VestingCategory> VestingCategories { get; set; }
         public DbSet<VestingMilestone> VestingMilestones { get; set; }
         public DbSet<VestingEvent> VestingEvents { get; set; }
 
-        // Treasury
+        // Treasury Entities (3)
         public DbSet<TreasurySnapshot> TreasurySnapshots { get; set; }
         public DbSet<TreasuryAllocation> TreasuryAllocations { get; set; }
         public DbSet<TreasuryTransaction> TreasuryTransactions { get; set; }
 
-        // Burn Management
+        // Burn Management Entities (3)
         public DbSet<BurnEvent> BurnEvents { get; set; }
         public DbSet<BurnMechanism> BurnMechanisms { get; set; }
         public DbSet<BurnSnapshot> BurnSnapshots { get; set; }
 
-        // Utility & Governance
+        // Utility & Governance Entities (3)
         public DbSet<UtilityMetricsSnapshot> UtilityMetricsSnapshots { get; set; }
         public DbSet<GovernanceProposal> GovernanceProposals { get; set; }
         public DbSet<GovernanceVote> GovernanceVotes { get; set; }
 
+        // Analytics Entities (4)
         public DbSet<AnalyticsSnapshot> AnalyticsSnapshots { get; set; }
         public DbSet<TierSnapshot> TierSnapshots { get; set; }
         public DbSet<DailyAnalytics> DailyAnalytics { get; set; }
         public DbSet<PerformanceMetric> PerformanceMetrics { get; set; }
 
-        // Staking entities
+        // Staking Entities (6)
         public DbSet<StakingPool> StakingPools { get; set; }
         public DbSet<UserStake> UserStakes { get; set; }
         public DbSet<StakingRewardClaim> StakingRewardClaims { get; set; }
@@ -60,12 +55,20 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
         public DbSet<UserStakingBeneficiary> UserStakingBeneficiaries { get; set; }
         public DbSet<SchoolRewardDistribution> SchoolRewardDistributions { get; set; }
 
-        // Liquidity entities
+        // Liquidity Entities (5)
         public DbSet<LiquidityPool> LiquidityPools { get; set; }
         public DbSet<UserLiquidityPosition> UserLiquidityPositions { get; set; }
         public DbSet<LiquidityTransaction> LiquidityTransactions { get; set; }
         public DbSet<LiquidityPoolSnapshot> LiquidityPoolSnapshots { get; set; }
         public DbSet<DexConfiguration> DexConfigurations { get; set; }
+
+        //Pencil Impact Home (5)
+        public DbSet<PlatformWaitlist> PlatformWaitlists { get; set; }
+        public DbSet<PencilDrive> PencilDrives { get; set; }
+        public DbSet<DemoProject> DemoProjects { get; set; }
+        public DbSet<PlatformAnalytics> PlatformAnalytics { get; set; }
+        public DbSet<PencilDriveImpactStory> PencilDriveImpactStories { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -79,153 +82,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
             ConfigureAnalyticsEntities(modelBuilder);
             ConfigureStakingEntities(modelBuilder);
             ConfigureLiquidityEntities(modelBuilder);
-        }
-
-        private void ConfigureLiquidityEntities(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<LiquidityPool>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.DexName).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.TokenPair).HasMaxLength(20).IsRequired();
-                entity.Property(e => e.PoolAddress).HasMaxLength(42).IsRequired();
-                entity.Property(e => e.Token0Address).HasMaxLength(42).IsRequired();
-                entity.Property(e => e.Token1Address).HasMaxLength(42).IsRequired();
-                entity.Property(e => e.Token0Symbol).HasMaxLength(10).IsRequired();
-                entity.Property(e => e.Token1Symbol).HasMaxLength(10).IsRequired();
-                entity.Property(e => e.TotalValueLocked).HasPrecision(18, 2);
-                entity.Property(e => e.Volume24h).HasPrecision(18, 2);
-                entity.Property(e => e.Volume7d).HasPrecision(18, 2);
-                entity.Property(e => e.FeePercentage).HasPrecision(5, 3);
-                entity.Property(e => e.APY).HasPrecision(8, 4);
-                entity.Property(e => e.APR).HasPrecision(8, 4);
-                entity.Property(e => e.Token0Reserve).HasPrecision(18, 8);
-                entity.Property(e => e.Token1Reserve).HasPrecision(18, 8);
-                entity.Property(e => e.CurrentPrice).HasPrecision(18, 8);
-                entity.Property(e => e.Description).HasMaxLength(500);
-                entity.Property(e => e.DexUrl).HasMaxLength(200);
-                entity.Property(e => e.AnalyticsUrl).HasMaxLength(200);
-                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(e => e.LastSyncAt).HasDefaultValueSql("GETUTCDATE()");
-
-                entity.HasIndex(e => e.PoolAddress).IsUnique();
-                entity.HasIndex(e => e.DexName);
-                entity.HasIndex(e => e.TokenPair);
-                entity.HasIndex(e => e.IsActive);
-                entity.HasIndex(e => e.IsFeatured);
-                entity.HasIndex(e => e.TotalValueLocked);
-                entity.HasIndex(e => e.LastSyncAt);
-
-                entity.HasMany(e => e.UserPositions)
-                    .WithOne(p => p.LiquidityPool)
-                    .HasForeignKey(p => p.LiquidityPoolId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasMany(e => e.Snapshots)
-                    .WithOne(s => s.LiquidityPool)
-                    .HasForeignKey(s => s.LiquidityPoolId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // UserLiquidityPosition configuration
-            modelBuilder.Entity<UserLiquidityPosition>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
-                entity.Property(e => e.LpTokenAmount).HasPrecision(18, 8);
-                entity.Property(e => e.Token0Amount).HasPrecision(18, 8);
-                entity.Property(e => e.Token1Amount).HasPrecision(18, 8);
-                entity.Property(e => e.InitialValueUsd).HasPrecision(18, 2);
-                entity.Property(e => e.CurrentValueUsd).HasPrecision(18, 2);
-                entity.Property(e => e.FeesEarnedUsd).HasPrecision(18, 6);
-                entity.Property(e => e.ImpermanentLoss).HasPrecision(18, 6);
-                entity.Property(e => e.NetPnL).HasPrecision(18, 6);
-                entity.Property(e => e.AddTransactionHash).HasMaxLength(66);
-                entity.Property(e => e.RemoveTransactionHash).HasMaxLength(66);
-                entity.Property(e => e.AddedAt).HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(e => e.LastUpdatedAt).HasDefaultValueSql("GETUTCDATE()");
-
-                entity.HasIndex(e => e.WalletAddress);
-                entity.HasIndex(e => e.LiquidityPoolId);
-                entity.HasIndex(e => e.IsActive);
-                entity.HasIndex(e => e.AddedAt);
-                entity.HasIndex(e => new { e.WalletAddress, e.IsActive });
-
-                entity.HasMany(e => e.Transactions)
-                    .WithOne(t => t.UserLiquidityPosition)
-                    .HasForeignKey(t => t.UserLiquidityPositionId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // LiquidityTransaction configuration
-            modelBuilder.Entity<LiquidityTransaction>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
-                entity.Property(e => e.TransactionType).HasMaxLength(20).IsRequired();
-                entity.Property(e => e.Token0Amount).HasPrecision(18, 8);
-                entity.Property(e => e.Token1Amount).HasPrecision(18, 8);
-                entity.Property(e => e.LpTokenAmount).HasPrecision(18, 8);
-                entity.Property(e => e.ValueUsd).HasPrecision(18, 2);
-                entity.Property(e => e.GasFeesUsd).HasPrecision(18, 6);
-                entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
-                entity.Property(e => e.Notes).HasMaxLength(500);
-                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
-
-                entity.HasIndex(e => e.UserLiquidityPositionId);
-                entity.HasIndex(e => e.WalletAddress);
-                entity.HasIndex(e => e.TransactionType);
-                entity.HasIndex(e => e.TransactionHash);
-                entity.HasIndex(e => e.Timestamp);
-                entity.HasIndex(e => e.Status);
-            });
-
-            // LiquidityPoolSnapshot configuration
-            modelBuilder.Entity<LiquidityPoolSnapshot>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.TotalValueLocked).HasPrecision(18, 2);
-                entity.Property(e => e.Volume24h).HasPrecision(18, 2);
-                entity.Property(e => e.Token0Reserve).HasPrecision(18, 8);
-                entity.Property(e => e.Token1Reserve).HasPrecision(18, 8);
-                entity.Property(e => e.Price).HasPrecision(18, 8);
-                entity.Property(e => e.APY).HasPrecision(8, 4);
-                entity.Property(e => e.APR).HasPrecision(8, 4);
-                entity.Property(e => e.Source).HasMaxLength(50);
-                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
-
-                entity.HasIndex(e => e.LiquidityPoolId);
-                entity.HasIndex(e => e.Timestamp);
-                entity.HasIndex(e => new { e.LiquidityPoolId, e.Timestamp });
-                entity.HasIndex(e => new { e.LiquidityPoolId, e.IsLatest });
-                entity.HasIndex(e => e.Source);
-            });
-
-            // DexConfiguration configuration
-            modelBuilder.Entity<DexConfiguration>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(500);
-                entity.Property(e => e.BaseUrl).HasMaxLength(200).IsRequired();
-                entity.Property(e => e.ApiUrl).HasMaxLength(200).IsRequired();
-                entity.Property(e => e.LogoUrl).HasMaxLength(200).IsRequired();
-                entity.Property(e => e.DefaultFeePercentage).HasPrecision(5, 3);
-                entity.Property(e => e.Network).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.RouterAddress).HasMaxLength(42);
-                entity.Property(e => e.FactoryAddress).HasMaxLength(42);
-                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
-
-                entity.HasIndex(e => e.Name).IsUnique();
-                entity.HasIndex(e => e.IsActive);
-                entity.HasIndex(e => e.Network);
-                entity.HasIndex(e => e.SortOrder);
-                entity.HasIndex(e => e.IsRecommended);
-            });
+            ConfigurePencilImpactEntities(modelBuilder);
         }
 
         private void ConfigureTransactionEntities(ModelBuilder modelBuilder)
@@ -282,7 +139,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
 
         private void ConfigureMetricsEntities(ModelBuilder modelBuilder)
         {
-            // TokenMetricsSnapshot
+            // TokenMetricsSnapshot - Based on actual entity properties
             modelBuilder.Entity<TokenMetricsSnapshot>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -290,6 +147,9 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.MarketCap).HasPrecision(18, 2);
                 entity.Property(e => e.Volume24h).HasPrecision(18, 2);
                 entity.Property(e => e.PriceChange24h).HasPrecision(18, 8);
+                entity.Property(e => e.PriceChangePercent24h).HasPrecision(18, 8); // ADDED
+                entity.Property(e => e.High24h).HasPrecision(18, 8); // ADDED
+                entity.Property(e => e.Low24h).HasPrecision(18, 8); // ADDED
                 entity.Property(e => e.TotalValueLocked).HasPrecision(18, 2);
                 entity.Property(e => e.TotalSupply).HasPrecision(18, 0);
                 entity.Property(e => e.CirculatingSupply).HasPrecision(18, 0);
@@ -372,20 +232,16 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.HasIndex(e => e.IsActive);
             });
 
-            // VestingMilestone
+            // VestingMilestone - Based on actual entity with long properties
             modelBuilder.Entity<VestingMilestone>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.TokensUnlocked).HasPrecision(18, 0);
-                entity.Property(e => e.CumulativeUnlocked).HasPrecision(18, 0);
+                entity.Property(e => e.TokensUnlocked).HasColumnType("bigint"); // long
+                entity.Property(e => e.CumulativeUnlocked).HasColumnType("bigint"); // long
                 entity.Property(e => e.PercentageUnlocked).HasPrecision(5, 2);
                 entity.Property(e => e.Amount).HasPrecision(32, 18);
                 entity.Property(e => e.FormattedDate).HasMaxLength(50);
                 entity.Property(e => e.TransactionHash).HasMaxLength(66);
-                entity.HasOne<VestingCategory>()
-                    .WithMany()
-                    .HasForeignKey(e => e.CategoryId)
-                    .OnDelete(DeleteBehavior.Cascade);
                 entity.HasIndex(e => new { e.CategoryId, e.Date });
                 entity.HasIndex(e => e.Date);
                 entity.HasIndex(e => e.IsExecuted);
@@ -457,11 +313,11 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
 
         private void ConfigureBurnEntities(ModelBuilder modelBuilder)
         {
-            // BurnEvent
+            // BurnEvent - Based on actual entity with long Amount
             modelBuilder.Entity<BurnEvent>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Amount).HasPrecision(18, 0);
+                entity.Property(e => e.Amount).HasColumnType("bigint"); // long in C#
                 entity.Property(e => e.Mechanism).HasMaxLength(100).IsRequired();
                 entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
                 entity.Property(e => e.UsdValue).HasPrecision(18, 2);
@@ -472,7 +328,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.HasIndex(e => e.IsVerified);
             });
 
-            // BurnMechanism
+            // BurnMechanism - COMPLETE entity configuration
             modelBuilder.Entity<BurnMechanism>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -482,11 +338,12 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.Frequency).HasMaxLength(50);
                 entity.Property(e => e.HistoricalBurns).HasPrecision(18, 0);
                 entity.Property(e => e.Icon).HasMaxLength(10);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.HasIndex(e => e.IsActive);
             });
 
-            // BurnSnapshot
+            // BurnSnapshot - COMPLETE entity configuration
             modelBuilder.Entity<BurnSnapshot>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -543,10 +400,6 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.VoterAddress).HasMaxLength(42).IsRequired();
                 entity.Property(e => e.VotingPower).HasPrecision(18, 0);
                 entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
-                entity.HasOne<GovernanceProposal>()
-                    .WithMany()
-                    .HasForeignKey(e => e.ProposalId)
-                    .OnDelete(DeleteBehavior.Cascade);
                 entity.HasIndex(e => e.ProposalId);
                 entity.HasIndex(e => e.VoterAddress);
                 entity.HasIndex(e => e.VoteDate);
@@ -556,7 +409,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
 
         private void ConfigureAnalyticsEntities(ModelBuilder modelBuilder)
         {
-            // AnalyticsSnapshot
+            // AnalyticsSnapshot - Based on actual entity
             modelBuilder.Entity<AnalyticsSnapshot>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -572,12 +425,9 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.TreasuryBalance).HasPrecision(18, 2);
                 entity.Property(e => e.StabilityFundBalance).HasPrecision(18, 2);
                 entity.Property(e => e.BurnedTokens).HasPrecision(18, 0);
-                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
 
                 entity.HasIndex(e => e.Timestamp);
-                entity.HasIndex(e => e.Date);
                 entity.HasIndex(e => e.ActiveTierId);
-                entity.HasIndex(e => new { e.Date, e.Timestamp });
 
                 entity.HasMany(e => e.TierSnapshots)
                     .WithOne(t => t.AnalyticsSnapshot)
@@ -585,7 +435,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // TierSnapshot
+            // TierSnapshot - Based on actual entity
             modelBuilder.Entity<TierSnapshot>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -594,7 +444,6 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.Allocation).HasPrecision(18, 0);
                 entity.Property(e => e.Sold).HasPrecision(18, 0);
                 entity.Property(e => e.SoldChange24h).HasPrecision(18, 0);
-
                 entity.HasIndex(e => e.TierId);
                 entity.HasIndex(e => e.Timestamp);
                 entity.HasIndex(e => new { e.TierId, e.Timestamp });
@@ -614,9 +463,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.LowPrice).HasPrecision(18, 8);
                 entity.Property(e => e.DailyRewardsDistributed).HasPrecision(18, 8);
                 entity.Property(e => e.EducationFundingAmount).HasPrecision(18, 2);
-
                 entity.HasIndex(e => e.Date).IsUnique();
-                entity.HasIndex(e => e.Date);
             });
 
             // PerformanceMetric
@@ -630,39 +477,37 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.PreviousValue).HasPrecision(18, 8);
                 entity.Property(e => e.ChangePercentage).HasPrecision(8, 4);
                 entity.Property(e => e.Description).HasMaxLength(500);
-
                 entity.HasIndex(e => e.MetricName);
                 entity.HasIndex(e => e.Category);
                 entity.HasIndex(e => e.Timestamp);
-                entity.HasIndex(e => e.Date);
                 entity.HasIndex(e => new { e.MetricName, e.Timestamp });
                 entity.HasIndex(e => new { e.Category, e.Timestamp });
                 entity.HasIndex(e => e.IsPublic);
             });
         }
+
         private void ConfigureStakingEntities(ModelBuilder modelBuilder)
         {
-            // StakingPool configuration
+            // StakingPool - Based on actual entity
             modelBuilder.Entity<StakingPool>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(1000);
                 entity.Property(e => e.MinStakeAmount).HasPrecision(18, 8);
                 entity.Property(e => e.MaxStakeAmount).HasPrecision(18, 8);
-                entity.Property(e => e.BaseAPY).HasPrecision(5, 2);
-                entity.Property(e => e.BonusAPY).HasPrecision(5, 2);
+                entity.Property(e => e.BaseAPY).HasPrecision(8, 4);
+                entity.Property(e => e.BonusAPY).HasPrecision(8, 4);
                 entity.Property(e => e.TotalStaked).HasPrecision(18, 8);
                 entity.Property(e => e.MaxPoolSize).HasPrecision(18, 8);
+                entity.Property(e => e.EarlyWithdrawalPenalty).HasPrecision(5, 2);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
                 entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(e => e.EarlyWithdrawalPenalty).HasPrecision(5, 2);
-
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.LockPeriodDays);
             });
 
-            // UserStake configuration
+            // UserStake - Based on actual entity
             modelBuilder.Entity<UserStake>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -672,7 +517,6 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.ClaimedRewards).HasPrecision(18, 8);
                 entity.Property(e => e.StakeTransactionHash).HasMaxLength(66);
                 entity.Property(e => e.UnstakeTransactionHash).HasMaxLength(66);
-
                 entity.HasIndex(e => e.WalletAddress);
                 entity.HasIndex(e => e.StakingPoolId);
                 entity.HasIndex(e => e.IsActive);
@@ -684,13 +528,12 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // StakingRewardClaim configuration
+            // StakingRewardClaim - Based on actual entity
             modelBuilder.Entity<StakingRewardClaim>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.ClaimedAmount).HasPrecision(18, 8);
                 entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
-
                 entity.HasIndex(e => e.UserStakeId);
                 entity.HasIndex(e => e.ClaimDate);
                 entity.HasIndex(e => e.TransactionHash);
@@ -701,7 +544,7 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // SchoolBeneficiary configuration
+            // SchoolBeneficiary - COMPLETE entity configuration with ALL properties
             modelBuilder.Entity<SchoolBeneficiary>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -716,7 +559,6 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.Property(e => e.LogoUrl).HasMaxLength(500);
                 entity.Property(e => e.TotalReceived).HasPrecision(18, 8);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-
                 entity.HasIndex(e => e.WalletAddress).IsUnique();
                 entity.HasIndex(e => e.Country);
                 entity.HasIndex(e => e.State);
@@ -724,19 +566,16 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                 entity.HasIndex(e => e.IsActive);
             });
 
-            // UserStakingBeneficiary configuration
+            // UserStakingBeneficiary - COMPLETE entity configuration with ALL 6 properties
             modelBuilder.Entity<UserStakingBeneficiary>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
                 entity.Property(e => e.TotalDonated).HasPrecision(18, 8);
                 entity.Property(e => e.SelectedAt).HasDefaultValueSql("GETUTCDATE()");
-
                 entity.HasIndex(e => e.WalletAddress);
                 entity.HasIndex(e => e.SchoolBeneficiaryId);
                 entity.HasIndex(e => e.IsActive);
-
-                // Ensure only one active selection per wallet
                 entity.HasIndex(e => new { e.WalletAddress, e.IsActive })
                     .IsUnique()
                     .HasFilter("[IsActive] = 1");
@@ -747,19 +586,19 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // SchoolRewardDistribution configuration
+            // SchoolRewardDistribution - COMPLETE entity configuration with ALL 7 properties
             modelBuilder.Entity<SchoolRewardDistribution>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.StakerAddress).HasMaxLength(42).IsRequired();
                 entity.Property(e => e.Amount).HasPrecision(18, 8);
-                entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
+                entity.Property(e => e.TransactionHash).HasMaxLength(66);
                 entity.Property(e => e.DistributionDate).HasDefaultValueSql("GETUTCDATE()");
-
                 entity.HasIndex(e => e.SchoolBeneficiaryId);
                 entity.HasIndex(e => e.StakerAddress);
                 entity.HasIndex(e => e.DistributionDate);
                 entity.HasIndex(e => e.TransactionHash);
+                entity.HasIndex(e => e.Status);
 
                 entity.HasOne(e => e.SchoolBeneficiary)
                     .WithMany()
@@ -767,6 +606,276 @@ namespace TeachCrowdSale.Infrastructure.Data.Context
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }
-    }
 
+        private void ConfigureLiquidityEntities(ModelBuilder modelBuilder)
+        {
+            // LiquidityPool
+            modelBuilder.Entity<LiquidityPool>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.DexName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.TokenPair).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.PoolAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.Token0Address).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.Token1Address).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.Token0Symbol).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.Token1Symbol).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.TotalValueLocked).HasPrecision(18, 2);
+                entity.Property(e => e.Volume24h).HasPrecision(18, 2);
+                entity.Property(e => e.Volume7d).HasPrecision(18, 2);
+                entity.Property(e => e.FeePercentage).HasPrecision(5, 3);
+                entity.Property(e => e.APY).HasPrecision(8, 4);
+                entity.Property(e => e.APR).HasPrecision(8, 4);
+                entity.Property(e => e.Token0Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.CurrentPrice).HasPrecision(18, 8);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.DexUrl).HasMaxLength(200);
+                entity.Property(e => e.AnalyticsUrl).HasMaxLength(200);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.LastSyncAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.PoolAddress).IsUnique();
+                entity.HasIndex(e => e.DexName);
+                entity.HasIndex(e => e.TokenPair);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.IsFeatured);
+                entity.HasIndex(e => e.TotalValueLocked);
+                entity.HasIndex(e => e.LastSyncAt);
+
+                // Navigation properties
+                entity.HasMany(e => e.UserPositions)
+                    .WithOne(p => p.LiquidityPool)
+                    .HasForeignKey(p => p.LiquidityPoolId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(e => e.Snapshots)
+                    .WithOne(s => s.LiquidityPool)
+                    .HasForeignKey(s => s.LiquidityPoolId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // UserLiquidityPosition
+            modelBuilder.Entity<UserLiquidityPosition>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.LpTokenAmount).HasPrecision(18, 8);
+                entity.Property(e => e.Token0Amount).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Amount).HasPrecision(18, 8);
+                entity.Property(e => e.InitialValueUsd).HasPrecision(18, 2);
+                entity.Property(e => e.CurrentValueUsd).HasPrecision(18, 2);
+                entity.Property(e => e.FeesEarnedUsd).HasPrecision(18, 6);
+                entity.Property(e => e.ImpermanentLoss).HasPrecision(18, 6);
+                entity.Property(e => e.NetPnL).HasPrecision(18, 6);
+                entity.Property(e => e.AddTransactionHash).HasMaxLength(66);
+                entity.Property(e => e.RemoveTransactionHash).HasMaxLength(66);
+                entity.Property(e => e.AddedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.LastUpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.WalletAddress);
+                entity.HasIndex(e => e.LiquidityPoolId);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.AddedAt);
+                entity.HasIndex(e => new { e.WalletAddress, e.IsActive });
+
+                entity.HasMany(e => e.Transactions)
+                    .WithOne(t => t.UserLiquidityPosition)
+                    .HasForeignKey(t => t.UserLiquidityPositionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // LiquidityTransaction
+            modelBuilder.Entity<LiquidityTransaction>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.WalletAddress).HasMaxLength(42).IsRequired();
+                entity.Property(e => e.TransactionType).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.Token0Amount).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Amount).HasPrecision(18, 8);
+                entity.Property(e => e.LpTokenAmount).HasPrecision(18, 8);
+                entity.Property(e => e.ValueUsd).HasPrecision(18, 2);
+                entity.Property(e => e.GasFeesUsd).HasPrecision(18, 6);
+                entity.Property(e => e.TransactionHash).HasMaxLength(66).IsRequired();
+                entity.Property(e => e.Notes).HasMaxLength(500);
+                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.UserLiquidityPositionId);
+                entity.HasIndex(e => e.WalletAddress);
+                entity.HasIndex(e => e.TransactionType);
+                entity.HasIndex(e => e.TransactionHash);
+                entity.HasIndex(e => e.Timestamp);
+                entity.HasIndex(e => e.Status);
+            });
+
+            // LiquidityPoolSnapshot - Based on actual entity
+            modelBuilder.Entity<LiquidityPoolSnapshot>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TotalValueLocked).HasPrecision(18, 2);
+                entity.Property(e => e.Volume24h).HasPrecision(18, 2);
+                entity.Property(e => e.Token0Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.Token1Reserve).HasPrecision(18, 8);
+                entity.Property(e => e.Price).HasPrecision(18, 8);
+                entity.Property(e => e.APY).HasPrecision(8, 4);
+                entity.Property(e => e.APR).HasPrecision(8, 4);
+                entity.Property(e => e.Source).HasMaxLength(50);
+                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.LiquidityPoolId);
+                entity.HasIndex(e => e.Timestamp);
+                entity.HasIndex(e => new { e.LiquidityPoolId, e.Timestamp });
+                entity.HasIndex(e => new { e.LiquidityPoolId, e.IsLatest });
+                entity.HasIndex(e => e.Source);
+
+                entity.HasOne(e => e.LiquidityPool)
+                    .WithMany(p => p.Snapshots)
+                    .HasForeignKey(e => e.LiquidityPoolId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // DexConfiguration
+            modelBuilder.Entity<DexConfiguration>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.BaseUrl).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.ApiUrl).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.LogoUrl).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.DefaultFeePercentage).HasPrecision(5, 3);
+                entity.Property(e => e.Network).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.RouterAddress).HasMaxLength(42);
+                entity.Property(e => e.FactoryAddress).HasMaxLength(42);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.Network);
+                entity.HasIndex(e => e.SortOrder);
+                entity.HasIndex(e => e.IsRecommended);
+            });
+        }
+
+        private void ConfigurePencilImpactEntities(ModelBuilder modelBuilder)
+        {
+            // PlatformWaitlist configuration
+            modelBuilder.Entity<PlatformWaitlist>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.UserType).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.SchoolDistrict).HasMaxLength(200);
+                entity.Property(e => e.TeachingSubject).HasMaxLength(100);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                // Indexes
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.UserType);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.InterestedInTEACHTokens);
+            });
+
+            // PencilDrive configuration
+            modelBuilder.Entity<PencilDrive>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Year).IsRequired();
+                entity.Property(e => e.StartDate).IsRequired();
+                entity.Property(e => e.EndDate).IsRequired();
+                entity.Property(e => e.PencilGoal).IsRequired();
+                entity.Property(e => e.TokensRaised).HasPrecision(18, 8);
+                entity.Property(e => e.PartnerName).HasMaxLength(200);
+                entity.Property(e => e.PartnerLogoUrl).HasMaxLength(500);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                // Indexes
+                entity.HasIndex(e => e.Year).IsUnique();
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.StartDate);
+                entity.HasIndex(e => e.EndDate);
+            });
+
+            // DemoProject configuration
+            modelBuilder.Entity<DemoProject>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.FundingGoal).HasPrecision(10, 2).IsRequired();
+                entity.Property(e => e.CurrentFunding).HasPrecision(10, 2);
+                entity.Property(e => e.SchoolName).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.TeacherName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.State).HasMaxLength(2);
+                entity.Property(e => e.City).HasMaxLength(100);
+                entity.Property(e => e.GradeLevel).HasMaxLength(50);
+                entity.Property(e => e.ImageUrl).HasMaxLength(500);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                // Indexes
+                entity.HasIndex(e => e.Category);
+                entity.HasIndex(e => e.State);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.IsFeatured);
+                entity.HasIndex(e => e.IsUrgent);
+                entity.HasIndex(e => e.Deadline);
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
+            // PlatformAnalytics configuration
+            modelBuilder.Entity<PlatformAnalytics>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.PageUrl).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.SessionId).HasMaxLength(100);
+                entity.Property(e => e.UserAgent).HasMaxLength(1000);
+                entity.Property(e => e.ReferrerUrl).HasMaxLength(500);
+                entity.Property(e => e.UserIP).HasMaxLength(45);
+                entity.Property(e => e.ConversionAction).HasMaxLength(100);
+                entity.Property(e => e.ConversionData).HasMaxLength(1000);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                // Indexes
+                entity.HasIndex(e => e.PageUrl);
+                entity.HasIndex(e => e.SessionId);
+                entity.HasIndex(e => e.ConversionAction);
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
+            // PencilDriveImpactStory configuration
+            modelBuilder.Entity<PencilDriveImpactStory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SchoolName).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.TeacherName).HasMaxLength(100);
+                entity.Property(e => e.State).HasMaxLength(2);
+                entity.Property(e => e.City).HasMaxLength(100);
+                entity.Property(e => e.StoryText).IsRequired();
+                entity.Property(e => e.ImageUrl).HasMaxLength(500);
+                entity.Property(e => e.VideoUrl).HasMaxLength(100);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                // Foreign key relationship
+                entity.HasOne(e => e.PencilDrive)
+                      .WithMany()
+                      .HasForeignKey(e => e.PencilDriveId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Indexes
+                entity.HasIndex(e => e.PencilDriveId);
+                entity.HasIndex(e => e.State);
+                entity.HasIndex(e => e.IsFeatured);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.CreatedAt);
+            });
+        }
+    }
 }

@@ -47,25 +47,5 @@ namespace TeachCrowdSale.Core.Data.Entities
         public List<StakingRewardClaim> RewardClaims { get; set; } = new();
     }
 
-    /// <summary>
-    /// Staking reward claim history
-    /// </summary>
-    public class StakingRewardClaim
-    {
-        public int Id { get; set; }
-        public int UserStakeId { get; set; }
-
-        [Range(0, double.MaxValue)]
-        public decimal ClaimedAmount { get; set; }
-
-        public DateTime ClaimDate { get; set; }
-
-        [TransactionHash]
-        public string TransactionHash { get; set; } = string.Empty;
-
-        public Enum.TransactionStatus Status { get; set; }
-
-        // Navigation properties
-        public UserStake UserStake { get; set; }
-    }
+    
 }
