@@ -35,6 +35,7 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/roadmap.css" asp-append-version="true" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -44,35 +45,7 @@
 
 <body>
     <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-        <div class="container">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <a href="/" class="brand-link">
-                        <span class="brand-icon">✏️</span>
-                        <span class="brand-text">PencilImpact</span>
-                    </a>
-                </div>
-
-                <ul class="nav-menu" id="navMenu">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/vision" class="nav-link">Vision</a></li>
-                    <li><a href="/demo" class="nav-link">Demo</a></li>
-                    <li><a href="/roadmap" class="nav-link active">Roadmap</a></li>
-                    <li><a href="https://teachtoken.io" class="nav-link nav-link-external" target="_blank">
-                        TEACH Token <span class="external-icon">↗</span>
-                    </a></li>
-                    <li><a href="/#waitlist" class="nav-cta">Join Waitlist</a></li>
-                </ul>
-
-                <div class="nav-toggle" id="navToggle">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </div>
-            </div>
-        </div>
-    </nav>
+    @await Html.PartialAsync("_NavigationPartial")
 
     <!-- Main content -->
     <main role="main" class="main-content">
@@ -82,10 +55,10 @@
                 <div class="roadmap-hero-content">
                     <h1 class="section-title">Development Roadmap</h1>
                     <p class="section-subtitle">
-                        Follow our journey from concept to the most comprehensive education funding platform. 
+                        Follow our journey from concept to the most comprehensive education funding platform.
                         See exactly what we're building, when we're building it, and how you can be involved.
                     </p>
-                    
+
                     <div class="current-phase-indicator">
                         <div class="phase-label">Current Phase:</div>
                         <div class="phase-name">@Model.CurrentPhase</div>
@@ -117,69 +90,34 @@
                         var isActive = phase.Status == "In Progress";
                         var isCompleted = phase.Status == "Completed";
                         var phaseNumber = i + 1;
-                        
+
                         <div class="phase-card @(isActive ? "active" : "") @(isCompleted ? "completed" : "")">
-                            <div class="phase-header">
-                                <div class="phase-number">
-                                    @if (isCompleted)
-                                    {
-                                        <span class="phase-check">✅</span>
-                                    }
-                                    else if (isActive)
-                                    {
-                                        <span class="phase-spinner">⚡</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="phase-num">@phaseNumber</span>
-                                    }
-                                </div>
-                                <div class="phase-title-section">
-                                    <h3 class="phase-title">@phase.Name</h3>
-                                    <div class="phase-timeline-text">@phase.Timeline</div>
-                                    <div class="phase-status @phase.Status.Replace(" ", "").ToLower()">
-                                        @phase.Status
-                                    </div>
-                                </div>
-                            </div>
-                            
+                            <div class="phase-number">@phaseNumber</div>
                             <div class="phase-content">
-                                <p class="phase-description">@phase.Description</p>
-                                
-                                <div class="phase-deliverables">
-                                    <h4>Key Deliverables:</h4>
-                                    <ul class="deliverables-list">
-                                        @foreach (var deliverable in phase.Deliverables)
-                                        {
-                                            <li class="deliverable-item">
-                                                <span class="deliverable-icon">🎯</span>
-                                                <span class="deliverable-text">@deliverable</span>
-                                            </li>
-                                        }
-                                    </ul>
+                                <div class="phase-header">
+                                    <h3 class="phase-title">@phase.Name</h3>
+                                    <span class="phase-timeline">@phase.Timeline</span>
+                                    <span class="phase-status status-@phase.Status.ToLower().Replace(" ", "-")">@phase.Status</span>
                                 </div>
-                                
-                                @if (isActive)
+                                <p class="phase-description">@phase.Description</p>
+
+                                @if (phase.Deliverables.Any())
                                 {
-                                    <div class="phase-progress-detail">
-                                        <div class="progress-label">Phase Progress</div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 65%"></div>
-                                        </div>
-                                        <div class="progress-details">
-                                            <span>65% Complete</span>
-                                            <span>Est. completion: August 2025</span>
-                                        </div>
+                                    <div class="phase-deliverables">
+                                        <h4>Key Deliverables:</h4>
+                                        <ul class="deliverables-list">
+                                            @foreach (var deliverable in phase.Deliverables)
+                                            {
+                                                <li>@deliverable</li>
+                                            }
+                                        </ul>
                                     </div>
                                 }
                             </div>
-                            
+
                             @if (i < Model.Phases.Count - 1)
                             {
-                                <div class="phase-connector">
-                                    <div class="connector-line"></div>
-                                    <div class="connector-arrow">→</div>
-                                </div>
+                                <div class="phase-connector"></div>
                             }
                         </div>
                     }
@@ -193,18 +131,266 @@
                 <div class="section-header">
                     <h2 class="section-title">Key Milestones</h2>
                     <p class="section-subtitle">
-                        Critical achievements and targets that mark our progress toward revolutionizing education funding
+                        Critical checkpoints on our journey to revolutionize education funding
                     </p>
                 </div>
 
                 <div class="milestones-grid">
                     @foreach (var milestone in Model.Milestones)
                     {
-                        var statusClass = milestone.Status.ToLower().Replace(" ", "");
-                        
-                        <div class="milestone-card @statusClass">
-                            <div class="milestone-header">
-                                <div class="milestone-status-indicator">
-                                    @switch (milestone.Status.ToLower())
-                                    {
-                                        case "completed":
+                        var statusClass = milestone.Status.ToLower().Replace(" ", "-");
+
+                        <div class="milestone-card status-@statusClass">
+                            <div class="milestone-date">@milestone.Date</div>
+                            <div class="milestone-content">
+                                <h3 class="milestone-title">@milestone.Title</h3>
+                                <p class="milestone-description">@milestone.Description</p>
+                                <span class="milestone-status">@milestone.Status</span>
+                            </div>
+                            <div class="milestone-icon">
+                                @switch (milestone.Status.ToLower())
+                                {
+                                    case "completed":
+                                        <span class="status-icon completed">✓</span>
+                                        break;
+                                    case "in progress":
+                                        <span class="status-icon in-progress">⏳</span>
+                                        break;
+                                    case "planned":
+                                        <span class="status-icon planned">📅</span>
+                                        break;
+                                    default:
+                                        <span class="status-icon target">🎯</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Token Integration Roadmap Section -->
+        <section class="token-integration-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">TEACH Token Integration</h2>
+                    <p class="section-subtitle">
+                        How TEACH tokens will power the future of education funding throughout our development
+                    </p>
+                </div>
+
+                <div class="token-phases-container">
+                    @foreach (var tokenPhase in Model.TokenIntegration)
+                    {
+                        <div class="token-phase-card">
+                            <div class="token-phase-header">
+                                <h3 class="token-phase-title">@tokenPhase.Phase</h3>
+                                <span class="token-phase-timeline">@tokenPhase.Timeline</span>
+                            </div>
+
+                            <div class="token-features">
+                                @foreach (var feature in tokenPhase.Features)
+                                {
+                                    <div class="token-feature">
+                                        <span class="feature-icon">🔗</span>
+                                        <span class="feature-text">@feature</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="token-benefits-highlight">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">💰</div>
+                        <h4>Payment Processing</h4>
+                        <p>Use TEACH tokens for seamless donations with reduced fees and instant transactions</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">🗳️</div>
+                        <h4>Governance Rights</h4>
+                        <p>Vote on platform features, funding priorities, and community initiatives</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">🎁</div>
+                        <h4>Exclusive Rewards</h4>
+                        <p>Access special NFTs, early features, and enhanced donor recognition</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">📈</div>
+                        <h4>Staking Benefits</h4>
+                        <p>Stake tokens to earn rewards while supporting your favorite schools</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Involvement Section -->
+        <section class="community-involvement-section">
+            <div class="container">
+                <div class="involvement-content">
+                    <div class="involvement-text">
+                        <h2 class="section-title">Be Part of the Journey</h2>
+                        <p class="section-subtitle">
+                            Join our growing community and help shape the future of education funding.
+                            Every step forward brings us closer to transforming how schools get the resources they need.
+                        </p>
+
+                        <div class="involvement-actions">
+                            <a href="/#waitlist" class="btn btn-primary btn-large">Join the Waitlist</a>
+                            <a href="https://teachtoken.io" class="btn btn-secondary btn-large" target="_blank">
+                                Get TEACH Tokens <span class="external-icon">↗</span>
+                            </a>
+                        </div>
+
+                        <div class="community-stats">
+                            <div class="stat">
+                                <span class="stat-number">2,500+</span>
+                                <span class="stat-label">Educators Interested</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">850+</span>
+                                <span class="stat-label">Early Supporters</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">150+</span>
+                                <span class="stat-label">Schools Inquiring</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="involvement-visual">
+                        <div class="roadmap-visual">
+                            <div class="visual-path">
+                                <div class="path-point completed">
+                                    <span class="point-label">Concept</span>
+                                </div>
+                                <div class="path-point active">
+                                    <span class="point-label">Vision</span>
+                                </div>
+                                <div class="path-point">
+                                    <span class="point-label">MVP</span>
+                                </div>
+                                <div class="path-point">
+                                    <span class="point-label">Launch</span>
+                                </div>
+                                <div class="path-point">
+                                    <span class="point-label">Scale</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Development Updates Section -->
+        <section class="updates-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Stay Updated</h2>
+                    <p class="section-subtitle">
+                        Get the latest development updates, milestone achievements, and community news
+                    </p>
+                </div>
+
+                <div class="updates-signup">
+                    <div class="signup-form">
+                        <h3>Development Newsletter</h3>
+                        <p>Monthly updates on our progress, new features, and community milestones</p>
+                        <form class="newsletter-form" id="developmentNewsletterForm">
+                            <div class="form-group">
+                                <input type="email" placeholder="Enter your email address" required>
+                                <button type="submit" class="btn btn-primary">Subscribe</button>
+                            </div>
+                            <p class="form-note">
+                                We respect your privacy. Unsubscribe at any time.
+                            </p>
+                        </form>
+                    </div>
+
+                    <div class="social-links">
+                        <h4>Follow Our Progress</h4>
+                        <div class="social-buttons">
+                            <a href="#" class="social-btn github">
+                                <span class="social-icon">📧</span>
+                                GitHub Updates
+                            </a>
+                            <a href="#" class="social-btn discord">
+                                <span class="social-icon">💬</span>
+                                Join Discord
+                            </a>
+                            <a href="#" class="social-btn twitter">
+                                <span class="social-icon">🐦</span>
+                                Follow Twitter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>PencilImpact</h4>
+                    <p>Revolutionizing education funding through transparency, community, and blockchain technology.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">💬</a>
+                        <a href="#" class="social-link">📧</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/vision">Vision</a></li>
+                        <li><a href="/demo">Demo</a></li>
+                        <li><a href="/roadmap">Roadmap</a></li>
+                        <li><a href="/#waitlist">Waitlist</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Development</h4>
+                    <ul>
+                        <li><a href="/roadmap#phases">Development Phases</a></li>
+                        <li><a href="/roadmap#milestones">Key Milestones</a></li>
+                        <li><a href="/roadmap#token-integration">Token Integration</a></li>
+                        <li><a href="#">GitHub Repository</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>TEACH Token</h4>
+                    <ul>
+                        <li><a href="https://teachtoken.io" target="_blank">Buy TEACH</a></li>
+                        <li><a href="https://teachtoken.io/tokenomics" target="_blank">Tokenomics</a></li>
+                        <li><a href="https://teachtoken.io/staking" target="_blank">Staking</a></li>
+                        <li><a href="https://teachtoken.io/analytics" target="_blank">Analytics</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 PencilImpact. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/roadmap.js" asp-append-version="true"></script>
+</body>
+</html>
