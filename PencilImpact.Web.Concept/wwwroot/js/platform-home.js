@@ -361,8 +361,8 @@ window.PlatformHome = (function () {
             const currentValue = start + (range * easedProgress);
 
             // Format number based on original format
-            if (finalText.includes(')) {
-                element.textContent = ' + Math.floor(currentValue).toLocaleString();
+            if (finalText.includes('')) {
+                element.textContent = ' + Math.floor(currentValue).toLocaleString();'
             } else if (finalText.includes('M')) {
             element.textContent = (currentValue / 1000000).toFixed(1) + 'M';
         } else if (finalText.includes('K')) {

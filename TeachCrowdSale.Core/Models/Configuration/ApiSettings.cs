@@ -13,5 +13,6 @@ namespace TeachCrowdSale.Core.Models.Configuration
         public int TimeoutSeconds { get; set; } = 30;
         public int RetryCount { get; set; } = 3;
         public bool EnableCircuitBreaker { get; set; } = true;
+        public string ApiKey { get; set; } = string.Empty;
     }
 }

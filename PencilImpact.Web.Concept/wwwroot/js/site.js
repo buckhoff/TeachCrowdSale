@@ -305,10 +305,7 @@ heroSections.forEach(hero => {
         hero.style.transform = `translateY(${rate}px)`;
     }
 });
-
-ticking = false;
-        }
-
+q
 function requestScrollUpdate() {
     if (!ticking) {
         requestAnimationFrame(updateScrollEffects);

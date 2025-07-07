@@ -1,6 +1,6 @@
 [
   {
-    "Name": "New Profile",
+    "Name": "TokenCrowdSale w API",
     "Projects": [
       {
         "Path": "TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj",
@@ -8,6 +8,19 @@
       },
       {
         "Path": "TeachCrowdSale.Web\\TeachCrowdSale.Web.csproj",
+        "Action": "Start"
+      }
+    ]
+  },
+  {
+    "Name": "PencilImpact Concept w API",
+    "Projects": [
+      {
+        "Path": "TeachCrowdSale.Api\\TeachCrowdSale.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "PencilImpact.Web.Concept\\PencilImpact.Web.Concept.csproj",
         "Action": "Start"
       }
     ]

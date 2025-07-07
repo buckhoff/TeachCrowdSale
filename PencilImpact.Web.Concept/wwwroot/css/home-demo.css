@@ -1,0 +1,1273 @@
+﻿/* PencilImpact - Demo Page Styles (Complete) */
+/* Note: Basic styles like .btn, .card, .container, .grid are in site.css */
+
+/* ================================================
+   DEMO HERO SECTION
+================================================ */
+.demo-hero-section {
+    padding: var(--section-padding);
+    background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+    .demo-hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 70%, rgba(79, 70, 229, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+.demo-hero-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.demo-navigation {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.demo-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    font-weight: 500;
+}
+
+    .demo-nav-btn:hover,
+    .demo-nav-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+    }
+
+.demo-nav-icon {
+    font-size: 1.25rem;
+}
+
+/* ================================================
+   DEMO FLOW SECTION
+================================================ */
+.demo-flow-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.demo-flow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.demo-step {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+    .demo-step:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .demo-step[data-step].active {
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(255, 255, 255, 0.05));
+    }
+
+.demo-step-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.demo-step-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.demo-step-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.demo-step-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.demo-step-features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+    .demo-step-features li {
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        position: relative;
+        padding-left: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+        .demo-step-features li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+/* ================================================
+   INTERACTIVE DEMO SECTION
+================================================ */
+.interactive-demo-section {
+    padding: var(--section-padding);
+}
+
+.demo-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.demo-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin: 2rem 0;
+    display: none;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+    .demo-panel.active {
+        display: block;
+    }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.demo-panel-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .demo-panel-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .demo-panel-header p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+/* ================================================
+   DEMO FILTERS AND CONTROLS
+================================================ */
+.demo-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.demo-filter {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .demo-filter:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+/* ================================================
+   DEMO PROJECTS GRID
+================================================ */
+.demo-projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.demo-project-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+    .demo-project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border-color: var(--primary-color);
+    }
+
+    .demo-project-card[data-featured="true"] {
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(255, 255, 255, 0.05));
+    }
+
+.demo-project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.project-category {
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.urgent-badge {
+    background: var(--danger-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.demo-project-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+.demo-project-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    font-size: 0.875rem;
+}
+
+.demo-project-meta {
+    margin-bottom: 1rem;
+}
+
+.project-location,
+.project-teacher,
+.project-students {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.demo-project-funding {
+    margin-bottom: 1rem;
+}
+
+.funding-progress {
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.funding-stats {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* ================================================
+   DONATION SIMULATOR
+================================================ */
+.donation-simulator {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.donation-simulator-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .donation-simulator-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .donation-simulator-header p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+.donation-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.donation-input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+    .donation-input-group label {
+        color: var(--text-primary);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .donation-input-group input,
+    .donation-input-group select {
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 0.5rem;
+        color: var(--text-primary);
+        font-family: inherit;
+    }
+
+        .donation-input-group input:focus,
+        .donation-input-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+.donation-amount-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.amount-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    font-size: 0.875rem;
+}
+
+    .amount-btn.active,
+    .amount-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+.impact-preview {
+    background: rgba(79, 70, 229, 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+    .impact-preview h4 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+.impact-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.impact-metric {
+    text-align: center;
+}
+
+.impact-metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.impact-metric-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* ================================================
+   PLATFORM WALKTHROUGH
+================================================ */
+.platform-walkthrough {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.walkthrough-steps {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.walkthrough-step-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .walkthrough-step-btn.active,
+    .walkthrough-step-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+.walkthrough-step-number {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.walkthrough-content {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.walkthrough-screen {
+    display: none;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+    .walkthrough-screen.active {
+        display: block;
+    }
+
+    .walkthrough-screen h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .walkthrough-screen p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+.walkthrough-mockup {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    margin: 1rem 0;
+}
+
+.mockup-interface {
+    background: var(--card-bg);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mockup-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mockup-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.mockup-content {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* ================================================
+   TOKEN INTEGRATION DEMO
+================================================ */
+.token-demo-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.token-demo-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.token-demo-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: var(--transition-smooth);
+}
+
+    .token-demo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .token-demo-card.highlighted {
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(255, 255, 255, 0.05));
+    }
+
+.token-demo-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.token-demo-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.token-demo-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.token-demo-example {
+    background: rgba(79, 70, 229, 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+    .token-demo-example h5 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .token-demo-example p {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+/* ================================================
+   DEMO CTA SECTION
+================================================ */
+.demo-cta-section {
+    padding: var(--section-padding);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    text-align: center;
+}
+
+.demo-cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.demo-cta-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.demo-cta-description {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+}
+
+.demo-cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.demo-cta-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+    .demo-cta-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .demo-cta-btn.primary {
+        background: white;
+        color: var(--primary-color);
+        border-color: white;
+    }
+
+        .demo-cta-btn.primary:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+/* ================================================
+   RESPONSIVE STYLES
+================================================ */
+@media (max-width: 1024px) {
+    .demo-navigation {
+        gap: 0.75rem;
+    }
+
+    .demo-nav-btn {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.875rem;
+    }
+
+    .demo-flow-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .demo-projects-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .token-demo-features {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .demo-hero-content .section-title {
+        font-size: 2rem;
+    }
+
+    .demo-hero-content .section-subtitle {
+        font-size: 1.125rem;
+    }
+
+    .demo-navigation {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .demo-nav-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+
+    .demo-flow-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .demo-filters {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .demo-projects-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .donation-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .walkthrough-steps {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .walkthrough-step-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+
+    .token-demo-features {
+        grid-template-columns: 1fr;
+    }
+
+    .demo-cta-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .demo-cta-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .demo-hero-content .section-title {
+        font-size: 1.75rem;
+    }
+
+    .demo-cta-title {
+        font-size: 2rem;
+    }
+
+    .demo-step {
+        padding: 1.5rem;
+    }
+
+    .demo-panel {
+        padding: 1.5rem;
+    }
+
+    .donation-simulator {
+        padding: 1.5rem;
+    }
+
+    .platform-walkthrough {
+        padding: 1.5rem;
+    }
+
+    .token-demo-card {
+        padding: 1.5rem;
+    }
+
+    .amount-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .demo-nav-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* ================================================
+   PENCIL DRIVE DEMO SECTION
+================================================ */
+.pencil-drive-demo-section {
+    padding: var(--section-padding);
+    background: var(--secondary-bg);
+}
+
+.pencil-drive-simulator {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.drive-status-demo {
+    margin-bottom: 2rem;
+}
+
+.drive-progress-demo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .drive-progress-demo h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+.progress-visualization {
+    margin-bottom: 2rem;
+}
+
+.drive-progress-bar {
+    position: relative;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+    .drive-progress-bar .progress-fill {
+        height: 100%;
+        background: var(--gradient-pencil);
+        border-radius: 12px;
+        position: relative;
+        transition: width 1s ease;
+    }
+
+.progress-glow {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-30px);
+    }
+
+    100% {
+        transform: translateX(30px);
+    }
+}
+
+.progress-percentage {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    color: white;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.drive-stats-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-demo-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition-smooth);
+}
+
+    .stat-demo-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+.stat-demo-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--pencil-yellow);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.stat-demo-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.stat-demo-description {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+.participation-demo {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid var(--pencil-yellow);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+    .participation-demo h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .participation-demo p {
+        color: var(--text-secondary);
+        text-align: center;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+.token-donation-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.donation-option-demo {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .donation-option-demo:hover {
+        border-color: var(--pencil-yellow);
+        background: rgba(251, 191, 36, 0.1);
+        transform: translateY(-3px);
+    }
+
+    .donation-option-demo.selected {
+        border-color: var(--pencil-yellow);
+        background: rgba(251, 191, 36, 0.15);
+    }
+
+.donation-amount-demo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pencil-yellow);
+    margin-bottom: 0.5rem;
+}
+
+.pencils-equivalent {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.donation-impact {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.nft-reward-preview {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid var(--accent-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+    .nft-reward-preview h5 {
+        color: var(--accent-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .nft-reward-preview p {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+.nft-mockup {
+    width: 80px;
+    height: 80px;
+    background: var(--gradient-secondary);
+    border-radius: 0.5rem;
+    margin: 1rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.drive-timeline-demo {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+    .drive-timeline-demo h4 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+.timeline-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin: 2rem 0;
+}
+
+    .timeline-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.2);
+        z-index: 1;
+    }
+
+.timeline-step-demo {
+    background: var(--card-bg);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    font-size: 1.25rem;
+}
+
+    .timeline-step-demo.completed {
+        border-color: var(--success-color);
+        background: var(--success-color);
+        color: white;
+    }
+
+    .timeline-step-demo.current {
+        border-color: var(--pencil-yellow);
+        background: var(--pencil-yellow);
+        color: var(--primary-bg);
+        animation: pulse 2s infinite;
+    }
+
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.timeline-label {
+    flex: 1;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+    .timeline-label.completed {
+        color: var(--success-color);
+    }
+
+    .timeline-label.current {
+        color: var(--pencil-yellow);
+    }
+
+.demo-action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.demo-action-btn {
+    background: var(--gradient-pencil);
+    color: var(--primary-bg);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+    .demo-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(251, 191, 36, 0.3);
+    }
+
+    .demo-action-btn.secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+        .demo-action-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--pencil-yellow);
+        }
+
+/* ================================================
+   RESPONSIVE STYLES FOR PENCIL DRIVE DEMO
+================================================ */
+@media (max-width: 768px) {
+    .pencil-drive-simulator {
+        padding: 1.5rem;
+    }
+
+    .drive-stats-demo {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .token-donation-demo {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline-steps {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+        .timeline-steps::before {
+            top: 0;
+            bottom: 0;
+            left: 20px;
+            width: 2px;
+            height: auto;
+            right: auto;
+        }
+
+    .timeline-labels {
+        flex-direction: column;
+        gap: 1rem;
+        margin-left: 3rem;
+    }
+
+    .timeline-label {
+        text-align: left;
+    }
+
+    .demo-action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+pencil-drive-
+    .demo-action-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-demo-value {
+        font-size: 1.5rem;
+    }
+
+    .donation-amount-demo {
+        font-size: 1.25rem;
+    }
+
+    .nft-mockup {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .timeline-step-demo {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+}
